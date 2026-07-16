@@ -32,6 +32,6 @@ public class VehicleService {
             return vehicleMapper.toResponse(vehicle);
         }
         throw new VehicleAlreadyRegisteredException
-                ("This vehicle is already registeres, try to vinculater with the owner, or dismiss");
+                ("This vehicle is already registered, try to vinculate with the owner, or dismiss");
     }
 }
