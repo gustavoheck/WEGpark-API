@@ -57,5 +57,13 @@ public class OccurrenceService {
                 .toList();
     }
 
+    public List<OccurrenceResponseDto> findByLocal(String location) {
+
+        List<Occurrence> occurrences = occurrenceRepository.findByLocal(location);
+
+        return occurrences.stream()
+                .map(occurrenceMapper::toResponse)
+                .toList();
+    }
 
 }
