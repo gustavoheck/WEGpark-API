@@ -5,10 +5,12 @@ import com.weg.WEGpark.park.internal.dto.occurrence.OccurrenceRequestDto;
 import com.weg.WEGpark.park.internal.dto.occurrence.OccurrenceResponseDto;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.YearMonth;
 import java.util.List;
 
 @RestController
@@ -34,4 +36,18 @@ public class OccurenceController {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(response);
     }
+
+    @GetMapping("/date")
+    public ResponseEntity<List<OccurrenceResponseDto>> getOccurrencesByDate(
+            @RequestParam(name = "period")
+            @DateTimeFormat(pattern = "yyyy-MM")
+            YearMonth period
+    ) {
+
+        List<OccurrenceResponseDto> response = occurrenceService.findByDate(period);
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(response);
+    }
+
 }
