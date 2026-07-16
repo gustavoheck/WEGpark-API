@@ -1,0 +1,6 @@
+CREATE TABLE park.occurrence (
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    date_hour TIMESTAMP NOT NULL,
+    location VARCHAR(255) NOT NULL,
+    gate VARCHAR(255) NOT NULL
+);
