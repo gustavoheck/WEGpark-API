@@ -17,6 +17,7 @@ Este documento consolida as diretrizes técnicas, arquiteturais e de processos a
 ## Regras de Escrita
 
 * **Nome de Pacote**: Escrever sempre no singular. Ex: ~~mappers~~ -> mapper
+* **Nomes das branchs de feature**: Além do nome padrão para identificação sempre colocar um # como o número da feature. Ex: Feature/#1 texto
 
 ---
 
@@ -66,7 +67,7 @@ A estrutura de pacotes do projeto foi desenhada para reforçar o isolamento do m
 └── internal/                      # Subpasta obrigatória de isolamento
     ├── controller/                # Controladores HTTP (REST Endpoints)
     ├── dto/                       # Objetos de Transferência de Dados (Requests/Responses)
-    ├── service/                   # Camada de lógica de negócio e orquestração
+    ├── app/                       # Camada de lógica de negócio e orquestração
     ├── domain/                    # Entidades, Enums e Objetos de Valor (Domain Model)
     ├── infra/                     # Repositories, integrações externas e adapters de frameworks
     └── listener/                  # Consumidores (listeners) de eventos do sistema
@@ -110,17 +111,17 @@ V<Timestamp>__<descricao_da_acao>.sql
 ```
 
 #### Exemplo Prático:
-`V20260715100400__create_users_table.sql`
+`V160720261004__create_users_table.sql`
 
 #### Anatomia do Nome:
 
-| Parte | Elemento | Descrição / Regra | Exemplo |
-| :--- | :--- | :--- | :--- |
-| **Prefixo** | `V` | Prefixo obrigatório para migrações com versão estática. | `V` |
-| **Timestamp** | `20260715100400` | Timestamp com precisão de segundo representando o exato momento de criação. <br>`YYYYMMDDHHMMSS` (Ano, Mês, Dia, Hora, Minuto, Segundo). | `20260715100400` |
-| **Separador** | `__` | **Dois underlines obrigatoriamente.** É o delimitador utilizado pelo motor de migração. | `__` |
-| **Descrição** | `create_users_table` | Descrição sucinta em inglês ou português utilizando letras minúsculas e separada por underlines (`snake_case`). | `create_users_table` |
-| **Extensão** | `.sql` | Extensão padrão do arquivo (ou `.java` para migrações programáticas complexas). | `.sql` |
+| Parte | Elemento | Descrição / Regra                                                                                                               | Exemplo              |
+| :--- | :--- |:--------------------------------------------------------------------------------------------------------------------------------|:---------------------|
+| **Prefixo** | `V` | Prefixo obrigatório para migrações com versão estática.                                                                         | `V`                  |
+| **Timestamp** | `20260715100400` | Timestamp com precisão de segundo representando o exato momento de criação. <br>`YYYYMMDDHHMMSS` (Ano, Mês, Dia, Hora, Minuto). | `202607151004`       |
+| **Separador** | `__` | **Dois underlines obrigatoriamente.** É o delimitador utilizado pelo motor de migração.                                         | `__`                 |
+| **Descrição** | `create_users_table` | Descrição sucinta em inglês ou português utilizando letras minúsculas e separada por underlines (`snake_case`).                 | `create_users_table` |
+| **Extensão** | `.sql` | Extensão padrão do arquivo (ou `.java` para migrações programáticas complexas).                                                 | `.sql`               |
 
 ### 3.2. Melhores Práticas para Migrations
 1. **Imutabilidade:** Nunca altere um arquivo de migração que já tenha sido aplicado em produção ou homologação. Se precisar corrigir algo, crie uma nova migração (ex: `V20260715110000__add_missing_column_to_users.sql`).
