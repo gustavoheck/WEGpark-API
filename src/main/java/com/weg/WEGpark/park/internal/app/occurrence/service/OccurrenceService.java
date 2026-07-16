@@ -10,6 +10,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.YearMonth;
 import java.util.List;
 
 @Service
@@ -42,6 +44,18 @@ public class OccurrenceService {
                 .toList();
     }
 
+    public List<OccurrenceResponseDto> findByDate(YearMonth period) {
+
+        LocalDateTime startMonth = period.atDay(1).atStartOfDay();
+
+        LocalDateTime endMonth = period.atEndOfMonth().atTime(LocalTime.MAX);
+
+        List<Occurrence> occurrences = occurrenceRepository.findByDateHourBetween(startMonth, endMonth);
+
+        return occurrences.stream()
+                .map(occurrenceMapper::toResponse)
+                .toList();
+    }
 
 
 }
