@@ -67,7 +67,7 @@ A estrutura de pacotes do projeto foi desenhada para reforçar o isolamento do m
 └── internal/                      # Subpasta obrigatória de isolamento
     ├── controller/                # Controladores HTTP (REST Endpoints)
     ├── dto/                       # Objetos de Transferência de Dados (Requests/Responses)
-    ├── service/                   # Camada de lógica de negócio e orquestração
+    ├── app/                       # Camada de lógica de negócio e orquestração
     ├── domain/                    # Entidades, Enums e Objetos de Valor (Domain Model)
     ├── infra/                     # Repositories, integrações externas e adapters de frameworks
     └── listener/                  # Consumidores (listeners) de eventos do sistema

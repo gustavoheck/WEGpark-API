@@ -30,7 +30,8 @@ public class Vehicle {
     @Column(nullable = false)
     private String color;
 
-    public Vehicle(String model, String brand, String color) {
+    public Vehicle(String plate, String model, String brand, String color) {
+        this.plate = plate;
         this.model = model;
         this.brand = brand;
         this.color = color;
