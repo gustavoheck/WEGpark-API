@@ -12,5 +12,5 @@ public interface OccurrenceRepository extends JpaRepository<Occurrence, Long> {
 
     List<Occurrence> findByDateHourBetween(LocalDateTime start, LocalDateTime end);
 
-    List<Occurrence> findByLocal(String location);
+    List<Occurrence> findByLocation(String location);
 }

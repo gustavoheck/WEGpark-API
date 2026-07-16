@@ -50,4 +50,15 @@ public class OccurenceController {
                 .body(response);
     }
 
+    @GetMapping("/local")
+    public ResponseEntity<List<OccurrenceResponseDto>> getOccurrencesByLocal(
+            @RequestParam(name = "location")
+            String location
+    ) {
+
+        List<OccurrenceResponseDto> response = occurrenceService.findByLocal(location);
+
+        return ResponseEntity.status((HttpStatus.OK))
+                .body(response);
+    }
 }
