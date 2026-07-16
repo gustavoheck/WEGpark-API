@@ -16,16 +16,19 @@ public class Vehicle {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long id;
+    private Long id;
+
+    @Column(nullable = false, unique = true)
+    private String plate;
 
     @Column(nullable = false)
-    String model;
+    private String model;
 
     @Column(nullable = false)
-    String brand;
+    private String brand;
 
     @Column(nullable = false)
-    String color;
+    private String color;
 
     public Vehicle(String model, String brand, String color) {
         this.model = model;
