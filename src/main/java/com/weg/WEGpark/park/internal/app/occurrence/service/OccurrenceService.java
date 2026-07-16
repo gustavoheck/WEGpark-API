@@ -22,6 +22,7 @@ public class OccurrenceService {
 
     @Transactional
     public OccurrenceResponseDto registerOccurrence(OccurrenceRequestDto occurrenceRequestDto) {
+
         Occurrence occurrence = occurrenceMapper.toEntity(occurrenceRequestDto);
 
         LocalDateTime date = LocalDateTime.now();
@@ -30,6 +31,15 @@ public class OccurrenceService {
         occurrence = occurrenceRepository.save(occurrence);
 
         return occurrenceMapper.toResponse(occurrence);
+    }
+
+    public List<OccurrenceResponseDto> findAllOccurrences() {
+
+        List<Occurrence> occurrences = occurrenceRepository.findAll();
+
+        return occurrences.stream()
+                .map(occurrenceMapper::toResponse)
+                .toList();
     }
 
 
