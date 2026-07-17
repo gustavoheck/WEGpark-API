@@ -1,5 +1,6 @@
 package com.weg.WEGpark.park.internal.domain.model.vehicle;
 
+import com.weg.WEGpark.park.internal.domain.model.users.ParkUser;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -29,6 +30,9 @@ public class Vehicle {
 
     @Column(nullable = false)
     private String color;
+
+    @ManyToMany(fetch = FetchType.EAGER, mappedBy = "vehicles")
+    private ParkUser vehicleUser;
 
     public Vehicle(String plate, String model, String brand, String color) {
         this.plate = plate;

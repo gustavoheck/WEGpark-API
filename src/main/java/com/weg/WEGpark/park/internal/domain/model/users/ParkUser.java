@@ -1,12 +1,14 @@
 package com.weg.WEGpark.park.internal.domain.model.users;
 
 import com.weg.WEGpark.park.internal.domain.enums.ParkUserType;
+import com.weg.WEGpark.park.internal.domain.model.vehicle.Vehicle;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -36,6 +38,15 @@ public class ParkUser {
 
     @Column(name = "user_type")
     private ParkUserType userType;
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "parkuser_vehicle",
+            schema = "park",
+            joinColumns = @JoinColumn(name = "id_parkuser"),
+            inverseJoinColumns = @JoinColumn(name = "id_vehicle")
+    )
+    private List<Vehicle> vehicles;
 
     public ParkUser(String email, String telephone, String name, ParkUserType userType) {
         this.email = email;
