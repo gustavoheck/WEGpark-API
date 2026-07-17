@@ -3,14 +3,15 @@ package com.weg.WEGpark.park.internal.controller.vehicle;
 import com.weg.WEGpark.park.internal.app.vehicle.service.VehicleService;
 import com.weg.WEGpark.park.internal.dto.vehicle.CreateVehicleRequestDTO;
 import com.weg.WEGpark.park.internal.dto.vehicle.CreateVehicleResponseDTO;
+import com.weg.WEGpark.park.internal.dto.vehicle.FilterVehicleRequestDTO;
+import com.weg.WEGpark.park.internal.dto.vehicle.GetVehicleResponseDTO;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -23,8 +24,18 @@ public class VehicleController {
     public ResponseEntity<CreateVehicleResponseDTO> registerVehicle (@Valid @RequestBody CreateVehicleRequestDTO request) {
         CreateVehicleResponseDTO response = vehicleService.registerVehicle(request);
 
+        // Need to change to ResponseEntity.create
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(response);
+    }
+
+    @GetMapping
+    public ResponseEntity<List<GetVehicleResponseDTO>> findVehicles (FilterVehicleRequestDTO filter) {
+        List<GetVehicleResponseDTO> filteredVehicles = vehicleService.findVehicle(filter);
+
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(filteredVehicles);
     }
 }
