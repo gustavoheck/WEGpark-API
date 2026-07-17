@@ -3,5 +3,6 @@ CREATE TABLE park.parkuser (
     uuid UUID UNIQUE NOT NULL,
     email VARCHAR(255) NOT NULL,
     telefone VARCHAR(255) UNIQUE NOT NULL,
-    nome VARCHAR(255) NOT NULL
+    nome VARCHAR(255) NOT NULL,
+    user_type VARCHAR(50) NOT NULL
 );

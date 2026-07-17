@@ -1,3 +1,5 @@
 CREATE TABLE park.collaborator (
+    id BIGINT PRIMARY KEY,
     boss VARCHAR(255) NOT NULL
-) INHERITS (park.collaborator);
+    CONSTRAINT fk_guard FOREIGN KEY (id) REFERENCES parkuser(id) ON DELETE CASCADE
+);
