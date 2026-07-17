@@ -1,6 +1,7 @@
-CREATE TABLE park.collaborator (
+CREATE TABLE park.visitor (
     id BIGINT PRIMARY KEY,
+    uuid UUID UNIQUE NOT NULL,
     company VARCHAR(255),
     cpf VARCHAR(255) UNIQUE NOT NULL,
-    CONSTRAINT fk_visitor FOREIGN KEY (id) REFERENCES parkuser(id) ON DELETE CASCADE
+    CONSTRAINT fk_visitor FOREIGN KEY (id) REFERENCES park.parkuser(id) ON DELETE CASCADE
 );

@@ -2,7 +2,7 @@ package com.weg.WEGpark.park.internal.app.vehicle.service;
 
 import com.weg.WEGpark.park.internal.app.vehicle.exception.VehicleAlreadyRegisteredException;
 import com.weg.WEGpark.park.internal.app.vehicle.mapper.VehicleMapper;
-import com.weg.WEGpark.park.internal.domain.model.Vehicle;
+import com.weg.WEGpark.park.internal.domain.model.vehicle.Vehicle;
 import com.weg.WEGpark.park.internal.dto.vehicle.CreateVehicleRequestDTO;
 import com.weg.WEGpark.park.internal.dto.vehicle.CreateVehicleResponseDTO;
 import com.weg.WEGpark.park.internal.infra.repository.VehicleRepository;

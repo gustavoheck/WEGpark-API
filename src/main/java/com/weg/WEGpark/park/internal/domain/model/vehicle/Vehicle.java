@@ -1,4 +1,4 @@
-package com.weg.WEGpark.park.internal.domain.model;
+package com.weg.WEGpark.park.internal.domain.model.vehicle;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

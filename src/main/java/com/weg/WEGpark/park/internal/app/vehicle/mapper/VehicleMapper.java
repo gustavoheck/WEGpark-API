@@ -1,6 +1,6 @@
 package com.weg.WEGpark.park.internal.app.vehicle.mapper;
 
-import com.weg.WEGpark.park.internal.domain.model.Vehicle;
+import com.weg.WEGpark.park.internal.domain.model.vehicle.Vehicle;
 import com.weg.WEGpark.park.internal.dto.vehicle.CreateVehicleRequestDTO;
 import com.weg.WEGpark.park.internal.dto.vehicle.CreateVehicleResponseDTO;
 import org.springframework.stereotype.Component;
