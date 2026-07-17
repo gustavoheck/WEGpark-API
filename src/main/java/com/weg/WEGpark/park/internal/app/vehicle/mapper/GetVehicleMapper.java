@@ -13,4 +13,13 @@ public class GetVehicleMapper {
                 vehicle.getColor()
         );
     }
+
+    public Vehicle toEntity (GetVehicleResponseDTO request) {
+        return new Vehicle(
+                request.plate(),
+                request.model(),
+                request.brand(),
+                request.color()
+        );
+    }
 }
