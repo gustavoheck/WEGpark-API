@@ -1,7 +1,7 @@
 package com.weg.WEGpark.park.internal.app.occurrence.service;
 
 import com.weg.WEGpark.park.internal.app.occurrence.mapper.OccurrenceMapper;
-import com.weg.WEGpark.park.internal.domain.model.Occurrence;
+import com.weg.WEGpark.park.internal.domain.model.occurrence.Occurrence;
 import com.weg.WEGpark.park.internal.dto.occurrence.OccurrenceRequestDto;
 import com.weg.WEGpark.park.internal.dto.occurrence.OccurrenceResponseDto;
 import com.weg.WEGpark.park.internal.infra.repository.OccurrenceRepository;
@@ -10,9 +10,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.YearMonth;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
