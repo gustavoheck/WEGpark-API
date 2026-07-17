@@ -35,7 +35,7 @@ public class VehicleService {
         Optional<Vehicle> findedVehicle = vehicleRepository.findByPlate(request.plate());
         if (findedVehicle.isEmpty()) {
             Vehicle vehicle = createVehicleMapper.toEntity(request);
-
+            // Need to add the plate formation here
             vehicleRepository.save(vehicle);
 
             return createVehicleMapper.toResponse(vehicle);
@@ -44,16 +44,7 @@ public class VehicleService {
                 ("This vehicle is already registered, try to vinculate with the owner, or dismiss");
     }
 
-    public List<GetVehicleResponseDTO> findAllVehicle () {
-        List<Vehicle> vehicleList = vehicleRepository.findAll();
-
-        return vehicleList
-                .stream()
-                .map(getVehicleMapper::toResponse)
-                .toList();
-    }
-
-    public List<GetVehicleResponseDTO> findVehicleByItsFilters (FilterVehicleRequestDTO filter) {
+    public List<GetVehicleResponseDTO> findVehicle (FilterVehicleRequestDTO filter) {
         List<Object> filterCamps = List.of(
                 filter.plate(),
                 filter.model(),
