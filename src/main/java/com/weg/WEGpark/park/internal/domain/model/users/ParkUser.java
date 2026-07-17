@@ -36,7 +36,8 @@ public class ParkUser {
     @Column(nullable = false)
     private String name;
 
-    @Column(name = "user_type")
+    @Enumerated(EnumType.STRING)
+    @Column(name = "user_type", insertable = false, updatable = false)
     private ParkUserType userType;
 
     @ManyToMany(fetch = FetchType.LAZY)

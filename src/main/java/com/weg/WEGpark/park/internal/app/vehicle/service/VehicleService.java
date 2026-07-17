@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -45,22 +46,21 @@ public class VehicleService {
     }
 
     public List<GetVehicleResponseDTO> findVehicle (FilterVehicleRequestDTO filter) {
-        List<Object> filterCamps = List.of(
-                filter.plate(),
-                filter.model(),
-                filter.brand(),
-                filter.color(),
-                filter.userName()
-        );
-
-        long nonNullCamps = filterCamps.stream()
+        long nonNullCamps = Stream.of(
+                        filter.plate(),
+                        filter.model(),
+                        filter.brand(),
+                        filter.color(),
+                        filter.userName()
+                )
                 .filter(Objects::nonNull)
+                .filter(camp -> !(camp.isBlank()))
                 .count();
 
-        if (nonNullCamps != 1 ) {
+        if (nonNullCamps <= 1 ) {
             String plate = null;
 
-            if (!filter.plate().isBlank()){
+            if (filter.plate() != null && !filter.plate().isBlank()){
                 plate = filter.plate().toUpperCase().replace("-", "").trim();
             }
 

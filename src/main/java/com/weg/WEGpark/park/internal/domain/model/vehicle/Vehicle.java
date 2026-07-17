@@ -7,6 +7,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.List;
+
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
@@ -32,7 +34,7 @@ public class Vehicle {
     private String color;
 
     @ManyToMany(fetch = FetchType.EAGER, mappedBy = "vehicles")
-    private ParkUser vehicleUser;
+    private List<ParkUser> parkUser;
 
     public Vehicle(String plate, String model, String brand, String color) {
         this.plate = plate;

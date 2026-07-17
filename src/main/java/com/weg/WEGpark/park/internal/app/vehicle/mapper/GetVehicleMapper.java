@@ -2,7 +2,9 @@ package com.weg.WEGpark.park.internal.app.vehicle.mapper;
 
 import com.weg.WEGpark.park.internal.domain.model.vehicle.Vehicle;
 import com.weg.WEGpark.park.internal.dto.vehicle.GetVehicleResponseDTO;
+import org.springframework.stereotype.Component;
 
+@Component
 public class GetVehicleMapper {
 
     public GetVehicleResponseDTO toResponse (Vehicle vehicle) {

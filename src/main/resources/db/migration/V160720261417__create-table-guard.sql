@@ -1,6 +1,6 @@
 CREATE TABLE park.guard (
     id BIGINT PRIMARY KEY,
     uuid UUID UNIQUE NOT NULL,
-    boss VARCHAR(255) NOT NULL
+    boss VARCHAR(255) NOT NULL,
     CONSTRAINT fk_guard FOREIGN KEY (id) REFERENCES park.collaborator(id) ON DELETE CASCADE
 );
