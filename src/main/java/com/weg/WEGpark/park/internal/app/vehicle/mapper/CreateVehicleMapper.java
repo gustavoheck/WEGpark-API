@@ -6,7 +6,7 @@ import com.weg.WEGpark.park.internal.dto.vehicle.CreateVehicleResponseDTO;
 import org.springframework.stereotype.Component;
 
 @Component
-public class VehicleMapper {
+public class CreateVehicleMapper {
 
     public Vehicle toEntity (CreateVehicleRequestDTO request) {
         return new Vehicle(

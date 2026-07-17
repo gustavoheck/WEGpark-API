@@ -1,7 +1,8 @@
 package com.weg.WEGpark.park.internal.app.vehicle.service;
 
 import com.weg.WEGpark.park.internal.app.vehicle.exception.VehicleAlreadyRegisteredException;
-import com.weg.WEGpark.park.internal.app.vehicle.mapper.VehicleMapper;
+import com.weg.WEGpark.park.internal.app.vehicle.mapper.CreateVehicleMapper;
+import com.weg.WEGpark.park.internal.app.vehicle.mapper.GetVehicleMapper;
 import com.weg.WEGpark.park.internal.domain.model.vehicle.Vehicle;
 import com.weg.WEGpark.park.internal.dto.vehicle.CreateVehicleRequestDTO;
 import com.weg.WEGpark.park.internal.dto.vehicle.CreateVehicleResponseDTO;
@@ -11,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -18,7 +20,8 @@ import java.util.Optional;
 @Transactional(readOnly = true)
 public class VehicleService {
 
-    private final VehicleMapper vehicleMapper;
+    private final CreateVehicleMapper createVehicleMapper;
+    private final GetVehicleMapper getVehicleMapper;
 
     private final VehicleRepository vehicleRepository;
 
@@ -26,15 +29,22 @@ public class VehicleService {
     public CreateVehicleResponseDTO registerVehicle (CreateVehicleRequestDTO request) {
         Optional<Vehicle> findedVehicle = vehicleRepository.findByPlate(request.plate());
         if (findedVehicle.isEmpty()) {
-            Vehicle vehicle = vehicleMapper.toEntity(request);
+            Vehicle vehicle = createVehicleMapper.toEntity(request);
 
             vehicleRepository.save(vehicle);
 
-            return vehicleMapper.toResponse(vehicle);
+            return createVehicleMapper.toResponse(vehicle);
         }
         throw new VehicleAlreadyRegisteredException
                 ("This vehicle is already registered, try to vinculate with the owner, or dismiss");
     }
 
+    public List<GetVehicleResponseDTO> findAllVehicle () {
+        List<Vehicle> vehicleList = vehicleRepository.findAll();
 
+        return vehicleList
+                .stream()
+                .map(getVehicleMapper::toResponse)
+                .toList();
+    }
 }
