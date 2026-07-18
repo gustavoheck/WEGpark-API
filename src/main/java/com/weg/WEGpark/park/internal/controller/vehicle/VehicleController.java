@@ -38,4 +38,17 @@ public class VehicleController {
                 .status(HttpStatus.OK)
                 .body(filteredVehicles);
     }
+
+    @PutMapping
+    public ResponseEntity<GetVehicleResponseDTO> updateVehicle (
+            @Valid @RequestBody
+            CreateVehicleRequestDTO request,
+            @PathVariable
+            Long id
+    ) {
+        GetVehicleResponseDTO response = vehicleService.updateVehicle(id, request);
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(response);
+    }
 }

@@ -84,7 +84,7 @@ public class VehicleService {
     }
 
     @Transactional
-    public void updateVehicle(Long id, CreateVehicleRequestDTO request) {
+    public GetVehicleResponseDTO updateVehicle(Long id, CreateVehicleRequestDTO request) {
 
         Vehicle vehicle = vehicleRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException(("The vehicle was not found by %s id".formatted(id))));
@@ -92,5 +92,7 @@ public class VehicleService {
         updateVehicleMapper.updateVehicleFromDto(request, vehicle);
 
         vehicleRepository.save(vehicle);
+
+        return getVehicleMapper.toResponse(vehicle);
     }
 }
