@@ -3,27 +3,13 @@ package com.weg.WEGpark.park.internal.app.vehicle.mapper;
 import com.weg.WEGpark.park.internal.domain.model.vehicle.Vehicle;
 import com.weg.WEGpark.park.internal.dto.vehicle.CreateVehicleRequestDTO;
 import com.weg.WEGpark.park.internal.dto.vehicle.CreateVehicleResponseDTO;
+import org.mapstruct.Mapper;
 import org.springframework.stereotype.Component;
 
-@Component
-public class CreateVehicleMapper {
+@Mapper(componentModel = "spring")
+public interface CreateVehicleMapper {
 
-    public Vehicle toEntity (CreateVehicleRequestDTO request) {
-        return new Vehicle(
-                request.plate(),
-                request.model(),
-                request.brand(),
-                request.color()
-        );
-    }
+    Vehicle toEntity (CreateVehicleRequestDTO request);
 
-    public CreateVehicleResponseDTO toResponse (Vehicle vehicle) {
-        return new CreateVehicleResponseDTO(
-                vehicle.getId(),
-                vehicle.getPlate(),
-                vehicle.getModel(),
-                vehicle.getBrand(),
-                vehicle.getColor()
-        );
-    }
+    CreateVehicleResponseDTO toResponse (Vehicle vehicle);
 }
