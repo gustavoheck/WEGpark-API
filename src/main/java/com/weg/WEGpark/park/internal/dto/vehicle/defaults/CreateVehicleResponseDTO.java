@@ -1,4 +1,4 @@
-package com.weg.WEGpark.park.internal.dto.vehicle;
+package com.weg.WEGpark.park.internal.dto.vehicle.defaults;
 
 public record CreateVehicleResponseDTO (
         Long id,

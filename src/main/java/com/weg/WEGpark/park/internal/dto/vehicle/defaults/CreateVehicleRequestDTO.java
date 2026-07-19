@@ -1,4 +1,4 @@
-package com.weg.WEGpark.park.internal.dto.vehicle;
+package com.weg.WEGpark.park.internal.dto.vehicle.defaults;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
