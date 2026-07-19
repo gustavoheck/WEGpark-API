@@ -1,10 +1,7 @@
 package com.weg.WEGpark.park.internal.controller.vehicle;
 
 import com.weg.WEGpark.park.internal.app.vehicle.service.VehicleService;
-import com.weg.WEGpark.park.internal.dto.vehicle.CreateVehicleRequestDTO;
-import com.weg.WEGpark.park.internal.dto.vehicle.CreateVehicleResponseDTO;
-import com.weg.WEGpark.park.internal.dto.vehicle.FilterVehicleRequestDTO;
-import com.weg.WEGpark.park.internal.dto.vehicle.GetVehicleResponseDTO;
+import com.weg.WEGpark.park.internal.dto.vehicle.*;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -39,10 +36,10 @@ public class VehicleController {
                 .body(filteredVehicles);
     }
 
-    @PutMapping
+    @PutMapping("/{id}")
     public ResponseEntity<GetVehicleResponseDTO> updateVehicle (
             @Valid @RequestBody
-            CreateVehicleRequestDTO request,
+            UpdateVehicleRequestDTO request,
             @PathVariable
             Long id
     ) {

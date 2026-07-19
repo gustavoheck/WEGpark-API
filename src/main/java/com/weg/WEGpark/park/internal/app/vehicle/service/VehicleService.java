@@ -7,10 +7,7 @@ import com.weg.WEGpark.park.internal.app.vehicle.mapper.CreateVehicleMapper;
 import com.weg.WEGpark.park.internal.app.vehicle.mapper.GetVehicleMapper;
 import com.weg.WEGpark.park.internal.app.vehicle.mapper.UpdateVehicleMapper;
 import com.weg.WEGpark.park.internal.domain.model.vehicle.Vehicle;
-import com.weg.WEGpark.park.internal.dto.vehicle.CreateVehicleRequestDTO;
-import com.weg.WEGpark.park.internal.dto.vehicle.CreateVehicleResponseDTO;
-import com.weg.WEGpark.park.internal.dto.vehicle.FilterVehicleRequestDTO;
-import com.weg.WEGpark.park.internal.dto.vehicle.GetVehicleResponseDTO;
+import com.weg.WEGpark.park.internal.dto.vehicle.*;
 import com.weg.WEGpark.park.internal.infra.repository.VehicleRepository;
 import com.weg.WEGpark.park.internal.infra.specification.VehicleSpecification;
 import lombok.RequiredArgsConstructor;
@@ -84,7 +81,7 @@ public class VehicleService {
     }
 
     @Transactional
-    public GetVehicleResponseDTO updateVehicle(Long id, CreateVehicleRequestDTO request) {
+    public GetVehicleResponseDTO updateVehicle(Long id, UpdateVehicleRequestDTO request) {
 
         Vehicle vehicle = vehicleRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException(("The vehicle was not found by %s id".formatted(id))));
