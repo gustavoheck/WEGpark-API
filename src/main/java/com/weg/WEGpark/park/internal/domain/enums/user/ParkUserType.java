@@ -1,4 +1,4 @@
-package com.weg.WEGpark.park.internal.domain.enums;
+package com.weg.WEGpark.park.internal.domain.enums.user;
 
 public enum ParkUserType {
     COLLABORATOR,

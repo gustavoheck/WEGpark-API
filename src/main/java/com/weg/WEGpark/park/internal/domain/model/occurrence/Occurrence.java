@@ -1,5 +1,7 @@
 package com.weg.WEGpark.park.internal.domain.model.occurrence;
 
+import com.weg.WEGpark.park.internal.domain.enums.occurrence.OccurrenceType;
+import com.weg.WEGpark.park.internal.domain.enums.user.ParkUserType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -11,9 +13,11 @@ import java.time.LocalDateTime;
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(schema = "park", name = "occurrence")
 @Getter
 @Setter
+@Inheritance(strategy = InheritanceType.JOINED)
+@DiscriminatorColumn(name = "occurrence_type", discriminatorType = DiscriminatorType.STRING)
+@Table(schema = "park", name = "occurrence")
 public class Occurrence {
 
     @Id
@@ -28,6 +32,10 @@ public class Occurrence {
 
     @Column(nullable = false)
     private String gate;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "occurrence_type", insertable = false, updatable = false, nullable = false)
+    private OccurrenceType userType;
 
     public Occurrence(String location, String gate) {
         this.location = location;

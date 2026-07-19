@@ -1,13 +1,11 @@
 package com.weg.WEGpark.park.internal.domain.model.users;
 
-import com.weg.WEGpark.park.internal.domain.enums.ParkUserType;
+import com.weg.WEGpark.park.internal.domain.enums.user.ParkUserType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import java.util.UUID;
 
 @Entity
 @AllArgsConstructor
