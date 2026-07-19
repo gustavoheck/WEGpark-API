@@ -19,12 +19,6 @@ import java.util.UUID;
 @Table(name = "visitor", schema = "park")
 public class Visitor extends ParkUser {
 
-    @Id
-    private Long id;
-
-    @Column(unique = true, nullable = false, updatable = false)
-    private UUID uuid;
-
     private String company;
 
     @Column(nullable = false)
