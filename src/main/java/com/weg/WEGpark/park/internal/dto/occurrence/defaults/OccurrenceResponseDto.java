@@ -1,6 +1,4 @@
-package com.weg.WEGpark.park.internal.dto.occurrence;
-
-import jakarta.validation.constraints.NotBlank;
+package com.weg.WEGpark.park.internal.dto.occurrence.defaults;
 
 import java.time.LocalDateTime;
 

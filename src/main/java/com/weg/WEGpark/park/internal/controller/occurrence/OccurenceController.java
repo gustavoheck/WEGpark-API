@@ -1,8 +1,8 @@
 package com.weg.WEGpark.park.internal.controller.occurrence;
 
 import com.weg.WEGpark.park.internal.app.occurrence.service.OccurrenceService;
-import com.weg.WEGpark.park.internal.dto.occurrence.OccurrenceRequestDto;
-import com.weg.WEGpark.park.internal.dto.occurrence.OccurrenceResponseDto;
+import com.weg.WEGpark.park.internal.dto.occurrence.defaults.OccurrenceRequestDto;
+import com.weg.WEGpark.park.internal.dto.occurrence.defaults.OccurrenceResponseDto;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;

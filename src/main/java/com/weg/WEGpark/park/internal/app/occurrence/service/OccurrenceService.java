@@ -2,8 +2,8 @@ package com.weg.WEGpark.park.internal.app.occurrence.service;
 
 import com.weg.WEGpark.park.internal.app.occurrence.mapper.OccurrenceMapper;
 import com.weg.WEGpark.park.internal.domain.model.occurrence.Occurrence;
-import com.weg.WEGpark.park.internal.dto.occurrence.OccurrenceRequestDto;
-import com.weg.WEGpark.park.internal.dto.occurrence.OccurrenceResponseDto;
+import com.weg.WEGpark.park.internal.dto.occurrence.defaults.OccurrenceRequestDto;
+import com.weg.WEGpark.park.internal.dto.occurrence.defaults.OccurrenceResponseDto;
 import com.weg.WEGpark.park.internal.infra.repository.OccurrenceRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

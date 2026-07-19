@@ -37,8 +37,9 @@ public class Occurrence {
     @Column(name = "occurrence_type", insertable = false, updatable = false, nullable = false)
     private OccurrenceType userType;
 
-    public Occurrence(String location, String gate) {
+    public Occurrence(String location, String gate, OccurrenceType userType) {
         this.location = location;
         this.gate = gate;
+        this.userType = userType;
     }
 }

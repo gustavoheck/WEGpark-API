@@ -1,5 +1,6 @@
 package com.weg.WEGpark.park.internal.domain.model.occurrence;
 
+import com.weg.WEGpark.park.internal.domain.enums.occurrence.OccurrenceType;
 import com.weg.WEGpark.park.internal.domain.enums.occurrence.ParkingSpaceType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -24,8 +25,8 @@ public class IllegalParking extends Occurrence {
     @Column(nullable = false)
     private String description;
 
-    public IllegalParking(String location, String gate, ParkingSpaceType parkingSpaceType, String description) {
-        super(location, gate);
+    public IllegalParking(String location, String gate, OccurrenceType userType, ParkingSpaceType parkingSpaceType, String description) {
+        super(location, gate, userType);
         this.parkingSpaceType = parkingSpaceType;
         this.description = description;
     }

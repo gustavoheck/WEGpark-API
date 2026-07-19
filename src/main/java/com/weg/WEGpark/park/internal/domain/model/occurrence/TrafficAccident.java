@@ -1,5 +1,6 @@
 package com.weg.WEGpark.park.internal.domain.model.occurrence;
 
+import com.weg.WEGpark.park.internal.domain.enums.occurrence.OccurrenceType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -16,7 +17,7 @@ import java.time.LocalDateTime;
 @DiscriminatorValue("TRAFFIC_ACCIDENT")
 @PrimaryKeyJoinColumn(name = "id")
 @Table(name = "traffic_accident", schema = "park")
-public class TrafficAccident {
+public class TrafficAccident extends Occurrence {
 
     @Column(name = "occurrence_date", nullable = false)
     private LocalDateTime occurrenceDate;
@@ -41,4 +42,20 @@ public class TrafficAccident {
 
     @Column(name = "victim_testimony", nullable = false)
     private String victimTestimony;
+
+    public TrafficAccident(
+            String location, String gate, OccurrenceType userType, LocalDateTime occurrenceDate, String victimName,
+            String responsibleBossName, String responsibleFactory, String responsibleSection,
+            String trafficOccurrenceType, String guardTestimony, String victimTestimony
+    ) {
+        super(location, gate, userType);
+        this.occurrenceDate = occurrenceDate;
+        this.victimName = victimName;
+        this.responsibleBossName = responsibleBossName;
+        this.responsibleFactory = responsibleFactory;
+        this.responsibleSection = responsibleSection;
+        this.trafficOccurrenceType = trafficOccurrenceType;
+        this.guardTestimony = guardTestimony;
+        this.victimTestimony = victimTestimony;
+    }
 }

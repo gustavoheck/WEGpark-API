@@ -1,4 +1,4 @@
-package com.weg.WEGpark.park.internal.dto.occurrence;
+package com.weg.WEGpark.park.internal.dto.occurrence.defaults;
 
 import jakarta.validation.constraints.NotBlank;
 

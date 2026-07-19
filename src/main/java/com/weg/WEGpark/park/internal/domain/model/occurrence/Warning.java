@@ -1,6 +1,7 @@
 package com.weg.WEGpark.park.internal.domain.model.occurrence;
 
 
+import com.weg.WEGpark.park.internal.domain.enums.occurrence.OccurrenceType;
 import com.weg.WEGpark.park.internal.domain.enums.occurrence.WarningType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -24,8 +25,8 @@ public class Warning extends Occurrence {
 
     private String description;
 
-    public Warning(String location, String gate, WarningType warningType, String description) {
-        super(location, gate);
+    public Warning(String location, String gate, OccurrenceType userType, WarningType warningType, String description) {
+        super(location, gate, userType);
         this.warningType = warningType;
         this.description = description;
     }
