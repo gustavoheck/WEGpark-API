@@ -1,14 +1,13 @@
 package com.weg.WEGpark.park.internal.app.vehicle.service;
 
+import com.weg.WEGpark.park.internal.app.shared.exception.NotFoundException;
 import com.weg.WEGpark.park.internal.app.vehicle.exception.MoreThenOneFilterException;
 import com.weg.WEGpark.park.internal.app.vehicle.exception.VehicleAlreadyRegisteredException;
 import com.weg.WEGpark.park.internal.app.vehicle.mapper.CreateVehicleMapper;
 import com.weg.WEGpark.park.internal.app.vehicle.mapper.GetVehicleMapper;
+import com.weg.WEGpark.park.internal.app.vehicle.mapper.UpdateVehicleMapper;
 import com.weg.WEGpark.park.internal.domain.model.vehicle.Vehicle;
-import com.weg.WEGpark.park.internal.dto.vehicle.CreateVehicleRequestDTO;
-import com.weg.WEGpark.park.internal.dto.vehicle.CreateVehicleResponseDTO;
-import com.weg.WEGpark.park.internal.dto.vehicle.FilterVehicleRequestDTO;
-import com.weg.WEGpark.park.internal.dto.vehicle.GetVehicleResponseDTO;
+import com.weg.WEGpark.park.internal.dto.vehicle.*;
 import com.weg.WEGpark.park.internal.infra.repository.VehicleRepository;
 import com.weg.WEGpark.park.internal.infra.specification.VehicleSpecification;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +27,7 @@ public class VehicleService {
 
     private final CreateVehicleMapper createVehicleMapper;
     private final GetVehicleMapper getVehicleMapper;
+    private final UpdateVehicleMapper updateVehicleMapper;
 
     private final VehicleRepository vehicleRepository;
 
@@ -78,5 +78,18 @@ public class VehicleService {
                     .toList();
         }
         throw new MoreThenOneFilterException("You can not use more than one filter");
+    }
+
+    @Transactional
+    public GetVehicleResponseDTO updateVehicle(Long id, UpdateVehicleRequestDTO request) {
+
+        Vehicle vehicle = vehicleRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException(("The vehicle was not found by %s id".formatted(id))));
+
+        updateVehicleMapper.updateVehicleFromDto(request, vehicle);
+
+        vehicleRepository.save(vehicle);
+
+        return getVehicleMapper.toResponse(vehicle);
     }
 }
