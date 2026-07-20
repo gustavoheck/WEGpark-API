@@ -4,7 +4,6 @@ import com.weg.WEGpark.park.internal.app.occurrence.mapper.OccurrenceMapper;
 import com.weg.WEGpark.park.internal.domain.model.occurrence.Occurrence;
 import com.weg.WEGpark.park.internal.dto.occurrence.defaults.OccurrenceRequestDto;
 import com.weg.WEGpark.park.internal.dto.occurrence.defaults.OccurrenceResponseDto;
-import com.weg.WEGpark.park.internal.dto.occurrence.illegalparking.IllegalParkingResponseDTO;
 import com.weg.WEGpark.park.internal.infra.repository.OccurrenceRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -22,19 +21,6 @@ public class OccurrenceService {
 
     private final OccurrenceRepository occurrenceRepository;
     private final OccurrenceMapper occurrenceMapper;
-
-    @Transactional
-    public OccurrenceResponseDto registerOccurrence(OccurrenceRequestDto occurrenceRequestDto) {
-
-        Occurrence occurrence = occurrenceMapper.toEntity(occurrenceRequestDto);
-
-        LocalDateTime date = LocalDateTime.now();
-        occurrence.setDateHour(date);
-
-        occurrence = occurrenceRepository.save(occurrence);
-
-        return occurrenceMapper.toResponse(occurrence);
-    }
 
     public List<OccurrenceResponseDto> findAllOccurrences() {
 
