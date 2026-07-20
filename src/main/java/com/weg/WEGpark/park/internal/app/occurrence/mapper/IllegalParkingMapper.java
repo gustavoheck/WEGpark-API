@@ -16,5 +16,6 @@ public interface IllegalParkingMapper {
     @Mapping(source = ".", target = "defaults")
     CreateIllegalParkingResponseDTO toCreateResponse(IllegalParking illegalParking);
 
+    @Mapping(source = ".", target = "defaults")
     GetIllegalParkingResponseDTO toGetResponse(IllegalParking illegalParking);
 }

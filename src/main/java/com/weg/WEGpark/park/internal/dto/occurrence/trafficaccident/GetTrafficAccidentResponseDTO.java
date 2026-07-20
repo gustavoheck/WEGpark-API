@@ -1,12 +1,12 @@
 package com.weg.WEGpark.park.internal.dto.occurrence.trafficaccident;
 
-import com.weg.WEGpark.park.internal.dto.occurrence.defaults.CreateOccurrenceResponseDto;
+import com.weg.WEGpark.park.internal.dto.occurrence.defaults.DefaultOccurrenceResponseDto;
 
 import java.time.LocalDateTime;
 
 public record GetTrafficAccidentResponseDTO(
 
-        CreateOccurrenceResponseDto defaults,
+        DefaultOccurrenceResponseDto defaults,
 
         LocalDateTime occurrenceDate,
 
