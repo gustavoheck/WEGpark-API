@@ -16,9 +16,4 @@ public record FilterOccurrenceRequestDTO(
 
         Boolean recents
 ) {
-    public FilterOccurrenceRequestDTO {
-        if (recents == null) {
-            recents = false;
-        }
-    }
 }

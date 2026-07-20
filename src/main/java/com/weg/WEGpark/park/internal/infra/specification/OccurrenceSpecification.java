@@ -9,12 +9,12 @@ import java.time.YearMonth;
 
 public class OccurrenceSpecification {
 
-    public static Specification<Occurrence> hasLocal(String local) {
+    public static Specification<Occurrence> hasLocal(String location) {
         return (root, query, cb) -> {
-           if (local == null || local.trim().isEmpty()) {
+           if (location == null || location.trim().isEmpty()) {
                return null;
            }
-           return cb.like(cb.lower(root.get("location")), "%" + local.toLowerCase() + "%");
+           return cb.like(cb.lower(root.get("location")), "%" + location.toLowerCase() + "%");
         };
     }
 
@@ -32,7 +32,7 @@ public class OccurrenceSpecification {
             if (type == null || type.trim().isEmpty()) {
                 return null;
             }
-            return cb.like(cb.lower(root.get("occurrence_type")), "%" + type.toLowerCase() + "%");
+            return cb.like(cb.lower(root.get("occurrenceType")), "%" + type.toLowerCase() + "%");
         };
     }
 
@@ -45,7 +45,7 @@ public class OccurrenceSpecification {
             LocalDateTime startOfMonth = yearMonth.atDay(1).atStartOfDay();
             LocalDateTime endOfMonth = yearMonth.atEndOfMonth().atTime(LocalTime.MAX);
 
-            return cb.between(root.get("date_hour"), startOfMonth, endOfMonth);
+            return cb.between(root.get("dateHour"), startOfMonth, endOfMonth);
         };
     }
 
@@ -58,7 +58,7 @@ public class OccurrenceSpecification {
             LocalDateTime startOfMonth = YearMonth.now().atDay(1).atStartOfDay();
             LocalDateTime endOfMonth = YearMonth.now().atEndOfMonth().atTime(LocalTime.MAX);
 
-            return cb.between(root.get("date_hour"), startOfMonth, endOfMonth);
+            return cb.between(root.get("dateHour"), startOfMonth, endOfMonth);
         };
     }
 }
