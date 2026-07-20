@@ -21,7 +21,7 @@ public class TrafficAccidentService {
     private final TrafficAccidentMapper trafficAccidentMapper;
 
     @Transactional
-    public CreateTrafficAccidentResponseDTO createTrafficAccidentOccurrence (CreateTrafficAccidentRequestDTO request) {
+    public CreateTrafficAccidentResponseDTO registerTrafficAccidentOccurrence (CreateTrafficAccidentRequestDTO request) {
         TrafficAccident occurrence = trafficAccidentMapper.toEntity(request);
 
         LocalDateTime date = LocalDateTime.now();

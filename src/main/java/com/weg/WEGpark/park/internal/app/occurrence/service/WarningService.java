@@ -21,7 +21,7 @@ public class WarningService {
     private final WarningMapper warningMapper;
 
     @Transactional
-    public CreateWarningResponseDTO createWarningOccurrence (CreateWarningRequestDTO request) {
+    public CreateWarningResponseDTO registerWarningOccurrence (CreateWarningRequestDTO request) {
         Warning occurrence = warningMapper.toEntity(request);
 
         LocalDateTime date = LocalDateTime.now();
