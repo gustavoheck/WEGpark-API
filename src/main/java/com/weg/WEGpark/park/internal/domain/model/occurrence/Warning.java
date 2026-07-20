@@ -25,8 +25,8 @@ public class Warning extends Occurrence {
 
     private String description;
 
-    public Warning(String location, String gate, OccurrenceType userType, WarningType warningType, String description) {
-        super(location, gate, userType);
+    public Warning(String location, String gate, OccurrenceType occurrenceType, WarningType warningType, String description) {
+        super(location, gate, occurrenceType);
         this.warningType = warningType;
         this.description = description;
     }

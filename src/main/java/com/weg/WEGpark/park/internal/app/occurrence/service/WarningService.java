@@ -1,6 +1,7 @@
 package com.weg.WEGpark.park.internal.app.occurrence.service;
 
 import com.weg.WEGpark.park.internal.app.occurrence.mapper.WarningMapper;
+import com.weg.WEGpark.park.internal.domain.enums.occurrence.OccurrenceType;
 import com.weg.WEGpark.park.internal.domain.model.occurrence.Warning;
 import com.weg.WEGpark.park.internal.dto.occurrence.warning.CreateWarningRequestDTO;
 import com.weg.WEGpark.park.internal.dto.occurrence.warning.CreateWarningResponseDTO;
@@ -22,12 +23,14 @@ public class WarningService {
 
     @Transactional
     public CreateWarningResponseDTO registerWarningOccurrence (CreateWarningRequestDTO request) {
+
         Warning occurrence = warningMapper.toEntity(request);
+        occurrence.setOccurrenceType(OccurrenceType.WARNING);
 
         LocalDateTime date = LocalDateTime.now();
         occurrence.setDateHour(date);
 
-        occurrence = occurrenceRepository.save(occurrence);
+        occurrenceRepository.save(occurrence);
 
         return warningMapper.toResponse(occurrence);
     }

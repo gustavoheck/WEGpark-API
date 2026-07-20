@@ -1,7 +1,6 @@
 package com.weg.WEGpark.park.internal.controller.vehicle;
 
 import com.weg.WEGpark.park.internal.app.vehicle.service.VehicleService;
-import com.weg.WEGpark.park.internal.dto.vehicle.*;
 import com.weg.WEGpark.park.internal.dto.vehicle.defaults.CreateVehicleRequestDTO;
 import com.weg.WEGpark.park.internal.dto.vehicle.defaults.CreateVehicleResponseDTO;
 import com.weg.WEGpark.park.internal.dto.vehicle.defaults.GetVehicleResponseDTO;

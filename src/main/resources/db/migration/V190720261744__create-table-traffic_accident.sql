@@ -3,7 +3,7 @@ CREATE TABLE park.traffic_accident (
     occurrence_date DATE NOT NULL,
     victim_name VARCHAR(255) NOT NULL,
     responsible_boss_name VARCHAR(255),
-    responsible_factory VARCHAR(255),
+    responsible_factory VARCHAR(255) NOT NULL,
     responsible_section VARCHAR(255),
     traffic_occurrence_type VARCHAR(50) NOT NULL,
     guard_testimony VARCHAR(450) NOT NULL,

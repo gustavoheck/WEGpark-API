@@ -28,7 +28,7 @@ public class TrafficAccident extends Occurrence {
     @Column(name = "responsible_boss_name")
     private String responsibleBossName;
 
-    @Column(name = "responsible_factory")
+    @Column(name = "responsible_factory", nullable = false)
     private String responsibleFactory;
 
     @Column(name = "responsible_section")
@@ -44,11 +44,11 @@ public class TrafficAccident extends Occurrence {
     private String victimTestimony;
 
     public TrafficAccident(
-            String location, String gate, OccurrenceType userType, LocalDateTime occurrenceDate, String victimName,
+            String location, String gate, OccurrenceType occurrenceType, LocalDateTime occurrenceDate, String victimName,
             String responsibleBossName, String responsibleFactory, String responsibleSection,
             String trafficOccurrenceType, String guardTestimony, String victimTestimony
     ) {
-        super(location, gate, userType);
+        super(location, gate, occurrenceType);
         this.occurrenceDate = occurrenceDate;
         this.victimName = victimName;
         this.responsibleBossName = responsibleBossName;

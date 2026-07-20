@@ -6,14 +6,11 @@ import java.time.LocalDateTime;
 
 public record OccurrenceResponseDto(
 
-        Long id,
-
         LocalDateTime dateHour,
 
         String location,
 
-        String gate,
+        String gate
 
-        OccurrenceType userType
 ) {
 }

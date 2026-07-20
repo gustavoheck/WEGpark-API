@@ -15,13 +15,11 @@ public record CreateTrafficAccidentRequestDTO (
         @NotBlank(message = "The victim name can not be null or blank")
         String victimName,
 
-        @NotBlank(message = "The responsible boss name can not be null or blank")
         String responsibleBossName,
 
         @NotBlank(message = "The responsible factory can not be null or blank")
         String responsibleFactory,
 
-        @NotBlank(message = "The responsible section can not be null or blank")
         String responsibleSection,
 
         @NotBlank(message = "The traffic occurrence type can not be null or blank")

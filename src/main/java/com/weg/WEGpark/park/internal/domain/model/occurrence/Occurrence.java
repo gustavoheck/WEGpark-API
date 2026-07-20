@@ -35,11 +35,11 @@ public class Occurrence {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "occurrence_type", insertable = false, updatable = false, nullable = false)
-    private OccurrenceType userType;
+    private OccurrenceType occurrenceType;
 
-    public Occurrence(String location, String gate, OccurrenceType userType) {
+    public Occurrence(String location, String gate, OccurrenceType occurrenceType) {
         this.location = location;
         this.gate = gate;
-        this.userType = userType;
+        this.occurrenceType = occurrenceType;
     }
 }

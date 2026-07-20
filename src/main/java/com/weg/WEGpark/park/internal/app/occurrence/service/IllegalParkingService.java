@@ -1,6 +1,7 @@
 package com.weg.WEGpark.park.internal.app.occurrence.service;
 
 import com.weg.WEGpark.park.internal.app.occurrence.mapper.IllegalParkingMapper;
+import com.weg.WEGpark.park.internal.domain.enums.occurrence.OccurrenceType;
 import com.weg.WEGpark.park.internal.domain.model.occurrence.IllegalParking;
 import com.weg.WEGpark.park.internal.dto.occurrence.illegalparking.CreateIllegalParkingRequestDTO;
 import com.weg.WEGpark.park.internal.dto.occurrence.illegalparking.CreateIllegalParkingResponseDTO;
@@ -24,11 +25,12 @@ public class IllegalParkingService {
     public CreateIllegalParkingResponseDTO registerIllegalParkingOccurrence (CreateIllegalParkingRequestDTO request) {
 
         IllegalParking occurrence = illegalParkingMapper.toEntity(request);
+        occurrence.setOccurrenceType(OccurrenceType.ILLEGAL_PARKING);
 
         LocalDateTime date = LocalDateTime.now();
         occurrence.setDateHour(date);
 
-        occurrence = occurrenceRepository.save(occurrence);
+        occurrenceRepository.save(occurrence);
 
         return illegalParkingMapper.toResponse(occurrence);
     }

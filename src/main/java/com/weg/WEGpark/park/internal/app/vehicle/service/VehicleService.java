@@ -8,7 +8,6 @@ import com.weg.WEGpark.park.internal.app.vehicle.mapper.CreateVehicleMapper;
 import com.weg.WEGpark.park.internal.app.vehicle.mapper.GetVehicleMapper;
 import com.weg.WEGpark.park.internal.app.vehicle.mapper.UpdateVehicleMapper;
 import com.weg.WEGpark.park.internal.domain.model.vehicle.Vehicle;
-import com.weg.WEGpark.park.internal.dto.vehicle.*;
 import com.weg.WEGpark.park.internal.dto.vehicle.defaults.CreateVehicleRequestDTO;
 import com.weg.WEGpark.park.internal.dto.vehicle.defaults.CreateVehicleResponseDTO;
 import com.weg.WEGpark.park.internal.dto.vehicle.defaults.GetVehicleResponseDTO;

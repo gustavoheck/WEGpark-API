@@ -25,8 +25,8 @@ public class IllegalParking extends Occurrence {
     @Column(nullable = false)
     private String description;
 
-    public IllegalParking(String location, String gate, OccurrenceType userType, ParkingSpaceType parkingSpaceType, String description) {
-        super(location, gate, userType);
+    public IllegalParking(String location, String gate, OccurrenceType occurrenceType, ParkingSpaceType parkingSpaceType, String description) {
+        super(location, gate, occurrenceType);
         this.parkingSpaceType = parkingSpaceType;
         this.description = description;
     }
