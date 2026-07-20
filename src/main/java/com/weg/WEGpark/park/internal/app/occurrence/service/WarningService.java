@@ -32,6 +32,6 @@ public class WarningService {
 
         occurrenceRepository.save(occurrence);
 
-        return warningMapper.toResponse(occurrence);
+        return warningMapper.toCreateResponse(occurrence);
     }
 }

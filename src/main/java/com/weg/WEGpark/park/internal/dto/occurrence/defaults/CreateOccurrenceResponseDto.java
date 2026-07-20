@@ -1,10 +1,8 @@
 package com.weg.WEGpark.park.internal.dto.occurrence.defaults;
 
-import com.weg.WEGpark.park.internal.domain.enums.occurrence.OccurrenceType;
-
 import java.time.LocalDateTime;
 
-public record OccurrenceResponseDto(
+public record CreateOccurrenceResponseDto(
 
         LocalDateTime dateHour,
 

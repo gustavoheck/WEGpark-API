@@ -4,8 +4,7 @@ import com.weg.WEGpark.park.internal.dto.occurrence.defaults.CreateOccurrenceRes
 
 import java.time.LocalDateTime;
 
-public record CreateTrafficAccidentResponseDTO(
-        Long id,
+public record GetTrafficAccidentResponseDTO(
 
         CreateOccurrenceResponseDto defaults,
 

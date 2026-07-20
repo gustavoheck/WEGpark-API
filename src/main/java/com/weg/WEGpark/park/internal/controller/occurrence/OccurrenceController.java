@@ -5,7 +5,6 @@ import com.weg.WEGpark.park.internal.app.occurrence.service.OccurrenceService;
 import com.weg.WEGpark.park.internal.app.occurrence.service.TrafficAccidentService;
 import com.weg.WEGpark.park.internal.app.occurrence.service.WarningService;
 import com.weg.WEGpark.park.internal.dto.occurrence.defaults.GetOccurrenceResponseDTO;
-import com.weg.WEGpark.park.internal.dto.occurrence.defaults.OccurrenceResponseDto;
 import com.weg.WEGpark.park.internal.dto.occurrence.filter.FilterOccurrenceRequestDTO;
 import com.weg.WEGpark.park.internal.dto.occurrence.illegalparking.CreateIllegalParkingRequestDTO;
 import com.weg.WEGpark.park.internal.dto.occurrence.illegalparking.CreateIllegalParkingResponseDTO;
@@ -21,7 +20,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
-import java.util.List;
 
 @RestController
 @RequiredArgsConstructor

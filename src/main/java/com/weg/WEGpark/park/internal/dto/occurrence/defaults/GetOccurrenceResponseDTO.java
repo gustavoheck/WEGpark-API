@@ -1,17 +1,17 @@
 package com.weg.WEGpark.park.internal.dto.occurrence.defaults;
 
-import com.weg.WEGpark.park.internal.dto.occurrence.illegalparking.CreateIllegalParkingResponseDTO;
-import com.weg.WEGpark.park.internal.dto.occurrence.trafficaccident.CreateTrafficAccidentResponseDTO;
-import com.weg.WEGpark.park.internal.dto.occurrence.warning.CreateWarningResponseDTO;
+import com.weg.WEGpark.park.internal.dto.occurrence.illegalparking.GetIllegalParkingResponseDTO;
+import com.weg.WEGpark.park.internal.dto.occurrence.trafficaccident.GetTrafficAccidentResponseDTO;
+import com.weg.WEGpark.park.internal.dto.occurrence.warning.GetWarningResponseDTO;
 
 import java.util.List;
 
 public record GetOccurrenceResponseDTO (
 
-        List<CreateIllegalParkingResponseDTO> illegalParking,
+        List<GetIllegalParkingResponseDTO> illegalParking,
 
-        List<CreateTrafficAccidentResponseDTO> trafficAccident,
+        List<GetTrafficAccidentResponseDTO> trafficAccident,
 
-        List<CreateWarningResponseDTO> warning
+        List<GetWarningResponseDTO> warning
 ) {
 }

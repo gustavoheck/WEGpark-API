@@ -32,6 +32,6 @@ public class TrafficAccidentService {
 
         occurrenceRepository.save(occurrence);
 
-        return trafficAccidentMapper.toResponse(occurrence);
+        return trafficAccidentMapper.toCreateResponse(occurrence);
     }
 }

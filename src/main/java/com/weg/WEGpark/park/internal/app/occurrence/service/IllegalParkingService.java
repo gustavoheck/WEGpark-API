@@ -32,6 +32,6 @@ public class IllegalParkingService {
 
         occurrenceRepository.save(occurrence);
 
-        return illegalParkingMapper.toResponse(occurrence);
+        return illegalParkingMapper.toCreateResponse(occurrence);
     }
 }
