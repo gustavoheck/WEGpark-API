@@ -44,8 +44,9 @@ public class OccurrenceService {
     public GetOccurrenceResponseDTO findAllOccurrences(FilterOccurrenceRequestDTO filter) {
 
         if (FilterUtil.checkMoreThanOneFilter(filter)) {
-            Specification<Occurrence> spec = Specification.where(OccurrenceSpecification.hasLocal(filter.location()));
-            spec = spec.and(OccurrenceSpecification.hasGate(filter.location()))
+            Specification<Occurrence> spec = Specification
+                    .where(OccurrenceSpecification.hasLocal(filter.location()))
+                    .and(OccurrenceSpecification.hasGate(filter.gate()))
                     .and(OccurrenceSpecification.hasDate(filter.yearMonth()))
                     .and(OccurrenceSpecification.hasType(filter.occurrenceType() == null ? null : filter.occurrenceType().toString()))
                     .and(OccurrenceSpecification.hasRecents(filter.recents()));

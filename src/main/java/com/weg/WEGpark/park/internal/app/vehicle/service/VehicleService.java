@@ -58,8 +58,9 @@ public class VehicleService {
                 plate = filter.plate().toUpperCase().replace("-", "").trim();
             }
 
-            Specification<Vehicle> spec = Specification.where(VehicleSpecification.hasPlate(plate));
-            spec = spec.and(VehicleSpecification.hasModel(filter.model()))
+            Specification<Vehicle> spec = Specification
+                    .where(VehicleSpecification.hasPlate(plate))
+                    .and(VehicleSpecification.hasModel(filter.model()))
                     .and(VehicleSpecification.hasBrand(filter.brand()))
                     .and(VehicleSpecification.hasColor(filter.color()))
                     .and(VehicleSpecification.belongsToUser(filter.userName()));
