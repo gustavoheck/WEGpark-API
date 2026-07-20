@@ -1,6 +1,7 @@
 package com.weg.WEGpark.park.internal.app.vehicle.service;
 
 import com.weg.WEGpark.park.internal.app.shared.exception.NotFoundException;
+import com.weg.WEGpark.park.internal.app.shared.util.FilterUtil;
 import com.weg.WEGpark.park.internal.app.vehicle.exception.MoreThenOneFilterException;
 import com.weg.WEGpark.park.internal.app.vehicle.exception.VehicleAlreadyRegisteredException;
 import com.weg.WEGpark.park.internal.app.vehicle.mapper.CreateVehicleMapper;
@@ -51,18 +52,7 @@ public class VehicleService {
     }
 
     public List<GetVehicleResponseDTO> findVehicle (FilterVehicleRequestDTO filter) {
-        long nonNullCamps = Stream.of(
-                        filter.plate(),
-                        filter.model(),
-                        filter.brand(),
-                        filter.color(),
-                        filter.userName()
-                )
-                .filter(Objects::nonNull)
-                .filter(camp -> !(camp.isBlank()))
-                .count();
-
-        if (nonNullCamps <= 1 ) {
+        if (FilterUtil.checkMoreThanOneFilter(filter)) {
             String plate = null;
 
             if (filter.plate() != null && !filter.plate().isBlank()){
