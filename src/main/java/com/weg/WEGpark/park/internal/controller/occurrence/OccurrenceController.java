@@ -27,51 +27,7 @@ import java.net.URI;
 public class OccurrenceController {
 
     private final OccurrenceService occurrenceService;
-    private final IllegalParkingService illegalParkingService;
-    private final TrafficAccidentService trafficAccidentService;
     private final WarningService warningService;
-
-    @PostMapping("/traffic-accident")
-    public ResponseEntity<CreateTrafficAccidentResponseDTO> registerTrafficAccident (@Valid @RequestBody CreateTrafficAccidentRequestDTO request) {
-        CreateTrafficAccidentResponseDTO response = trafficAccidentService.registerTrafficAccidentOccurrence(request);
-
-        URI uri = ServletUriComponentsBuilder
-                .fromCurrentRequest()
-                .path("/{id}")
-                .buildAndExpand(response.id())
-                .toUri();
-
-        return ResponseEntity.created(uri)
-                .body(response);
-    }
-
-    @PostMapping("/illegal-parking")
-    public ResponseEntity<CreateIllegalParkingResponseDTO> registerIllegalParking (@Valid @RequestBody CreateIllegalParkingRequestDTO request) {
-        CreateIllegalParkingResponseDTO response = illegalParkingService.registerIllegalParkingOccurrence(request);
-
-        URI uri = ServletUriComponentsBuilder
-                .fromCurrentRequest()
-                .path("/{id}")
-                .buildAndExpand(response.id())
-                .toUri();
-
-        return ResponseEntity.created(uri)
-                .body(response);
-    }
-
-    @PostMapping("/warning")
-    public ResponseEntity<CreateWarningResponseDTO> registerWarning (@Valid @RequestBody CreateWarningRequestDTO request) {
-        CreateWarningResponseDTO response = warningService.registerWarningOccurrence(request);
-
-        URI uri = ServletUriComponentsBuilder
-                .fromCurrentRequest()
-                .path("/{id}")
-                .buildAndExpand(response.id())
-                .toUri();
-
-        return ResponseEntity.created(uri)
-                .body(response);
-    }
 
     @GetMapping
     public ResponseEntity<GetOccurrenceResponseDTO> findOccurrences(FilterOccurrenceRequestDTO filter) {
