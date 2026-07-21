@@ -81,7 +81,7 @@ public class VehicleService {
         Vehicle vehicle = vehicleRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException(("The vehicle was not found by %s id".formatted(id))));
 
-        updateVehicleMapper.updateVehicleFromDto(request, vehicle);
+        updateVehicleMapper.updateFromDto(request, vehicle);
 
         vehicleRepository.save(vehicle);
 

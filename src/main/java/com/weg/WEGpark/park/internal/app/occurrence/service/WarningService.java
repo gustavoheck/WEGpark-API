@@ -1,10 +1,16 @@
 package com.weg.WEGpark.park.internal.app.occurrence.service;
 
 import com.weg.WEGpark.park.internal.app.occurrence.mapper.WarningMapper;
+import com.weg.WEGpark.park.internal.app.shared.exception.NotFoundException;
 import com.weg.WEGpark.park.internal.domain.enums.occurrence.OccurrenceType;
+import com.weg.WEGpark.park.internal.domain.model.occurrence.TrafficAccident;
 import com.weg.WEGpark.park.internal.domain.model.occurrence.Warning;
+import com.weg.WEGpark.park.internal.dto.occurrence.trafficaccident.GetTrafficAccidentResponseDTO;
+import com.weg.WEGpark.park.internal.dto.occurrence.trafficaccident.UpdateTrafficAccidentRequestDTO;
 import com.weg.WEGpark.park.internal.dto.occurrence.warning.CreateWarningRequestDTO;
 import com.weg.WEGpark.park.internal.dto.occurrence.warning.CreateWarningResponseDTO;
+import com.weg.WEGpark.park.internal.dto.occurrence.warning.GetWarningResponseDTO;
+import com.weg.WEGpark.park.internal.dto.occurrence.warning.UpdateWarningRequestDTO;
 import com.weg.WEGpark.park.internal.infra.repository.OccurrenceRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -33,5 +39,17 @@ public class WarningService {
         occurrenceRepository.save(occurrence);
 
         return warningMapper.toCreateResponse(occurrence);
+    }
+
+    @Transactional
+    public GetWarningResponseDTO updateWarning (Long id, UpdateWarningRequestDTO request) {
+        Warning occurrence = (Warning) occurrenceRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Any occurrence of the warning type was found by %s ".formatted(id)));
+
+        warningMapper.updateFromDto(request, occurrence);
+
+        occurrenceRepository.save(occurrence);
+
+        return warningMapper.toGetResponse(occurrence);
     }
 }

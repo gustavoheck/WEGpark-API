@@ -1,11 +1,13 @@
 package com.weg.WEGpark.park.internal.app.occurrence.mapper;
 
+import com.weg.WEGpark.park.internal.domain.model.occurrence.TrafficAccident;
 import com.weg.WEGpark.park.internal.domain.model.occurrence.Warning;
+import com.weg.WEGpark.park.internal.dto.occurrence.trafficaccident.UpdateTrafficAccidentRequestDTO;
 import com.weg.WEGpark.park.internal.dto.occurrence.warning.CreateWarningRequestDTO;
 import com.weg.WEGpark.park.internal.dto.occurrence.warning.CreateWarningResponseDTO;
 import com.weg.WEGpark.park.internal.dto.occurrence.warning.GetWarningResponseDTO;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
+import com.weg.WEGpark.park.internal.dto.occurrence.warning.UpdateWarningRequestDTO;
+import org.mapstruct.*;
 
 @Mapper(componentModel = "spring")
 public interface WarningMapper {
@@ -18,4 +20,8 @@ public interface WarningMapper {
 
     @Mapping(source = ".", target = "defaults")
     GetWarningResponseDTO toGetResponse(Warning warning);
+
+    @Mapping(source = ".", target = "defaults")
+    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+    void updateFromDto(UpdateWarningRequestDTO dto, @MappingTarget Warning warning);
 }

@@ -1,11 +1,13 @@
 package com.weg.WEGpark.park.internal.app.occurrence.mapper;
 
+import com.weg.WEGpark.park.internal.domain.model.occurrence.IllegalParking;
 import com.weg.WEGpark.park.internal.domain.model.occurrence.TrafficAccident;
+import com.weg.WEGpark.park.internal.dto.occurrence.illegalparking.UpdateIllegalParkingRequestDTO;
 import com.weg.WEGpark.park.internal.dto.occurrence.trafficaccident.CreateTrafficAccidentRequestDTO;
 import com.weg.WEGpark.park.internal.dto.occurrence.trafficaccident.CreateTrafficAccidentResponseDTO;
 import com.weg.WEGpark.park.internal.dto.occurrence.trafficaccident.GetTrafficAccidentResponseDTO;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
+import com.weg.WEGpark.park.internal.dto.occurrence.trafficaccident.UpdateTrafficAccidentRequestDTO;
+import org.mapstruct.*;
 
 @Mapper(componentModel = "spring")
 public interface TrafficAccidentMapper {
@@ -18,4 +20,8 @@ public interface TrafficAccidentMapper {
 
         @Mapping(source = ".", target = "defaults")
         GetTrafficAccidentResponseDTO toGetResponse(TrafficAccident trafficAccident);
+
+        @Mapping(source = ".", target = "defaults")
+        @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+        void updateFromDto(UpdateTrafficAccidentRequestDTO dto, @MappingTarget TrafficAccident trafficAccident);
 }

@@ -5,10 +5,9 @@ import com.weg.WEGpark.park.internal.domain.model.vehicle.Vehicle;
 import com.weg.WEGpark.park.internal.dto.occurrence.illegalparking.CreateIllegalParkingRequestDTO;
 import com.weg.WEGpark.park.internal.dto.occurrence.illegalparking.CreateIllegalParkingResponseDTO;
 import com.weg.WEGpark.park.internal.dto.occurrence.illegalparking.GetIllegalParkingResponseDTO;
+import com.weg.WEGpark.park.internal.dto.occurrence.illegalparking.UpdateIllegalParkingRequestDTO;
 import com.weg.WEGpark.park.internal.dto.vehicle.defaults.UpdateVehicleRequestDTO;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.MappingTarget;
+import org.mapstruct.*;
 
 @Mapper(componentModel = "spring")
 public interface IllegalParkingMapper {
@@ -22,5 +21,7 @@ public interface IllegalParkingMapper {
     @Mapping(source = ".", target = "defaults")
     GetIllegalParkingResponseDTO toGetResponse(IllegalParking illegalParking);
 
-    void updateIllegalParkingFromDto(UpdateVehicleRequestDTO dto, @MappingTarget Vehicle vehicle);
+    @Mapping(source = ".", target = "defaults")
+    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+    void updateFromDto(UpdateIllegalParkingRequestDTO dto, @MappingTarget IllegalParking illegalParking);
 }

@@ -1,16 +1,20 @@
 package com.weg.WEGpark.park.internal.app.occurrence.service;
 
 import com.weg.WEGpark.park.internal.app.occurrence.mapper.IllegalParkingMapper;
+import com.weg.WEGpark.park.internal.app.shared.exception.NotFoundException;
 import com.weg.WEGpark.park.internal.domain.enums.occurrence.OccurrenceType;
 import com.weg.WEGpark.park.internal.domain.model.occurrence.IllegalParking;
 import com.weg.WEGpark.park.internal.dto.occurrence.illegalparking.CreateIllegalParkingRequestDTO;
 import com.weg.WEGpark.park.internal.dto.occurrence.illegalparking.CreateIllegalParkingResponseDTO;
+import com.weg.WEGpark.park.internal.dto.occurrence.illegalparking.GetIllegalParkingResponseDTO;
+import com.weg.WEGpark.park.internal.dto.occurrence.illegalparking.UpdateIllegalParkingRequestDTO;
 import com.weg.WEGpark.park.internal.infra.repository.OccurrenceRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -33,5 +37,17 @@ public class IllegalParkingService {
         occurrenceRepository.save(occurrence);
 
         return illegalParkingMapper.toCreateResponse(occurrence);
+    }
+
+    @Transactional
+    public GetIllegalParkingResponseDTO updateIllegalParking(Long id, UpdateIllegalParkingRequestDTO request) {
+        IllegalParking occurrence = (IllegalParking) occurrenceRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Any occurrence of the illegal parking type was found by %s ".formatted(id)));
+
+        illegalParkingMapper.updateFromDto(request, occurrence);
+
+        occurrenceRepository.save(occurrence);
+
+        return illegalParkingMapper.toGetResponse(occurrence);
     }
 }

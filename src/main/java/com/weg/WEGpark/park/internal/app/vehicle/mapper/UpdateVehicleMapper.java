@@ -11,5 +11,5 @@ import org.mapstruct.NullValuePropertyMappingStrategy;
 public interface UpdateVehicleMapper {
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
-    void updateVehicleFromDto(UpdateVehicleRequestDTO dto, @MappingTarget Vehicle vehicle);
+    void updateFromDto(UpdateVehicleRequestDTO dto, @MappingTarget Vehicle vehicle);
 }
