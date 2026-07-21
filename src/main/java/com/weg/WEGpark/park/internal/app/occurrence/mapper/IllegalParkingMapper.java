@@ -21,7 +21,7 @@ public interface IllegalParkingMapper {
     @Mapping(source = ".", target = "defaults")
     GetIllegalParkingResponseDTO toGetResponse(IllegalParking illegalParking);
 
-    @Mapping(source = ".", target = "defaults")
+    @Mapping(source = "defaults", target = ".")
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     void updateFromDto(UpdateIllegalParkingRequestDTO dto, @MappingTarget IllegalParking illegalParking);
 }

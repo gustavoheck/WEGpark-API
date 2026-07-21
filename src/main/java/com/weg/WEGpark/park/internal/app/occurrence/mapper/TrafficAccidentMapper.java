@@ -21,7 +21,7 @@ public interface TrafficAccidentMapper {
         @Mapping(source = ".", target = "defaults")
         GetTrafficAccidentResponseDTO toGetResponse(TrafficAccident trafficAccident);
 
-        @Mapping(source = ".", target = "defaults")
         @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+        @Mapping(source = "defaults", target = ".")
         void updateFromDto(UpdateTrafficAccidentRequestDTO dto, @MappingTarget TrafficAccident trafficAccident);
 }

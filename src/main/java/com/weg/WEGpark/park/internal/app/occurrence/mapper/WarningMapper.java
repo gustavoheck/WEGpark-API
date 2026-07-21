@@ -21,7 +21,7 @@ public interface WarningMapper {
     @Mapping(source = ".", target = "defaults")
     GetWarningResponseDTO toGetResponse(Warning warning);
 
-    @Mapping(source = ".", target = "defaults")
+    @Mapping(source = "defaults", target = ".")
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     void updateFromDto(UpdateWarningRequestDTO dto, @MappingTarget Warning warning);
 }
