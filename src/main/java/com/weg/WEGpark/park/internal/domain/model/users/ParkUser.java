@@ -1,6 +1,6 @@
 package com.weg.WEGpark.park.internal.domain.model.users;
 
-import com.weg.WEGpark.park.internal.domain.enums.ParkUserType;
+import com.weg.WEGpark.park.internal.domain.enums.user.ParkUserType;
 import com.weg.WEGpark.park.internal.domain.model.vehicle.Vehicle;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -37,7 +37,7 @@ public class ParkUser {
     private String name;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "user_type", insertable = false, updatable = false)
+    @Column(name = "user_type", insertable = false, updatable = false, nullable = false)
     private ParkUserType userType;
 
     @ManyToMany(fetch = FetchType.LAZY)

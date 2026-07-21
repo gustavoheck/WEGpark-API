@@ -1,13 +1,11 @@
 package com.weg.WEGpark.park.internal.domain.model.users;
 
-import com.weg.WEGpark.park.internal.domain.enums.ParkUserType;
+import com.weg.WEGpark.park.internal.domain.enums.user.ParkUserType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import java.util.UUID;
 
 @Entity
 @AllArgsConstructor
@@ -18,12 +16,6 @@ import java.util.UUID;
 @PrimaryKeyJoinColumn(name = "id")
 @Table(name = "collaborator", schema = "park")
 public class Collaborator extends ParkUser {
-
-    @Id
-    private Long id;
-
-    @Column(unique = true, nullable = false, updatable = false)
-    private UUID uuid;
 
     @Column(nullable = false, name = "badge_number")
     private String badgeNumber;

@@ -1,13 +1,18 @@
 package com.weg.WEGpark.park.internal.app.vehicle.service;
 
 import com.weg.WEGpark.park.internal.app.shared.exception.NotFoundException;
+import com.weg.WEGpark.park.internal.app.shared.util.FilterUtil;
 import com.weg.WEGpark.park.internal.app.vehicle.exception.MoreThenOneFilterException;
 import com.weg.WEGpark.park.internal.app.vehicle.exception.VehicleAlreadyRegisteredException;
 import com.weg.WEGpark.park.internal.app.vehicle.mapper.CreateVehicleMapper;
 import com.weg.WEGpark.park.internal.app.vehicle.mapper.GetVehicleMapper;
 import com.weg.WEGpark.park.internal.app.vehicle.mapper.UpdateVehicleMapper;
 import com.weg.WEGpark.park.internal.domain.model.vehicle.Vehicle;
-import com.weg.WEGpark.park.internal.dto.vehicle.*;
+import com.weg.WEGpark.park.internal.dto.vehicle.defaults.CreateVehicleRequestDTO;
+import com.weg.WEGpark.park.internal.dto.vehicle.defaults.CreateVehicleResponseDTO;
+import com.weg.WEGpark.park.internal.dto.vehicle.defaults.GetVehicleResponseDTO;
+import com.weg.WEGpark.park.internal.dto.vehicle.defaults.UpdateVehicleRequestDTO;
+import com.weg.WEGpark.park.internal.dto.vehicle.filter.FilterVehicleRequestDTO;
 import com.weg.WEGpark.park.internal.infra.repository.VehicleRepository;
 import com.weg.WEGpark.park.internal.infra.specification.VehicleSpecification;
 import lombok.RequiredArgsConstructor;
@@ -46,26 +51,16 @@ public class VehicleService {
     }
 
     public List<GetVehicleResponseDTO> findVehicle (FilterVehicleRequestDTO filter) {
-        long nonNullCamps = Stream.of(
-                        filter.plate(),
-                        filter.model(),
-                        filter.brand(),
-                        filter.color(),
-                        filter.userName()
-                )
-                .filter(Objects::nonNull)
-                .filter(camp -> !(camp.isBlank()))
-                .count();
-
-        if (nonNullCamps <= 1 ) {
+        if (FilterUtil.checkMoreThanOneFilter(filter)) {
             String plate = null;
 
             if (filter.plate() != null && !filter.plate().isBlank()){
                 plate = filter.plate().toUpperCase().replace("-", "").trim();
             }
 
-            Specification<Vehicle> spec = Specification.where(VehicleSpecification.hasPlate(plate));
-            spec = spec.and(VehicleSpecification.hasModel(filter.model()))
+            Specification<Vehicle> spec = Specification
+                    .where(VehicleSpecification.hasPlate(plate))
+                    .and(VehicleSpecification.hasModel(filter.model()))
                     .and(VehicleSpecification.hasBrand(filter.brand()))
                     .and(VehicleSpecification.hasColor(filter.color()))
                     .and(VehicleSpecification.belongsToUser(filter.userName()));

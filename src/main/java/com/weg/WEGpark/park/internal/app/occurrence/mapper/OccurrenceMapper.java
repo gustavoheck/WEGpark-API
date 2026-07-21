@@ -1,27 +1,14 @@
 package com.weg.WEGpark.park.internal.app.occurrence.mapper;
 
 import com.weg.WEGpark.park.internal.domain.model.occurrence.Occurrence;
-import com.weg.WEGpark.park.internal.dto.occurrence.OccurrenceRequestDto;
-import com.weg.WEGpark.park.internal.dto.occurrence.OccurrenceResponseDto;
-import org.mapstruct.Mapping;
-import org.springframework.stereotype.Component;
+import com.weg.WEGpark.park.internal.dto.occurrence.defaults.CreateOccurrenceRequestDto;
+import com.weg.WEGpark.park.internal.dto.occurrence.defaults.DefaultOccurrenceResponseDto;
+import org.mapstruct.Mapper;
 
-@Component
-public class OccurrenceMapper {
+@Mapper(componentModel = "spring")
+public interface OccurrenceMapper {
 
-    public Occurrence toEntity(OccurrenceRequestDto occurrenceRequestDto) {
-        return new Occurrence(
-                occurrenceRequestDto.location(),
-                occurrenceRequestDto.gate()
-        );
-    }
+    Occurrence toEntity(CreateOccurrenceRequestDto occurrenceRequestDto);
 
-    public OccurrenceResponseDto toResponse(Occurrence occurrence) {
-        return new OccurrenceResponseDto(
-                occurrence.getId(),
-                occurrence.getDateHour(),
-                occurrence.getLocation(),
-                occurrence.getGate()
-        );
-    }
+    DefaultOccurrenceResponseDto toResponse(Occurrence occurrence);
 }

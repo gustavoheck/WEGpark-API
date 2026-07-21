@@ -1,8 +1,8 @@
-package com.weg.WEGpark.park.internal.dto.occurrence;
+package com.weg.WEGpark.park.internal.dto.occurrence.defaults;
 
 import jakarta.validation.constraints.NotBlank;
 
-public record OccurrenceRequestDto(
+public record CreateOccurrenceRequestDto(
 
         @NotBlank(message = "The location can not be null or blank")
         String location,
