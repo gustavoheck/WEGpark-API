@@ -1,5 +1,6 @@
-package com.weg.WEGpark.auth.internal.domain;
+package com.weg.WEGpark.auth.internal.domain.model;
 
+import com.weg.WEGpark.auth.internal.domain.enums.RolesType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -22,18 +23,19 @@ public class Role implements GrantedAuthority {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String role;
+    private RolesType role;
 
-    @ManyToMany(mappedBy = "roles", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "role", fetch = FetchType.LAZY)
     private List<User> users;
 
-    public Role(String role) {
+    public Role(RolesType role) {
         this.role = role;
     }
 
     @Override
     public @Nullable String getAuthority() {
-        return this.role;
+        return this.role.toString();
     }
 }

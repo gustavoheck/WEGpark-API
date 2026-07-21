@@ -1,12 +1,9 @@
 package com.weg.WEGpark.park.internal.app.occurrence.service;
 
 import com.weg.WEGpark.park.internal.app.occurrence.mapper.TrafficAccidentMapper;
-import com.weg.WEGpark.park.internal.app.shared.exception.NotFoundException;
+import com.weg.WEGpark.shared.exception.NotFoundException;
 import com.weg.WEGpark.park.internal.domain.enums.occurrence.OccurrenceType;
-import com.weg.WEGpark.park.internal.domain.model.occurrence.IllegalParking;
 import com.weg.WEGpark.park.internal.domain.model.occurrence.TrafficAccident;
-import com.weg.WEGpark.park.internal.dto.occurrence.illegalparking.GetIllegalParkingResponseDTO;
-import com.weg.WEGpark.park.internal.dto.occurrence.illegalparking.UpdateIllegalParkingRequestDTO;
 import com.weg.WEGpark.park.internal.dto.occurrence.trafficaccident.CreateTrafficAccidentRequestDTO;
 import com.weg.WEGpark.park.internal.dto.occurrence.trafficaccident.CreateTrafficAccidentResponseDTO;
 import com.weg.WEGpark.park.internal.dto.occurrence.trafficaccident.GetTrafficAccidentResponseDTO;

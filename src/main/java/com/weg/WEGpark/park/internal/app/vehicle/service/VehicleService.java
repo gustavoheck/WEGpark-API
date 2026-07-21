@@ -1,6 +1,6 @@
 package com.weg.WEGpark.park.internal.app.vehicle.service;
 
-import com.weg.WEGpark.park.internal.app.shared.exception.NotFoundException;
+import com.weg.WEGpark.shared.exception.NotFoundException;
 import com.weg.WEGpark.park.internal.app.shared.util.FilterUtil;
 import com.weg.WEGpark.park.internal.app.vehicle.exception.MoreThenOneFilterException;
 import com.weg.WEGpark.park.internal.app.vehicle.exception.VehicleAlreadyRegisteredException;
@@ -21,10 +21,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor

@@ -3,5 +3,7 @@ CREATE TABLE auth.users (
     uuid UUID DEFAULT uuidv7() UNIQUE NOT NULL,
     email VARCHAR(255) NOT NULL,
     password VARCHAR(255) NOT NULL,
-    active BOOLEAN NOT NULL
+    active BOOLEAN NOT NULL,
+    id_role LONG NOT NULL,
+    FOREIGN KEY (id_role) REFERENCES auth.role(id)
 );

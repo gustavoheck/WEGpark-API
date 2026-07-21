@@ -1,4 +1,4 @@
-package com.weg.WEGpark.auth.internal.domain;
+package com.weg.WEGpark.auth.internal.domain.model;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -8,6 +8,7 @@ import lombok.Setter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
@@ -36,14 +37,8 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private Boolean active;
 
-    @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(
-            name = "users_role",
-            schema = "auth",
-            joinColumns = @JoinColumn(name = "id_users"),
-            inverseJoinColumns = @JoinColumn(name = "id_role")
-    )
-    private List<Role> roles;
+    @OneToMany(fetch = FetchType.EAGER)
+    private Role role;
 
     public User(String email, String password, Boolean active) {
         this.email = email;
@@ -53,7 +48,9 @@ public class User implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return this.roles;
+        List<Role> roles = new ArrayList<>();
+        roles.add(role);
+        return roles;
     }
 
     @Override
