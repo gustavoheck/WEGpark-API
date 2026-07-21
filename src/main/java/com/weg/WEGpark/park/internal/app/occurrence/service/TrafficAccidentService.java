@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -42,9 +43,9 @@ public class TrafficAccidentService {
     }
 
     @Transactional
-    public GetTrafficAccidentResponseDTO updateTrafficAccident(Long id, UpdateTrafficAccidentRequestDTO request) {
-        TrafficAccident occurrence = (TrafficAccident) occurrenceRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Any occurrence of the traffic accident type was found by %s ".formatted(id)));
+    public GetTrafficAccidentResponseDTO updateTrafficAccident(UUID uuid, UpdateTrafficAccidentRequestDTO request) {
+        TrafficAccident occurrence = (TrafficAccident) occurrenceRepository.findByUuid(uuid)
+                .orElseThrow(() -> new NotFoundException("Any occurrence of the traffic accident type was found by %s ".formatted(uuid)));
 
         trafficAccidentMapper.updateFromDto(request, occurrence);
 

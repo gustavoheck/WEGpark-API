@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -42,9 +43,9 @@ public class WarningService {
     }
 
     @Transactional
-    public GetWarningResponseDTO updateWarning (Long id, UpdateWarningRequestDTO request) {
-        Warning occurrence = (Warning) occurrenceRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Any occurrence of the warning type was found by %s ".formatted(id)));
+    public GetWarningResponseDTO updateWarning (UUID uuid, UpdateWarningRequestDTO request) {
+        Warning occurrence = (Warning) occurrenceRepository.findByUuid(uuid)
+                .orElseThrow(() -> new NotFoundException("Any occurrence of the warning type was found by %s ".formatted(uuid)));
 
         warningMapper.updateFromDto(request, occurrence);
 

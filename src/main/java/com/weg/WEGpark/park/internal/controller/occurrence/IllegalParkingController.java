@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
+import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
@@ -27,22 +28,22 @@ public class IllegalParkingController {
 
         URI uri = ServletUriComponentsBuilder
                 .fromCurrentRequest()
-                .path("/{id}")
-                .buildAndExpand(response.id())
+                .path("/{uuid}")
+                .buildAndExpand(response.uuid())
                 .toUri();
 
         return ResponseEntity.created(uri)
                 .body(response);
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("/{uuid}")
     public ResponseEntity<GetIllegalParkingResponseDTO> updateIllegalParking (
             @Valid @RequestBody
             UpdateIllegalParkingRequestDTO request,
             @PathVariable
-            Long id
+            UUID uuid
     ) {
-        GetIllegalParkingResponseDTO response = illegalParkingService.updateIllegalParking(id, request);
+        GetIllegalParkingResponseDTO response = illegalParkingService.updateIllegalParking(uuid, request);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(response);

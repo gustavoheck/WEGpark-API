@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
@@ -40,14 +41,14 @@ public class VehicleController {
                 .body(filteredVehicles);
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("/{uuid}")
     public ResponseEntity<GetVehicleResponseDTO> updateVehicle (
             @Valid @RequestBody
             UpdateVehicleRequestDTO request,
             @PathVariable
-            Long id
+            UUID uuid
     ) {
-        GetVehicleResponseDTO response = vehicleService.updateVehicle(id, request);
+        GetVehicleResponseDTO response = vehicleService.updateVehicle(uuid, request);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(response);

@@ -7,8 +7,11 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.Generated;
+import org.hibernate.generator.EventType;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @AllArgsConstructor
@@ -23,6 +26,10 @@ public class Occurrence {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Generated(event = EventType.INSERT)
+    @Column(unique = true, nullable = false, updatable = false, insertable = false)
+    private UUID uuid;
 
     @Column(nullable = false, name = "date_hour")
     private LocalDateTime dateHour;

@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -40,9 +41,9 @@ public class IllegalParkingService {
     }
 
     @Transactional
-    public GetIllegalParkingResponseDTO updateIllegalParking(Long id, UpdateIllegalParkingRequestDTO request) {
-        IllegalParking occurrence = (IllegalParking) occurrenceRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Any occurrence of the illegal parking type was found by %s ".formatted(id)));
+    public GetIllegalParkingResponseDTO updateIllegalParking(UUID uuid, UpdateIllegalParkingRequestDTO request) {
+        IllegalParking occurrence = (IllegalParking) occurrenceRepository.findByUuid(uuid)
+                .orElseThrow(() -> new NotFoundException("Any occurrence of the illegal parking type was found by %s ".formatted(uuid)));
 
         illegalParkingMapper.updateFromDto(request, occurrence);
 
