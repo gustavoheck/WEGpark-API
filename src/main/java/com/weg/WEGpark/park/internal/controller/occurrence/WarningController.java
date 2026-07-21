@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
+import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
@@ -29,22 +30,22 @@ public class WarningController {
 
         URI uri = ServletUriComponentsBuilder
                 .fromCurrentRequest()
-                .path("/{id}")
-                .buildAndExpand(response.id())
+                .path("/{uuid}")
+                .buildAndExpand(response.uuid())
                 .toUri();
 
         return ResponseEntity.created(uri)
                 .body(response);
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("/{uuid}")
     public ResponseEntity<GetWarningResponseDTO> updateWarning (
             @Valid @RequestBody
             UpdateWarningRequestDTO request,
             @PathVariable
-            Long id
+            UUID uuid
     ) {
-        GetWarningResponseDTO response = warningService.updateWarning(id, request);
+        GetWarningResponseDTO response = warningService.updateWarning(uuid, request);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(response);

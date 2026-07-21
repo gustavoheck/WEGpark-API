@@ -7,15 +7,12 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Repository
 public interface VehicleRepository extends JpaRepository<Vehicle, Long>, JpaSpecificationExecutor<Vehicle> {
 
     Optional<Vehicle> findByPlate (String plate);
 
-    List<Vehicle> findByColor (String color);
-
-    List<Vehicle> findByModel (String model);
-
-    List<Vehicle> findByBrand (String brand);
+    Optional<Vehicle> findByUuid (UUID uuid);
 }

@@ -23,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Stream;
 
 @Service
@@ -76,10 +77,10 @@ public class VehicleService {
     }
 
     @Transactional
-    public GetVehicleResponseDTO updateVehicle(Long id, UpdateVehicleRequestDTO request) {
+    public GetVehicleResponseDTO updateVehicle(UUID uuid, UpdateVehicleRequestDTO request) {
 
-        Vehicle vehicle = vehicleRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException(("The vehicle was not found by %s id".formatted(id))));
+        Vehicle vehicle = vehicleRepository.findByUuid(uuid)
+                .orElseThrow(() -> new NotFoundException(("The vehicle was not found by %s uuid".formatted(uuid))));
 
         updateVehicleMapper.updateFromDto(request, vehicle);
 

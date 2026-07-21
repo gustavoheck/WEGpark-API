@@ -1,6 +1,10 @@
 package com.weg.WEGpark.park.internal.dto.vehicle.defaults;
 
+import java.util.UUID;
+
 public record GetVehicleResponseDTO(
+
+        UUID uuid,
 
         String plate,
 

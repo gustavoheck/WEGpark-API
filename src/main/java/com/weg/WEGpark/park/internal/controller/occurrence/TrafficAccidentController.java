@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
+import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
@@ -27,22 +28,22 @@ public class TrafficAccidentController {
 
         URI uri = ServletUriComponentsBuilder
                 .fromCurrentRequest()
-                .path("/{id}")
-                .buildAndExpand(response.id())
+                .path("/{uuid}")
+                .buildAndExpand(response.uuid())
                 .toUri();
 
         return ResponseEntity.created(uri)
                 .body(response);
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("/{uuid}")
     public ResponseEntity<GetTrafficAccidentResponseDTO> updateTrafficAccident (
             @Valid @RequestBody
             UpdateTrafficAccidentRequestDTO request,
             @PathVariable
-            Long id
+            UUID uuid
     ) {
-        GetTrafficAccidentResponseDTO response = trafficAccidentService.updateTrafficAccident(id, request);
+        GetTrafficAccidentResponseDTO response = trafficAccidentService.updateTrafficAccident(uuid, request);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(response);

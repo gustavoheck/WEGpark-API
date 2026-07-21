@@ -5,7 +5,7 @@ Este documento consolida as diretrizes técnicas, arquiteturais e de processos a
 
 ## Stack
 
-* **DataBase**: Postgres - V16
+* **DataBase**: Postgres - V18
 * **LP**: Java - V21
 * **Framework:** Spring - V4.0.7
 * **Containering:** Docker

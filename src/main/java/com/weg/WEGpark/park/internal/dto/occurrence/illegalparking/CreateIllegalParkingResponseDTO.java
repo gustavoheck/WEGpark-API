@@ -3,8 +3,11 @@ package com.weg.WEGpark.park.internal.dto.occurrence.illegalparking;
 import com.weg.WEGpark.park.internal.domain.enums.occurrence.ParkingSpaceType;
 import com.weg.WEGpark.park.internal.dto.occurrence.defaults.DefaultOccurrenceResponseDto;
 
+import java.util.UUID;
+
 public record CreateIllegalParkingResponseDTO(
-        Long id,
+
+        UUID uuid,
 
         DefaultOccurrenceResponseDto defaults,
 
