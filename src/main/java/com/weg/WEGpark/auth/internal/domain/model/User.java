@@ -37,7 +37,7 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private Boolean active;
 
-    @OneToMany(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.EAGER)
     private Role role;
 
     public User(String email, String password, Boolean active) {
