@@ -1,4 +1,4 @@
-package com.weg.WEGpark.auth.internal.dto.register.collaborator;
+package com.weg.WEGpark.auth.shared.dto.collaborator;
 
 import com.weg.WEGpark.auth.internal.dto.register.defaults.RegisterAccountRequestDTO;
 import jakarta.validation.constraints.NotBlank;
