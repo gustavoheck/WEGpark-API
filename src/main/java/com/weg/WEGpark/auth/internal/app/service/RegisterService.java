@@ -4,6 +4,7 @@ import com.weg.WEGpark.auth.ValidateBadgeNumberEvent;
 import com.weg.WEGpark.auth.ValidateVisitorEmailEvent;
 import com.weg.WEGpark.auth.VisitorRegisteredEvent;
 import com.weg.WEGpark.auth.internal.app.exception.AlreadyHaveAccountException;
+import com.weg.WEGpark.auth.internal.app.mapper.EventMapper;
 import com.weg.WEGpark.auth.internal.app.mapper.UserMapper;
 import com.weg.WEGpark.auth.internal.domain.enums.RolesType;
 import com.weg.WEGpark.auth.internal.domain.model.Role;
@@ -31,6 +32,7 @@ public class RegisterService {
     private final RoleRepository roleRepository;
     private final SecurityConfig securityConfig;
 
+    private final EventMapper eventMapper;
     private final ApplicationEventPublisher applicationEventPublisher;
 
     @Transactional
@@ -48,7 +50,7 @@ public class RegisterService {
         }
         if (canRegister) {
             RegisterAccountResponseDTO response = registerParkAccount(request.defaults());
-            applicationEventPublisher.publishEvent(CollaboratorRegisteredEvent);
+            applicationEventPublisher.publishEvent(eventMapper.toCollaboratorRegisteredEvent(request));
             return response;
         }
         throw new AlreadyHaveAccountException("An account with this badge number is already registered!");
@@ -58,7 +60,7 @@ public class RegisterService {
     public RegisterAccountResponseDTO registerVisitor (RegisterVisitorRequestDTO request, Boolean alreadyExists) {
         if (!alreadyExists) {
             RegisterAccountResponseDTO response = registerParkAccount(request.defaults());
-            applicationEventPublisher.publishEvent(VisitorRegisteredEvent);
+            applicationEventPublisher.publishEvent(eventMapper.toVisitorRegisteredEvent(request));
             return response;
         }
         throw new AlreadyHaveAccountException("An account with this email is already registered!");
