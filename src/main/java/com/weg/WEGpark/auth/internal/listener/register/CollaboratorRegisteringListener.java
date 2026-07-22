@@ -1,6 +1,5 @@
-package com.weg.WEGpark.auth.internal.listener.collaborator;
+package com.weg.WEGpark.auth.internal.listener.register;
 
-import com.weg.WEGpark.auth.internal.app.service.AuthService;
 import com.weg.WEGpark.auth.internal.app.service.RegisterService;
 import com.weg.WEGpark.park.ValidatedCollaboratorEvent;
 import lombok.RequiredArgsConstructor;

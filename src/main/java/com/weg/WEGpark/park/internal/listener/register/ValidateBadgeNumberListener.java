@@ -1,4 +1,4 @@
-package com.weg.WEGpark.park.internal.listener.collaborator;
+package com.weg.WEGpark.park.internal.listener.register;
 
 import com.weg.WEGpark.auth.ValidateBadgeNumberEvent;
 import com.weg.WEGpark.park.ValidatedCollaboratorEvent;

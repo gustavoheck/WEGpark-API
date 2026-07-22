@@ -1,15 +1,16 @@
 package com.weg.WEGpark.auth.internal.app.service;
 
-import com.weg.WEGpark.auth.CollaboratorRegisteredEvent;
 import com.weg.WEGpark.auth.ValidateBadgeNumberEvent;
 import com.weg.WEGpark.auth.ValidateVisitorEmailEvent;
+import com.weg.WEGpark.auth.VisitorRegisteredEvent;
 import com.weg.WEGpark.auth.internal.app.exception.AlreadyHaveAccountException;
 import com.weg.WEGpark.auth.internal.app.mapper.UserMapper;
 import com.weg.WEGpark.auth.internal.domain.enums.RolesType;
 import com.weg.WEGpark.auth.internal.domain.model.Role;
 import com.weg.WEGpark.auth.internal.domain.model.User;
+import com.weg.WEGpark.auth.internal.dto.register.defaults.RegisterAccountRequestDTO;
 import com.weg.WEGpark.auth.internal.dto.register.defaults.RegisterAccountResponseDTO;
-import com.weg.WEGpark.auth.internal.dto.visitor.RegisterVisitorRequestDTO;
+import com.weg.WEGpark.auth.shared.dto.visitor.RegisterVisitorRequestDTO;
 import com.weg.WEGpark.auth.internal.infra.repository.RoleRepository;
 import com.weg.WEGpark.auth.internal.infra.repository.UserRepository;
 import com.weg.WEGpark.auth.internal.infra.security.config.SecurityConfig;
@@ -45,32 +46,43 @@ public class RegisterService {
         } else {
             canRegister = true;
         }
-
         if (canRegister) {
-            User user = userMapper.toEntity(request.defaults());
-
-            Role role = roleRepository.findByRole(RolesType.PARK.toString())
-                    .orElseThrow(() -> new NotFoundException("Role PARK was not encountered"));
-
-            user.setRole(role);
-            user.setPassword(securityConfig.passwordEncoder().encode(user.getPassword()));
-
-            userRepository.save(user);
-
+            RegisterAccountResponseDTO response = registerParkAccount(request.defaults());
             applicationEventPublisher.publishEvent(CollaboratorRegisteredEvent);
-
-            return userMapper.toResponse(user);
+            return response;
         }
-        throw new AlreadyHaveAccountException();
+        throw new AlreadyHaveAccountException("An account with this badge number is already registered!");
     }
 
     @Transactional
-    private void checkVisitorAccountsBeforeRegistering (RegisterVisitorRequestDTO request) {
+    public RegisterAccountResponseDTO registerVisitor (RegisterVisitorRequestDTO request, Boolean alreadyExists) {
+        if (!alreadyExists) {
+            RegisterAccountResponseDTO response = registerParkAccount(request.defaults());
+            applicationEventPublisher.publishEvent(VisitorRegisteredEvent);
+            return response;
+        }
+        throw new AlreadyHaveAccountException("An account with this email is already registered!");
+    }
+
+    private RegisterAccountResponseDTO registerParkAccount (RegisterAccountRequestDTO request) {
+        User user = userMapper.toEntity(request);
+
+        Role role = roleRepository.findByRole(RolesType.PARK.toString())
+                .orElseThrow(() -> new NotFoundException("Role PARK was not encountered"));
+
+        user.setRole(role);
+        user.setPassword(securityConfig.passwordEncoder().encode(user.getPassword()));
+
+        userRepository.save(user);
+
+        return userMapper.toResponse(user);
+    }
+
+    public void checkVisitorAccountsBeforeRegistering (RegisterVisitorRequestDTO request) {
         applicationEventPublisher.publishEvent(new ValidateVisitorEmailEvent(request));
     }
 
-    @Transactional
-    private void checkCollaboratorBadgeNumberBeforeRegistering (RegisterCollaboratorRequestDTO request) {
+    public void checkCollaboratorBadgeNumberBeforeRegistering (RegisterCollaboratorRequestDTO request) {
         applicationEventPublisher.publishEvent(new ValidateBadgeNumberEvent(request));
     }
 }
