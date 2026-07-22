@@ -13,15 +13,15 @@ import java.util.concurrent.CompletableFuture;
 @Mapper(componentModel = "spring")
 public interface EventMapper {
 
-    @Mapping(source = "defaults", target = ".")
-    @Mapping(source = "parkUserDefaults", target = ".")
+    @Mapping(source = "request.defaults", target = ".")
+    @Mapping(source = "request.parkUserDefaults", target = ".")
     CollaboratorRegisteredEvent toCollaboratorRegisteredEvent (
             RegisterCollaboratorRequestDTO request,
             CompletableFuture<RegisterAccountResponseDTO> futureResponse
     );
 
-    @Mapping(source = "defaults", target = ".")
-    @Mapping(source = "parkUserDefaults", target = ".")
+    @Mapping(source = "request.defaults", target = ".")
+    @Mapping(source = "request.parkUserDefaults", target = ".")
     VisitorRegisteredEvent toVisitorRegisteredEvent (
             RegisterVisitorRequestDTO request,
             CompletableFuture<RegisterAccountResponseDTO> futureResponse

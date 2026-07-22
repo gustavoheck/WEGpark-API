@@ -6,6 +6,7 @@ import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.weg.WEGpark.auth.internal.domain.model.User;
 import com.weg.WEGpark.auth.internal.infra.security.exception.InvalidTokenException;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.converter.RsaKeyConverters;
 import org.springframework.security.core.GrantedAuthority;
@@ -26,9 +27,15 @@ public class TokenConfig {
 
     private final SecurityVariables securityVariables;
 
-    private final Algorithm algorithm = Algorithm
-            .RSA256(publicKeyFormatter(securityVariables.publicKey()),
-                    privateKeyFormatter(securityVariables.privateKey()));
+    private Algorithm algorithm;
+
+    @PostConstruct
+    public void initAlgorithm() {
+        this.algorithm = Algorithm.RSA256(
+                publicKeyFormatter(securityVariables.publicKey()),
+                privateKeyFormatter(securityVariables.privateKey())
+        );
+    }
 
     public String generateToken(User user) {
         return JWT.create()
