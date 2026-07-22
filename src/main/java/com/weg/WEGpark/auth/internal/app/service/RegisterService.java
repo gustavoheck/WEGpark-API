@@ -82,7 +82,7 @@ public class RegisterService {
             CompletableFuture<RegisterAccountResponseDTO> futureResponse) {
         User user = userMapper.toEntity(request);
 
-        Optional<Role> role = roleRepository.findByRole(RolesType.PARK.toString());
+        Optional<Role> role = roleRepository.findByRole(RolesType.PARK);
 
         if (role.isEmpty()) {
             futureResponse.completeExceptionally(new NotFoundException("Any PARK role was found"));
