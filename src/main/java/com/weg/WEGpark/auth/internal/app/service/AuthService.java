@@ -1,23 +1,11 @@
 package com.weg.WEGpark.auth.internal.app.service;
 
-import com.weg.WEGpark.auth.ValidateBadgeNumberEvent;
-import com.weg.WEGpark.auth.internal.app.exception.AlreadyHaveAccountException;
 import com.weg.WEGpark.auth.internal.app.exception.InvalidLoginException;
-import com.weg.WEGpark.auth.internal.app.mapper.UserMapper;
-import com.weg.WEGpark.auth.internal.domain.enums.RolesType;
-import com.weg.WEGpark.auth.internal.domain.model.Role;
 import com.weg.WEGpark.auth.internal.domain.model.User;
 import com.weg.WEGpark.auth.internal.dto.login.LoginRequestDTO;
 import com.weg.WEGpark.auth.internal.dto.login.LoginResponseDTO;
-import com.weg.WEGpark.auth.internal.infra.repository.UserRepository;
-import com.weg.WEGpark.auth.shared.dto.collaborator.RegisterCollaboratorRequestDTO;
-import com.weg.WEGpark.auth.internal.dto.register.defaults.RegisterAccountResponseDTO;
-import com.weg.WEGpark.auth.internal.infra.repository.RoleRepository;
-import com.weg.WEGpark.auth.internal.infra.security.config.SecurityConfig;
 import com.weg.WEGpark.auth.internal.infra.security.config.TokenConfig;
-import com.weg.WEGpark.shared.exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;

@@ -1,4 +1,4 @@
-package com.weg.WEGpark.auth.internal.dto.register.defaults;
+package com.weg.WEGpark.auth.shared.dto.register;
 
 import jakarta.validation.constraints.NotBlank;
 

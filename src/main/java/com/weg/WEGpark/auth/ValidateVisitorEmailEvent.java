@@ -1,8 +1,13 @@
 package com.weg.WEGpark.auth;
 
-import com.weg.WEGpark.auth.shared.dto.visitor.RegisterVisitorRequestDTO;
+import com.weg.WEGpark.auth.internal.dto.register.defaults.RegisterAccountResponseDTO;
+import com.weg.WEGpark.auth.shared.dto.register.RegisterVisitorRequestDTO;
+
+import java.util.concurrent.CompletableFuture;
 
 public record ValidateVisitorEmailEvent(
+
+        CompletableFuture<RegisterAccountResponseDTO> futureResponse,
 
         RegisterVisitorRequestDTO request
 ) {

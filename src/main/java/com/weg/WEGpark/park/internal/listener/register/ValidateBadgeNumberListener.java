@@ -18,6 +18,6 @@ public class ValidateBadgeNumberListener {
     @EventListener
     public void validateCollaborator (ValidateBadgeNumberEvent event) {
         Long id = collaboratorService.verifyCollaboratorToRegisterByBadgeNumber(event.request().badgeNumber());
-        applicationEventPublisher.publishEvent(new ValidatedCollaboratorEvent(event.request(), id));
+        applicationEventPublisher.publishEvent(new ValidatedCollaboratorEvent(event.futureResponse(), event.request(), id));
     }
 }

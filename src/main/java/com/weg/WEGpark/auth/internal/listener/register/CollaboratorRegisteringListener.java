@@ -14,6 +14,6 @@ public class CollaboratorRegisteringListener {
 
     @EventListener
     public void startRegistering (ValidatedCollaboratorEvent event) {
-        registerService.registerCollaborator(event.request(), event.collaboratorId());
+        registerService.registerCollaborator(event.futureResponse(), event.request(), event.collaboratorId());
     }
 }

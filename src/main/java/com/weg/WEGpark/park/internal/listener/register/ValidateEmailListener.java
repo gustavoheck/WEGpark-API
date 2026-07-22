@@ -18,6 +18,6 @@ public class ValidateEmailListener {
     @EventListener
     public void validateCollaborator (ValidateVisitorEmailEvent event) {
         Boolean existsByEmail = parkUserService.verifyParkUserToRegister(event.request().defaults().email());
-        applicationEventPublisher.publishEvent(new ValidatedVisitorEvent(event.request(), existsByEmail));
+        applicationEventPublisher.publishEvent(new ValidatedVisitorEvent(event.futureResponse(), event.request(), existsByEmail));
     }
 }
