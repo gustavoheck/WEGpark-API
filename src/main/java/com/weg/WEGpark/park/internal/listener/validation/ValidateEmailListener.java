@@ -1,8 +1,8 @@
-package com.weg.WEGpark.park.internal.listener.register;
+package com.weg.WEGpark.park.internal.listener.validation;
 
 import com.weg.WEGpark.auth.ValidateVisitorEmailEvent;
 import com.weg.WEGpark.park.ValidatedVisitorEvent;
-import com.weg.WEGpark.park.internal.app.user.ParkUserService;
+import com.weg.WEGpark.park.internal.app.user.service.ParkUserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;

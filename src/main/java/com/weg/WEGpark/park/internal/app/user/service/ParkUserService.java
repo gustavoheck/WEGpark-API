@@ -1,12 +1,9 @@
-package com.weg.WEGpark.park.internal.app.user;
+package com.weg.WEGpark.park.internal.app.user.service;
 
-import com.weg.WEGpark.park.internal.domain.model.users.ParkUser;
 import com.weg.WEGpark.park.internal.infra.repository.ParkUserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
