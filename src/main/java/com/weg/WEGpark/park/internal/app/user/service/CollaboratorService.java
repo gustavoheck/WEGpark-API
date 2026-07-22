@@ -36,6 +36,6 @@ public class CollaboratorService {
 
         parkUserRepository.save(collaborator);
 
-        event.futureResponse().complete(new RegisterAccountResponseDTO(collaborator.getEmail()));
+        event.futureResponse().complete(new RegisterAccountResponseDTO(collaborator.getUuid(), collaborator.getEmail()));
     }
 }

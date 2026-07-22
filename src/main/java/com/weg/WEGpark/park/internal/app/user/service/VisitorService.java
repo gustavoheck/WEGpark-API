@@ -24,6 +24,6 @@ public class VisitorService {
         visitor.setUserType(ParkUserType.VISITOR);
         parkUserRepository.save(visitor);
 
-        event.futureResponse().complete(new RegisterAccountResponseDTO(event.email()));
+        event.futureResponse().complete(new RegisterAccountResponseDTO(visitor.getUuid(), event.email()));
     }
 }

@@ -17,7 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class AuthService {
+public class LoginService {
 
     private final AuthenticationManager authenticationManager;
     private final TokenConfig tokenConfig;

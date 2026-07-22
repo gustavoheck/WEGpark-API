@@ -21,6 +21,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 @Service
@@ -53,11 +54,12 @@ public class RegisterService {
             canRegister = true;
         }
         if (canRegister) {
-            RegisterAccountResponseDTO response = registerParkAccount(request.defaults());
+            RegisterAccountResponseDTO response = registerParkAccount(request.defaults(), futureResponse);
             applicationEventPublisher.publishEvent(eventMapper.toCollaboratorRegisteredEvent(request, futureResponse));
             return response;
         }
-        throw new AlreadyHaveAccountException("An account with this badge number is already registered!");
+        futureResponse.completeExceptionally(new AlreadyHaveAccountException("An account with this badge number is already registered!"));
+        return null;
     }
 
     @Transactional
@@ -67,20 +69,26 @@ public class RegisterService {
             Boolean alreadyExists
     ) {
         if (!alreadyExists) {
-            RegisterAccountResponseDTO response = registerParkAccount(request.defaults());
+            RegisterAccountResponseDTO response = registerParkAccount(request.defaults(), futureResponse);
             applicationEventPublisher.publishEvent(eventMapper.toVisitorRegisteredEvent(request, futureResponse));
             return response;
         }
-        throw new AlreadyHaveAccountException("An account with this email is already registered!");
+        futureResponse.completeExceptionally(new AlreadyHaveAccountException("An account with this email is already registered!"));
+        return null;
     }
 
-    private RegisterAccountResponseDTO registerParkAccount (RegisterAccountRequestDTO request) {
+    private RegisterAccountResponseDTO registerParkAccount (
+            RegisterAccountRequestDTO request,
+            CompletableFuture<RegisterAccountResponseDTO> futureResponse) {
         User user = userMapper.toEntity(request);
 
-        Role role = roleRepository.findByRole(RolesType.PARK.toString())
-                .orElseThrow(() -> new NotFoundException("Role PARK was not encountered"));
+        Optional<Role> role = roleRepository.findByRole(RolesType.PARK.toString());
 
-        user.setRole(role);
+        if (role.isEmpty()) {
+            futureResponse.completeExceptionally(new NotFoundException("Any PARK role was found"));
+        }
+
+        user.setRole(role.get());
         user.setPassword(securityConfig.passwordEncoder().encode(user.getPassword()));
 
         userRepository.save(user);
@@ -96,7 +104,7 @@ public class RegisterService {
         return futureResponse;
     }
 
-    public CompletableFuture<RegisterAccountResponseDTO> checkCollaboratorBadgeNumberBeforeRegistering
+    public CompletableFuture<RegisterAccountResponseDTO> checkBadgeNumberBeforeRegistering
             (RegisterCollaboratorRequestDTO request)
     {
         CompletableFuture<RegisterAccountResponseDTO> futureResponse = new CompletableFuture<>();
