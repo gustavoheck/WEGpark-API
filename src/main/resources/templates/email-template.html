@@ -1,0 +1,126 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org" xmlns:v="urn:schemas-microsoft-com:vml"
+      xmlns:o="urn:schemas-microsoft-com:office:office">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title th:text="${subject}">Aviso do Sistema</title>
+    <!--[if gte mso 9]>
+    <xml>
+        <o:OfficeDocumentSettings>
+            <o:AllowPNG/>
+            <o:PixelsPerInch>96</o:PixelsPerInch>
+        </o:OfficeDocumentSettings>
+    </xml>
+    <![endif]-->
+    <style type="text/css">
+        body, table, td, a { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
+        table, td { mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
+        img { -ms-interpolation-mode: bicubic; border: 0; height: auto; line-height: 100%; outline: none; text-decoration: none; }
+        table { border-collapse: collapse !important; }
+        body { height: 100% !important; margin: 0 !important; padding: 0 !important; width: 100% !important; background-color: #FCFCFD; }
+
+        a[x-apple-data-detectors] {
+          color: inherit !important;
+          text-decoration: none !important;
+          font-size: inherit !important;
+          font-family: inherit !important;
+          font-weight: inherit !important;
+          line-height: inherit !important;
+        }
+
+        @media screen and (max-width: 600px) {
+          .container { width: 100% !important; padding-left: 10px !important; padding-right: 10px !important; }
+          .content-padding { padding: 24px !important; }
+        }
+    </style>
+</head>
+<body style="margin: 0; padding: 0; background-color: #FCFCFD; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+
+<span th:text="${notificationSummary}"
+      style="color: transparent; display: none; height: 0; max-height: 0; max-width: 0; opacity: 0; overflow: hidden; mso-hide: all; visibility: hidden; width: 0;">
+    Você possui uma nova notificação do sistema.
+  </span>
+
+<table border="0" cellpadding="0" cellspacing="0" width="100%" role="presentation"
+       style="background-color: #FCFCFD; table-layout: fixed;">
+    <tr>
+        <td align="center" style="padding: 40px 0;">
+
+            <!--[if (gte mso 9)|(IE)]>
+            <table align="center" border="0" cellspacing="0" cellpadding="0" width="600">
+                <tr>
+                    <td align="center" valign="top" width="600">
+            <![endif]-->
+
+            <table border="0" cellpadding="0" cellspacing="0" width="100%" class="container"
+                   style="max-width: 600px; margin: 0 auto;">
+
+                <tr>
+                    <td align="center" style="padding-bottom: 28px;">
+                        <a th:href="${systemUrl}" target="_blank" style="text-decoration: none;">
+                            <img th:src="${isEmail == true} ? 'cid:logoWegpark' : @{/images/logo-white.png}"
+                                 src="/images/logo-white.png" alt="Logo WEGpark" width="220"
+                                 style="display: block; width: 220px; max-width: 220px; height: auto; border: 0; margin: 0 auto;">
+                        </a>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td align="left" class="content-padding"
+                        style="background-color: #F7F7F8; border-radius: 8px; border: 1px solid #CCCCCD; padding: 40px;">
+
+                        <table border="0" cellpadding="0" cellspacing="0" width="100%" role="presentation">
+
+                            <tr>
+                                <td align="left"
+                                    style="padding-bottom: 16px; font-size: 20px; font-weight: bold; color: #191B1F; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+                                    Olá, <span th:text="${userName}">Usuário</span>!
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td valign="top"
+                                    style="padding-bottom: 24px; font-size: 15px; line-height: 24px; color: #191B1F; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+                                    <p th:text="${noticeMessage}" style="margin: 0;">
+                                        Você recebeu uma notificação relacionada ao seu carro ou ao estacionamento da
+                                        empresa, clique no botão e vá para a notificação no sistema.
+                                    </p>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td valign="top"
+                                    style="font-size: 13px; line-height: 20px; color: #444449; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; border-top: 1px solid #CCCCCD; padding-top: 20px;">
+                                    Se você não reconhece esta ação ou precisa de ajuda, entre em contato com o suporte.
+                                </td>
+                            </tr>
+
+                        </table>
+
+                    </td>
+                </tr>
+
+                <tr>
+                    <td align="center"
+                        style="padding-top: 30px; font-size: 12px; line-height: 18px; color: #444449; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+                        Esta é uma mensagem automática do sistema <strong th:text="${systemName}">WEGpark</strong>. Por
+                        favor, não responda a este e-mail.
+                    </td>
+                </tr>
+
+            </table>
+
+            <!--[if (gte mso 9)|(IE)]>
+            </td>
+            </tr>
+            </table>
+            <![endif]-->
+
+        </td>
+    </tr>
+</table>
+
+</body>
+</html>
