@@ -41,10 +41,9 @@ public class User implements UserDetails {
     @JoinColumn(name = "id_role")
     private Role role;
 
-    public User(String email, String password, Boolean active) {
+    public User(String email, String password) {
         this.email = email;
         this.password = password;
-        this.active = active;
     }
 
     @Override

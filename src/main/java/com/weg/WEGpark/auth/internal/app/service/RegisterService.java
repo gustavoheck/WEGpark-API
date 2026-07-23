@@ -91,6 +91,7 @@ public class RegisterService {
 
         user.setRole(role.get());
         user.setPassword(securityConfig.passwordEncoder().encode(user.getPassword()));
+        user.setActive(false);
 
         userRepository.save(user);
 
