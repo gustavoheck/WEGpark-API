@@ -77,6 +77,7 @@ public class RegisterService {
         return null;
     }
 
+    @Transactional
     private RegisterAccountResponseDTO registerParkAccount (
             RegisterAccountRequestDTO request,
             CompletableFuture<RegisterAccountResponseDTO> futureResponse) {
@@ -96,6 +97,7 @@ public class RegisterService {
         return userMapper.toResponse(user);
     }
 
+    @Transactional
     public CompletableFuture<RegisterAccountResponseDTO> checkVisitorAccountsBeforeRegistering
             (RegisterVisitorRequestDTO request)
     {
@@ -104,6 +106,7 @@ public class RegisterService {
         return futureResponse;
     }
 
+    @Transactional
     public CompletableFuture<RegisterAccountResponseDTO> checkBadgeNumberBeforeRegistering
             (RegisterCollaboratorRequestDTO request)
     {

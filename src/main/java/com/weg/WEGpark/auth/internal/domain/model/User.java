@@ -61,7 +61,7 @@ public class User implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return this.active;
+        return true; // Change after do email validation
     }
 
     @Override
