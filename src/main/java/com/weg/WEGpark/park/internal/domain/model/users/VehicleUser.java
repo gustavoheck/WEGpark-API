@@ -1,5 +1,6 @@
 package com.weg.WEGpark.park.internal.domain.model.users;
 
+import com.weg.WEGpark.park.internal.domain.model.occurrence.Occurrence;
 import com.weg.WEGpark.park.internal.domain.model.vehicle.Vehicle;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -32,6 +33,15 @@ public class VehicleUser {
 
     @Column(nullable = false)
     private Boolean active;
+
+    @ManyToMany
+    @JoinTable (
+            schema = "park",
+            name = "vehicle_user_occurrence",
+            joinColumns = @JoinColumn(name = "id_parkuser_vehicle"),
+            inverseJoinColumns = @JoinColumn(name = "id_occurrence")
+    )
+    private Occurrence occurrences;
 
     public VehicleUser(Boolean proprietary, Boolean active) {
         this.proprietary = proprietary;
