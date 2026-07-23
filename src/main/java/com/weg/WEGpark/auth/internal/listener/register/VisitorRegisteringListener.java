@@ -1,8 +1,6 @@
 package com.weg.WEGpark.auth.internal.listener.register;
 
-import com.weg.WEGpark.auth.ValidateVisitorEmailEvent;
 import com.weg.WEGpark.auth.internal.app.service.RegisterService;
-import com.weg.WEGpark.park.ValidatedCollaboratorEvent;
 import com.weg.WEGpark.park.ValidatedVisitorEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.event.EventListener;

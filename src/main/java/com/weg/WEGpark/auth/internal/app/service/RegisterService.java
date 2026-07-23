@@ -1,7 +1,7 @@
 package com.weg.WEGpark.auth.internal.app.service;
 
-import com.weg.WEGpark.auth.ValidateBadgeNumberEvent;
-import com.weg.WEGpark.auth.ValidateVisitorEmailEvent;
+import com.weg.WEGpark.auth.ValidateCollaboratorEvent;
+import com.weg.WEGpark.auth.ValidateVisitorEvent;
 import com.weg.WEGpark.auth.internal.app.exception.AlreadyHaveAccountException;
 import com.weg.WEGpark.auth.internal.app.mapper.EventMapper;
 import com.weg.WEGpark.auth.internal.app.mapper.UserMapper;
@@ -58,7 +58,7 @@ public class RegisterService {
             applicationEventPublisher.publishEvent(eventMapper.toCollaboratorRegisteredEvent(request, futureResponse, user));
             return userMapper.toResponse(user);
         }
-        futureResponse.completeExceptionally(new AlreadyHaveAccountException("An account with this badge number is already registered!"));
+        futureResponse.completeExceptionally(new AlreadyHaveAccountException("An account with this badge number or email is already registered!"));
         return null;
     }
 
@@ -104,7 +104,7 @@ public class RegisterService {
             (RegisterVisitorRequestDTO request)
     {
         CompletableFuture<RegisterAccountResponseDTO> futureResponse = new CompletableFuture<>();
-        applicationEventPublisher.publishEvent(new ValidateVisitorEmailEvent(futureResponse, request));
+        applicationEventPublisher.publishEvent(new ValidateVisitorEvent(futureResponse, request));
         return futureResponse;
     }
 
@@ -113,7 +113,7 @@ public class RegisterService {
             (RegisterCollaboratorRequestDTO request)
     {
         CompletableFuture<RegisterAccountResponseDTO> futureResponse = new CompletableFuture<>();
-        applicationEventPublisher.publishEvent(new ValidateBadgeNumberEvent(futureResponse, request));
+        applicationEventPublisher.publishEvent(new ValidateCollaboratorEvent(futureResponse, request));
         return futureResponse;
     }
 }

@@ -7,5 +7,5 @@ import java.util.Optional;
 
 public interface CollaboratorRepository extends JpaRepository<Collaborator, Long> {
 
-    Optional<Collaborator> findByBadgeNumber (String badgeNumber);
+    Optional<Collaborator> findByBadgeNumberOrEmail (String badgeNumber, String email);
 }

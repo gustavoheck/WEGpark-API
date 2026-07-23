@@ -1,6 +1,6 @@
 package com.weg.WEGpark.park.internal.listener.validation;
 
-import com.weg.WEGpark.auth.ValidateBadgeNumberEvent;
+import com.weg.WEGpark.auth.ValidateCollaboratorEvent;
 import com.weg.WEGpark.park.ValidatedCollaboratorEvent;
 import com.weg.WEGpark.park.internal.app.user.service.CollaboratorService;
 import lombok.RequiredArgsConstructor;
@@ -10,14 +10,14 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class ValidateBadgeNumberListener {
+public class ValidateCollaboratorListener {
 
     private final CollaboratorService collaboratorService;
     private final ApplicationEventPublisher applicationEventPublisher;
 
     @EventListener
-    public void validateCollaborator (ValidateBadgeNumberEvent event) {
-        Long id = collaboratorService.verifyCollaboratorToRegisterByBadgeNumber(event.request().badgeNumber());
+    public void validateCollaborator (ValidateCollaboratorEvent event) {
+        Long id = collaboratorService.verifyCollaboratorToRegister(event.request().badgeNumber(), event.request().defaults().email());
         applicationEventPublisher.publishEvent(new ValidatedCollaboratorEvent(event.futureResponse(), event.request(), id));
     }
 }

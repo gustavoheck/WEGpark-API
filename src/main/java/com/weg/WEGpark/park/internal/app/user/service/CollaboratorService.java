@@ -23,8 +23,8 @@ public class CollaboratorService {
     private final ParkUserRepository parkUserRepository;
     private final CollaboratorMapper collaboratorMapper;
 
-    public Long verifyCollaboratorToRegisterByBadgeNumber (String badgeNumber) {
-        Optional<Collaborator> collaborator = collaboratorRepository.findByBadgeNumber(badgeNumber);
+    public Long verifyCollaboratorToRegister (String badgeNumber, String email) {
+        Optional<Collaborator> collaborator = collaboratorRepository.findByBadgeNumberOrEmail(badgeNumber, email);
 
         return collaborator.map(ParkUser::getId).orElse(null);
     }
