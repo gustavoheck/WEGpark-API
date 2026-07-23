@@ -96,7 +96,14 @@ public class VehicleService {
                 .orElseThrow(() -> new NotFoundException("Any park user was found by the logged email"));
         Vehicle vehicle = vehicleRepository.findByPlate(request.plate())
                         .orElseThrow(() -> new NotFoundException("Any vehicle was found by %s plate".formatted(request.plate())));
-        applicationEventPublisher.publishEvent(eventMapper.toEvent(loggedUser, vehicle));
+        ParkUser vehicleOwner = vehicle
+                .getParkUsers()
+                .stream()
+                .filter(vehicleUser -> vehicleUser.getProprietary())
+                .toList()
+                .getFirst()
+                .getParkUser();
+        applicationEventPublisher.publishEvent(eventMapper.toEvent(loggedUser, vehicle, vehicleOwner));
     }
 
     public List<GetVehicleResponseDTO> findVehicle (FilterVehicleRequestDTO filter) {
