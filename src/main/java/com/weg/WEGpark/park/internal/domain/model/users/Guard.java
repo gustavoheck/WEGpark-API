@@ -1,12 +1,13 @@
 package com.weg.WEGpark.park.internal.domain.model.users;
 
-import com.weg.WEGpark.park.internal.domain.enums.user.ParkUserType;
+import com.weg.WEGpark.park.internal.domain.model.occurrence.Occurrence;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -21,6 +22,15 @@ public class Guard extends Collaborator{
 
     @Column(nullable = false)
     private String boss;
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "guard_occurrence",
+            schema = "park",
+            joinColumns = @JoinColumn(name = "id_guard"),
+            inverseJoinColumns = @JoinColumn(name = "id_occurrence")
+    )
+    private List<Occurrence> occurrences;
 
     public Guard(Long id, UUID uuid, String email, String telephone,
                  String name, String badgeNumber, String location, String boss) {

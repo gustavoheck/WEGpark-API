@@ -2,6 +2,8 @@ package com.weg.WEGpark.park.internal.domain.model.occurrence;
 
 import com.weg.WEGpark.park.internal.domain.enums.occurrence.OccurrenceType;
 import com.weg.WEGpark.park.internal.domain.enums.user.ParkUserType;
+import com.weg.WEGpark.park.internal.domain.model.users.Guard;
+import com.weg.WEGpark.park.internal.domain.model.users.VehicleUser;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -43,6 +45,12 @@ public class Occurrence {
     @Enumerated(EnumType.STRING)
     @Column(name = "occurrence_type", insertable = false, updatable = false, nullable = false)
     private OccurrenceType occurrenceType;
+
+    @ManyToMany(fetch = FetchType.LAZY, mappedBy = "occurrences")
+    private Guard guard;
+
+    @ManyToMany(fetch = FetchType.LAZY, mappedBy = "occurrences")
+    private VehicleUser vehicleUser;
 
     public Occurrence(String location, String gate, OccurrenceType occurrenceType) {
         this.location = location;
