@@ -10,6 +10,8 @@ public record LoginRequestDTO(
         String email,
 
         @NotBlank(message = "The email can not be null or blank")
-        String password
+        String password,
+
+        String role
 ) {
 }
