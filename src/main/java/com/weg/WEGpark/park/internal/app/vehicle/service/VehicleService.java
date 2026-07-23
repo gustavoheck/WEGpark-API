@@ -1,5 +1,9 @@
 package com.weg.WEGpark.park.internal.app.vehicle.service;
 
+import com.weg.WEGpark.notification.FindAssociationNotificationResponse;
+import com.weg.WEGpark.park.FindAssociationNotificationEvent;
+import com.weg.WEGpark.park.internal.app.user.mapper.ParkUserMapper;
+import com.weg.WEGpark.park.internal.app.vehicle.exception.NotificationNotFoundException;
 import com.weg.WEGpark.park.internal.app.vehicle.mapper.EventMapper;
 import com.weg.WEGpark.park.internal.domain.model.users.ParkUser;
 import com.weg.WEGpark.park.internal.domain.model.users.VehicleUser;
@@ -12,9 +16,7 @@ import com.weg.WEGpark.shared.exception.NotFoundException;
 import com.weg.WEGpark.park.internal.app.shared.util.FilterUtil;
 import com.weg.WEGpark.park.internal.app.vehicle.exception.MoreThenOneFilterException;
 import com.weg.WEGpark.park.internal.app.vehicle.exception.VehicleAlreadyRegisteredException;
-import com.weg.WEGpark.park.internal.app.vehicle.mapper.CreateVehicleMapper;
-import com.weg.WEGpark.park.internal.app.vehicle.mapper.GetVehicleMapper;
-import com.weg.WEGpark.park.internal.app.vehicle.mapper.UpdateVehicleMapper;
+import com.weg.WEGpark.park.internal.app.vehicle.mapper.VehicleMapper;
 import com.weg.WEGpark.park.internal.domain.model.vehicle.Vehicle;
 import com.weg.WEGpark.park.internal.dto.vehicle.filter.FilterVehicleRequestDTO;
 import com.weg.WEGpark.park.internal.infra.repository.VehicleRepository;
@@ -29,15 +31,15 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class VehicleService {
 
-    private final CreateVehicleMapper createVehicleMapper;
-    private final GetVehicleMapper getVehicleMapper;
-    private final UpdateVehicleMapper updateVehicleMapper;
+    private final VehicleMapper vehicleMapper;
+    private final ParkUserMapper parkUserMapper;
 
     private final VehicleRepository vehicleRepository;
     private final VehicleUserRepository vehicleUserRepository;
@@ -50,7 +52,7 @@ public class VehicleService {
     public CreateVehicleResponseDTO registerVehicle (CreateVehicleRequestDTO request, UserDetails userDetails) {
         Optional<Vehicle> findedVehicle = vehicleRepository.findByPlate(request.plate());
         if (findedVehicle.isEmpty()) {
-            Vehicle vehicle = createVehicleMapper.toEntity(request);
+            Vehicle vehicle = vehicleMapper.toEntity(request);
 
             String plate = vehicle.getPlate();
             plate = plate.toUpperCase().replace("-", "").trim();
@@ -69,26 +71,37 @@ public class VehicleService {
 
             vehicleUserRepository.save(vehicleUser);
 
-            return createVehicleMapper.toResponse(vehicle);
+            return vehicleMapper.toCreateResponse(vehicle);
         }
         throw new VehicleAlreadyRegisteredException
                 ("This vehicle is already registered, try to vinculate with the owner, or dismiss");
     }
 
-    @Transactional // Need refactoring
+    @Transactional
     public AssociateWithVehicleResponseDTO associateToRegisteredVehicle
-            (AssociateWithVehicleRequestDTO request, UserDetails userDetails) {
-        Vehicle vehicleToAssociate = vehicleRepository.findByPlate(request.plate())
-                .orElseThrow(() -> new NotFoundException("Any vehicle with the %s plate was found".formatted(request.plate())));
-        ParkUser userToAssociate = parkUserRepository.findByUuid(UUID.fromString(request.uuid()))
-                .orElseThrow(() -> new NotFoundException("Any park user was found by the logged email"));
+            (Long idNotification) {
 
-        VehicleUser vehicleUser = new VehicleUser(loggedUser, vehicleToAssociate);
-        vehicleUser.setProprietary(false);
+        CompletableFuture<FindAssociationNotificationResponse> eventResponse = new CompletableFuture<>();
+        applicationEventPublisher.publishEvent(new FindAssociationNotificationEvent(eventResponse, idNotification));
 
-        vehicleUserRepository.save(vehicleUser);
+        Vehicle vehicleToAssociate;
+        ParkUser userToAssociate;
 
-        return createVehicleMapper.toResponse(vehicleToAssociate);
+        try {
+            vehicleToAssociate = vehicleRepository.findById(eventResponse.get().idVehicleToAssociate())
+                    .orElseThrow(() -> new NotFoundException("Any vehicle with this id was found"));
+            userToAssociate = parkUserRepository.findById(eventResponse.get().idUserToAssociate())
+                    .orElseThrow(() -> new NotFoundException("Any park user was found by the logged email"));
+
+            VehicleUser vehicleUser = new VehicleUser(userToAssociate, vehicleToAssociate);
+            vehicleUser.setProprietary(false);
+
+            vehicleUserRepository.save(vehicleUser);
+        } catch (Exception e) {
+            throw new NotificationNotFoundException("Error trying to find association notification");
+        }
+
+        return parkUserMapper.toAssociationResponse(userToAssociate);
     }
 
     public void SendNotificationForAssociate (AssociationNotificationRequestDTO request, UserDetails userDetails) {
@@ -125,7 +138,7 @@ public class VehicleService {
 
             return vehicleList
                     .stream()
-                    .map(getVehicleMapper::toResponse)
+                    .map(vehicleMapper::toGetResponse)
                     .toList();
         }
         throw new MoreThenOneFilterException("You can not use more than one filter");
@@ -137,10 +150,10 @@ public class VehicleService {
         Vehicle vehicle = vehicleRepository.findByUuid(uuid)
                 .orElseThrow(() -> new NotFoundException(("The vehicle was not found by %s uuid".formatted(uuid))));
 
-        updateVehicleMapper.updateFromDto(request, vehicle);
+        vehicleMapper.updateFromDto(request, vehicle);
 
         vehicleRepository.save(vehicle);
 
-        return getVehicleMapper.toResponse(vehicle);
+        return vehicleMapper.toGetResponse(vehicle);
     }
 }
