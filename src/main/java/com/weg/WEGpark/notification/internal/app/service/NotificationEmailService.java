@@ -2,6 +2,7 @@ package com.weg.WEGpark.notification.internal.app.service;
 
 import java.nio.charset.StandardCharsets;
 
+import com.weg.WEGpark.notification.internal.app.exception.ImageNotEncounteredException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -23,8 +24,13 @@ public class NotificationEmailService {
             String destinationEmail,
             String userName,
             String subject,
-            String warningMessage
+            String warningMessage,
+            Boolean useButton,
+            String buttonUrl,
+            String buttonText
     ) throws MessagingException {
+
+        String htmlContent;
 
         Context context = new Context();
         context.setVariable("isEmail", true);
@@ -34,8 +40,13 @@ public class NotificationEmailService {
         context.setVariable("urlSistema", "https://wegpark.com.br");
         context.setVariable("nomeUsuario", userName);
         context.setVariable("mensagemAviso", warningMessage);
-
-        String htmlContent = templateEngine.process("index", context);
+        if (useButton == null || useButton) {
+            context.setVariable("urlAcao", buttonUrl);
+            context.setVariable("textoBotao", buttonText != null ? buttonText : "Ver Notificação");
+            htmlContent = templateEngine.process("email-template-button", context);
+        } else {
+            htmlContent = templateEngine.process("email-template", context);
+        }
 
         MimeMessage message = mailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(
@@ -51,7 +62,7 @@ public class NotificationEmailService {
         try {
             helper.addInline("logoWegpark", new ClassPathResource("static/images/logo-white.png"));
         } catch (Exception e) {
-            System.err.println("Aviso: Imagem da logo não encontrada em static/images/logo.png");
+            throw new ImageNotEncounteredException();
         }
 
         mailSender.send(message);
