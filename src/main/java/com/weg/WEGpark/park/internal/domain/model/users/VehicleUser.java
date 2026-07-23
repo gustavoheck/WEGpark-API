@@ -43,8 +43,9 @@ public class VehicleUser {
     )
     private Occurrence occurrences;
 
-    public VehicleUser(Boolean proprietary, Boolean active) {
-        this.proprietary = proprietary;
-        this.active = active;
+    public VehicleUser(ParkUser parkUser, Vehicle vehicle) {
+        this.parkUser = parkUser;
+        this.vehicle = vehicle;
+        this.active = true;
     }
 }

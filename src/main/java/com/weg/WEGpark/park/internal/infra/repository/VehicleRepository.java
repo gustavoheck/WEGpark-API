@@ -14,5 +14,7 @@ public interface VehicleRepository extends JpaRepository<Vehicle, Long>, JpaSpec
 
     Optional<Vehicle> findByPlate (String plate);
 
+    Boolean existsByPlate (String plate);
+
     Optional<Vehicle> findByUuid (UUID uuid);
 }
