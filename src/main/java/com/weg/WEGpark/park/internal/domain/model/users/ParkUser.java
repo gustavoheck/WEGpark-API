@@ -42,14 +42,8 @@ public class ParkUser {
     @Column(name = "user_type", insertable = false, updatable = false, nullable = false)
     private ParkUserType userType;
 
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(
-            name = "parkuser_vehicle",
-            schema = "park",
-            joinColumns = @JoinColumn(name = "id_parkuser"),
-            inverseJoinColumns = @JoinColumn(name = "id_vehicle")
-    )
-    private List<Vehicle> vehicles;
+    @OneToMany(mappedBy = "parkUser")
+    private List<VehicleUser> vehicles;
 
     public ParkUser(Long id, UUID uuid, String email, String telephone, String name) {
         this.id = id;
