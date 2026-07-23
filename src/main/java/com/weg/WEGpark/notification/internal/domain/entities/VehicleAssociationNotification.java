@@ -23,8 +23,8 @@ public class VehicleAssociationNotification extends Notification {
     @Column(name = "id_user_to_associate")
     private Long idUserToAssociate;
 
-    public VehicleAssociationNotification(Long idNotificatedUser, String message, Long idVehicleToAssociate, Long idUserToAssociate) {
-        super(idNotificatedUser, message, NotificationType.VEHICLE_ASSOCIATION);
+    public VehicleAssociationNotification(Long idNotificatedUser, Long idVehicleToAssociate, Long idUserToAssociate) {
+        super(idNotificatedUser, NotificationType.VEHICLE_ASSOCIATION);
         this.idVehicleToAssociate = idVehicleToAssociate;
         this.idUserToAssociate = idUserToAssociate;
     }
