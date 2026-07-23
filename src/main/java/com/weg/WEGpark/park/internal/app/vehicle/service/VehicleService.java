@@ -49,29 +49,37 @@ public class VehicleService {
     private final EventMapper eventMapper;
 
     @Transactional
-    public CreateVehicleResponseDTO registerVehicle (CreateVehicleRequestDTO request, UserDetails userDetails) {
+    public CreateVehicleResponseDTO registerVehicle(CreateVehicleRequestDTO request, UserDetails userDetails) {
         Optional<Vehicle> findedVehicle = vehicleRepository.findByPlate(request.plate());
         if (findedVehicle.isEmpty()) {
-            Vehicle vehicle = vehicleMapper.toEntity(request);
-
-            String plate = vehicle.getPlate();
-            plate = plate.toUpperCase().replace("-", "").trim();
-            vehicle.setPlate(plate);
-
-            if (vehicleRepository.existsByPlate(vehicle.getPlate()))
-                throw new VehicleAlreadyRegisteredException
-                        ("A vehicle with the %s plate is already registered".formatted(vehicle.getPlate()));
-
-            vehicleRepository.saveAndFlush(vehicle);
             ParkUser loggedUser = parkUserRepository.findByEmail(userDetails.getUsername())
                     .orElseThrow(() -> new NotFoundException("Any park user was found by the logged email"));
 
-            VehicleUser vehicleUser = new VehicleUser(loggedUser, vehicle);
-            vehicleUser.setProprietary(true);
+            Optional<VehicleUser> possibleUser = vehicleUserRepository.findByParkUserId(loggedUser.getId());
+            if (possibleUser.isPresent()) {
+                possibleUser.get().setActive(true);
+                possibleUser.get().setProprietary(true);
+            } else {
 
-            vehicleUserRepository.save(vehicleUser);
+                Vehicle vehicle = vehicleMapper.toEntity(request);
 
-            return vehicleMapper.toCreateResponse(vehicle);
+                String plate = vehicle.getPlate();
+                plate = plate.toUpperCase().replace("-", "").trim();
+                vehicle.setPlate(plate);
+
+                if (vehicleRepository.existsByPlate(vehicle.getPlate()))
+                    throw new VehicleAlreadyRegisteredException
+                            ("A vehicle with the %s plate is already registered".formatted(vehicle.getPlate()));
+
+                vehicleRepository.saveAndFlush(vehicle);
+
+                VehicleUser vehicleUser = new VehicleUser(loggedUser, vehicle);
+                vehicleUser.setProprietary(true);
+
+                vehicleUserRepository.save(vehicleUser);
+
+                return vehicleMapper.toCreateResponse(vehicle);
+            }
         }
         throw new VehicleAlreadyRegisteredException
                 ("This vehicle is already registered, try to vinculate with the owner, or dismiss");
@@ -88,15 +96,21 @@ public class VehicleService {
         ParkUser userToAssociate;
 
         try {
-            vehicleToAssociate = vehicleRepository.findById(eventResponse.get().idVehicleToAssociate())
-                    .orElseThrow(() -> new NotFoundException("Any vehicle with this id was found"));
             userToAssociate = parkUserRepository.findById(eventResponse.get().idUserToAssociate())
                     .orElseThrow(() -> new NotFoundException("Any park user was found by the logged email"));
 
-            VehicleUser vehicleUser = new VehicleUser(userToAssociate, vehicleToAssociate);
-            vehicleUser.setProprietary(false);
+            Optional<VehicleUser> possibleUser = vehicleUserRepository.findByParkUserId(userToAssociate.getId());
+            if (possibleUser.isPresent()) {
+                possibleUser.get().setActive(true);
+                possibleUser.get().setProprietary(true);
+            } else {
+                vehicleToAssociate = vehicleRepository.findById(eventResponse.get().idVehicleToAssociate())
+                        .orElseThrow(() -> new NotFoundException("Any vehicle with this id was found"));
 
-            vehicleUserRepository.save(vehicleUser);
+                VehicleUser vehicleUser = new VehicleUser(userToAssociate, vehicleToAssociate);
+                vehicleUser.setProprietary(false);
+                vehicleUserRepository.save(vehicleUser);
+            }
         } catch (Exception e) {
             throw new NotificationNotFoundException("Error trying to find association notification");
         }
@@ -104,11 +118,11 @@ public class VehicleService {
         return parkUserMapper.toAssociationResponse(userToAssociate);
     }
 
-    public void SendNotificationForAssociate (AssociationNotificationRequestDTO request, UserDetails userDetails) {
+    public void SendNotificationForAssociate(AssociationNotificationRequestDTO request, UserDetails userDetails) {
         ParkUser loggedUser = parkUserRepository.findByEmail(userDetails.getUsername())
                 .orElseThrow(() -> new NotFoundException("Any park user was found by the logged email"));
         Vehicle vehicle = vehicleRepository.findByPlate(request.plate())
-                        .orElseThrow(() -> new NotFoundException("Any vehicle was found by %s plate".formatted(request.plate())));
+                .orElseThrow(() -> new NotFoundException("Any vehicle was found by %s plate".formatted(request.plate())));
         ParkUser vehicleOwner = vehicle
                 .getParkUsers()
                 .stream()
@@ -119,11 +133,11 @@ public class VehicleService {
         applicationEventPublisher.publishEvent(eventMapper.toEvent(loggedUser, vehicle, vehicleOwner));
     }
 
-    public List<GetVehicleResponseDTO> findVehicle (FilterVehicleRequestDTO filter) {
+    public List<GetVehicleResponseDTO> findVehicle(FilterVehicleRequestDTO filter) {
         if (FilterUtil.checkMoreThanOneFilter(filter)) {
             String plate = null;
 
-            if (filter.plate() != null && !filter.plate().isBlank()){
+            if (filter.plate() != null && !filter.plate().isBlank()) {
                 plate = filter.plate().toUpperCase().replace("-", "").trim();
             }
 

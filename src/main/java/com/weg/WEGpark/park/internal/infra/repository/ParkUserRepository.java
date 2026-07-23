@@ -15,5 +15,4 @@ public interface ParkUserRepository extends JpaRepository<ParkUser, Long> {
 
     Optional<ParkUser> findByEmail(String email);
 
-    Optional<ParkUser> findByUuid (UUID uuid);
 }
