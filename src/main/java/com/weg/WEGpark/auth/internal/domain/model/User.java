@@ -38,6 +38,7 @@ public class User implements UserDetails {
     private Boolean active;
 
     @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "id_role")
     private Role role;
 
     public User(String email, String password, Boolean active) {
