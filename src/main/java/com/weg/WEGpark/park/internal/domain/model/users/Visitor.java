@@ -14,7 +14,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @Getter
 @Setter
-@DiscriminatorValue("COLLABORATOR")
+@DiscriminatorValue("VISITOR")
 @PrimaryKeyJoinColumn(name = "id")
 @Table(name = "visitor", schema = "park")
 public class Visitor extends ParkUser {
