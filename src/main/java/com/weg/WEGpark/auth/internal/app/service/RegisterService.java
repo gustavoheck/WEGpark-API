@@ -54,9 +54,9 @@ public class RegisterService {
             canRegister = true;
         }
         if (canRegister) {
-            RegisterAccountResponseDTO response = registerParkAccount(request.defaults(), futureResponse);
-            applicationEventPublisher.publishEvent(eventMapper.toCollaboratorRegisteredEvent(request, futureResponse));
-            return response;
+            User user = registerParkAccount(request.defaults(), futureResponse);
+            applicationEventPublisher.publishEvent(eventMapper.toCollaboratorRegisteredEvent(request, futureResponse, user));
+            return userMapper.toResponse(user);
         }
         futureResponse.completeExceptionally(new AlreadyHaveAccountException("An account with this badge number is already registered!"));
         return null;
@@ -69,16 +69,16 @@ public class RegisterService {
             Boolean alreadyExists
     ) {
         if (!alreadyExists) {
-            RegisterAccountResponseDTO response = registerParkAccount(request.defaults(), futureResponse);
-            applicationEventPublisher.publishEvent(eventMapper.toVisitorRegisteredEvent(request, futureResponse));
-            return response;
+            User user = registerParkAccount(request.defaults(), futureResponse);
+            applicationEventPublisher.publishEvent(eventMapper.toVisitorRegisteredEvent(request, futureResponse, user));
+            return userMapper.toResponse(user);
         }
         futureResponse.completeExceptionally(new AlreadyHaveAccountException("An account with this email is already registered!"));
         return null;
     }
 
     @Transactional
-    private RegisterAccountResponseDTO registerParkAccount (
+    private User registerParkAccount (
             RegisterAccountRequestDTO request,
             CompletableFuture<RegisterAccountResponseDTO> futureResponse) {
         User user = userMapper.toEntity(request);
@@ -87,15 +87,16 @@ public class RegisterService {
 
         if (role.isEmpty()) {
             futureResponse.completeExceptionally(new NotFoundException("Any PARK role was found"));
+            return null;
         }
 
         user.setRole(role.get());
         user.setPassword(securityConfig.passwordEncoder().encode(user.getPassword()));
         user.setActive(false);
 
-        userRepository.save(user);
+        userRepository.saveAndFlush(user);
 
-        return userMapper.toResponse(user);
+        return user;
     }
 
     @Transactional

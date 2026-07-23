@@ -7,6 +7,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.UUID;
+
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
@@ -22,8 +24,9 @@ public class Visitor extends ParkUser {
     @Column(nullable = false)
     private String cpf;
 
-    public Visitor(String email, String telephone, String name, ParkUserType userType, String company, String cpf) {
-        super(email, telephone, name, userType);
+    public Visitor(Long id, UUID uuid, String email, String telephone,
+                   String name, String company, String cpf) {
+        super(id, uuid, email, telephone, name);
         this.company = company;
         this.cpf = cpf;
     }

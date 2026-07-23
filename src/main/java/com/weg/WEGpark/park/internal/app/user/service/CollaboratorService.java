@@ -31,7 +31,6 @@ public class CollaboratorService {
 
     public void registerCollaborator (CollaboratorRegisteredEvent event) {
         Collaborator collaborator = collaboratorMapper.toEntity(event);
-
         collaborator.setUserType(ParkUserType.COLLABORATOR);
 
         parkUserRepository.save(collaborator);
