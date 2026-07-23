@@ -2,9 +2,12 @@ package com.weg.WEGpark;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 
 @SpringBootApplication
-public class WeGparkApplication {
+@ConfigurationPropertiesScan
+public class
+WeGparkApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(WeGparkApplication.class, args);

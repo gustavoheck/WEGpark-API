@@ -1,4 +1,4 @@
-package com.weg.WEGpark.park.internal.app.shared.exception;
+package com.weg.WEGpark.shared.exception;
 
 public class NotFoundException extends RuntimeException {
     public NotFoundException(String message) {

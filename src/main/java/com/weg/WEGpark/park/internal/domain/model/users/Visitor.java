@@ -7,12 +7,14 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.UUID;
+
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
 @Setter
-@DiscriminatorValue("COLLABORATOR")
+@DiscriminatorValue("VISITOR")
 @PrimaryKeyJoinColumn(name = "id")
 @Table(name = "visitor", schema = "park")
 public class Visitor extends ParkUser {
@@ -22,8 +24,9 @@ public class Visitor extends ParkUser {
     @Column(nullable = false)
     private String cpf;
 
-    public Visitor(String email, String telephone, String name, ParkUserType userType, String company, String cpf) {
-        super(email, telephone, name, userType);
+    public Visitor(Long id, UUID uuid, String email, String telephone,
+                   String name, String company, String cpf) {
+        super(id, uuid, email, telephone, name);
         this.company = company;
         this.cpf = cpf;
     }

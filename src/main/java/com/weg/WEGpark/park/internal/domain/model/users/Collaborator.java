@@ -7,6 +7,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.UUID;
+
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
@@ -23,8 +25,8 @@ public class Collaborator extends ParkUser {
     @Column(nullable = false)
     private String location;
 
-    public Collaborator(String email, String telephone, String name, ParkUserType userType, String badgeNumber, String location) {
-        super(email, telephone, name, userType);
+    public Collaborator(Long id, UUID uuid, String email, String telephone, String name, String badgeNumber, String location) {
+        super(id, uuid, email, telephone, name);
         this.badgeNumber = badgeNumber;
         this.location = location;
     }

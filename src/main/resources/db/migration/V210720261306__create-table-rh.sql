@@ -1,0 +1,8 @@
+CREATE TABLE rh (
+    id BIGINT PRIMARY KEY,
+    uuid UUID UNIQUE NOT NULL,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    telephone VARCHAR(255) NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    badgeNumber VARCHAR(255) NOT NULL
+);

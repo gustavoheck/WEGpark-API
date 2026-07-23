@@ -7,6 +7,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.UUID;
+
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
@@ -20,8 +22,9 @@ public class Guard extends Collaborator{
     @Column(nullable = false)
     private String boss;
 
-    public Guard(String email, String telephone, String name, ParkUserType userType, String badgeNumber, String location, String boss) {
-        super(email, telephone, name, userType, badgeNumber, location);
+    public Guard(Long id, UUID uuid, String email, String telephone,
+                 String name, String badgeNumber, String location, String boss) {
+        super(id, uuid, email, telephone, name, badgeNumber, location);
         this.boss = boss;
     }
 }

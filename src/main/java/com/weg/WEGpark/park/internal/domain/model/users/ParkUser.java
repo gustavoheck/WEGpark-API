@@ -26,8 +26,7 @@ public class ParkUser {
     @Id
     private Long id;
 
-    @Generated(event = EventType.INSERT)
-    @Column(unique = true, nullable = false, updatable = false, insertable = false)
+    @Column(unique = true, nullable = false, updatable = false)
     private UUID uuid;
 
     @Column(nullable = false)
@@ -52,10 +51,11 @@ public class ParkUser {
     )
     private List<Vehicle> vehicles;
 
-    public ParkUser(String email, String telephone, String name, ParkUserType userType) {
+    public ParkUser(Long id, UUID uuid, String email, String telephone, String name) {
+        this.id = id;
+        this.uuid = uuid;
         this.email = email;
         this.telephone = telephone;
         this.name = name;
-        this.userType = userType;
     }
 }

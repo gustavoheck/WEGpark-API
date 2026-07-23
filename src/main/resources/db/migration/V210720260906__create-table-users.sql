@@ -1,0 +1,9 @@
+CREATE TABLE auth.users (
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    uuid UUID DEFAULT uuidv7() UNIQUE NOT NULL,
+    email VARCHAR(255) NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    active BOOLEAN NOT NULL,
+    id_role BIGINT NOT NULL,
+    FOREIGN KEY (id_role) REFERENCES auth.role(id)
+);
