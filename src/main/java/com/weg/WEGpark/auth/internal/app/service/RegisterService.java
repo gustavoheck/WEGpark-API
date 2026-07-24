@@ -3,7 +3,7 @@ package com.weg.WEGpark.auth.internal.app.service;
 import com.weg.WEGpark.auth.ValidateCollaboratorEvent;
 import com.weg.WEGpark.auth.ValidateVisitorEvent;
 import com.weg.WEGpark.auth.internal.app.exception.AlreadyHaveAccountException;
-import com.weg.WEGpark.auth.internal.app.mapper.EventMapper;
+import com.weg.WEGpark.auth.internal.app.mapper.AuthEventMapper;
 import com.weg.WEGpark.auth.internal.app.mapper.UserMapper;
 import com.weg.WEGpark.auth.internal.domain.enums.RolesType;
 import com.weg.WEGpark.auth.internal.domain.model.Role;
@@ -34,7 +34,7 @@ public class RegisterService {
     private final RoleRepository roleRepository;
     private final SecurityConfig securityConfig;
 
-    private final EventMapper eventMapper;
+    private final AuthEventMapper authEventMapper;
     private final ApplicationEventPublisher applicationEventPublisher;
 
     @Transactional
@@ -55,7 +55,7 @@ public class RegisterService {
         }
         if (canRegister) {
             User user = registerParkAccount(request.defaults(), futureResponse);
-            applicationEventPublisher.publishEvent(eventMapper.toCollaboratorRegisteredEvent(request, futureResponse, user));
+            applicationEventPublisher.publishEvent(authEventMapper.toCollaboratorRegisteredEvent(request, futureResponse, user));
             return userMapper.toResponse(user);
         }
         futureResponse.completeExceptionally(new AlreadyHaveAccountException("An account with this badge number or email is already registered!"));
@@ -70,7 +70,7 @@ public class RegisterService {
     ) {
         if (!alreadyExists) {
             User user = registerParkAccount(request.defaults(), futureResponse);
-            applicationEventPublisher.publishEvent(eventMapper.toVisitorRegisteredEvent(request, futureResponse, user));
+            applicationEventPublisher.publishEvent(authEventMapper.toVisitorRegisteredEvent(request, futureResponse, user));
             return userMapper.toResponse(user);
         }
         futureResponse.completeExceptionally(new AlreadyHaveAccountException("An account with this email is already registered!"));

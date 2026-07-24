@@ -4,7 +4,7 @@ import com.weg.WEGpark.notification.FindAssociationNotificationResponse;
 import com.weg.WEGpark.park.FindAssociationNotificationEvent;
 import com.weg.WEGpark.park.internal.app.user.mapper.ParkUserMapper;
 import com.weg.WEGpark.park.internal.app.vehicle.exception.NotificationNotFoundException;
-import com.weg.WEGpark.park.internal.app.vehicle.mapper.EventMapper;
+import com.weg.WEGpark.park.internal.app.vehicle.mapper.VehicleEventMapper;
 import com.weg.WEGpark.park.internal.domain.model.users.ParkUser;
 import com.weg.WEGpark.park.internal.domain.model.users.VehicleUser;
 import com.weg.WEGpark.park.internal.dto.vehicle.association.AssociateWithVehicleResponseDTO;
@@ -46,7 +46,7 @@ public class VehicleService {
     private final ParkUserRepository parkUserRepository;
 
     private final ApplicationEventPublisher applicationEventPublisher;
-    private final EventMapper eventMapper;
+    private final VehicleEventMapper vehicleEventMapper;
 
     @Transactional
     public CreateVehicleResponseDTO registerVehicle(CreateVehicleRequestDTO request, UserDetails userDetails) {
@@ -129,7 +129,7 @@ public class VehicleService {
                 .toList()
                 .getFirst()
                 .getParkUser();
-        applicationEventPublisher.publishEvent(eventMapper.toEvent(loggedUser, vehicle, vehicleOwner));
+        applicationEventPublisher.publishEvent(vehicleEventMapper.toEvent(loggedUser, vehicle, vehicleOwner));
     }
 
     public List<GetVehicleResponseDTO> findVehicle(FilterVehicleRequestDTO filter) {

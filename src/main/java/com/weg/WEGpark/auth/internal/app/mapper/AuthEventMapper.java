@@ -12,7 +12,7 @@ import org.mapstruct.Mapping;
 import java.util.concurrent.CompletableFuture;
 
 @Mapper(componentModel = "spring")
-public interface EventMapper {
+public interface AuthEventMapper {
 
     @Mapping(source = "request.defaults", target = ".")
     @Mapping(source = "request.parkUserDefaults", target = ".")

@@ -7,7 +7,7 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")
-public interface EventMapper {
+public interface VehicleEventMapper {
 
     @Mapping(source = "loggedUser.id", target = "idUserToAssociate")
     @Mapping(source = "vehicle.id", target = "idVehicleToAssociate")

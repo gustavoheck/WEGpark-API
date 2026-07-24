@@ -1,7 +1,7 @@
 package com.weg.WEGpark.notification.internal.app.service.notification;
 
 import com.weg.WEGpark.notification.FindAssociationNotificationResponse;
-import com.weg.WEGpark.notification.internal.app.service.mapper.EventMapper;
+import com.weg.WEGpark.notification.internal.app.service.mapper.NotificationEventMapper;
 import com.weg.WEGpark.notification.internal.domain.entities.VehicleAssociationNotification;
 import com.weg.WEGpark.notification.internal.infra.repository.NotificationRepository;
 import com.weg.WEGpark.park.AssociateToVehicleNotificationEvent;
@@ -16,11 +16,11 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 public class NotificationService {
 
-    private final EventMapper eventMapper;
+    private final NotificationEventMapper notificationEventMapper;
     private final NotificationRepository notificationRepository;
 
     public void CreateAssociationNotification (AssociateToVehicleNotificationEvent event) {
-        VehicleAssociationNotification notification = eventMapper.toNotification(event);
+        VehicleAssociationNotification notification = notificationEventMapper.toNotification(event);
         notificationRepository.save(notification);
     }
 

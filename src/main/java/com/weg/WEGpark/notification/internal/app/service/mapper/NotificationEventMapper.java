@@ -5,7 +5,7 @@ import com.weg.WEGpark.park.AssociateToVehicleNotificationEvent;
 import org.mapstruct.Mapper;
 
 @Mapper(componentModel = "spring")
-public interface EventMapper {
+public interface NotificationEventMapper {
 
     VehicleAssociationNotification toNotification (AssociateToVehicleNotificationEvent event);
 }
