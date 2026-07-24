@@ -32,7 +32,7 @@ public class Notification {
     @Column(nullable = false)
     private String message;
 
-    @Column(nullable = false, name = "notification_type")
+    @Column(name = "notification_type", insertable = false, updatable = false, nullable = false)
     private NotificationType notificationType;
 
     public Notification(Long idNotificatedUser, NotificationType notificationType) {
