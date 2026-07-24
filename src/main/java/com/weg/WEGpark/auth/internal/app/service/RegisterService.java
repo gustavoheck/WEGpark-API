@@ -45,7 +45,7 @@ public class RegisterService {
         boolean canRegister;
         if (collaboratorId != null ) {
             User user = userRepository.findById(collaboratorId).get();
-            if (user.getRole().getRole().equals(RolesType.PARK)) {
+            if (user.getRole().getRole().equals(RolesType.ROLE_PARK)) {
                 canRegister = false;
             } else {
                 canRegister = true;
@@ -83,7 +83,7 @@ public class RegisterService {
             CompletableFuture<RegisterAccountResponseDTO> futureResponse) {
         User user = userMapper.toEntity(request);
 
-        Optional<Role> role = roleRepository.findByRole(RolesType.PARK);
+        Optional<Role> role = roleRepository.findByRole(RolesType.ROLE_PARK);
 
         if (role.isEmpty()) {
             futureResponse.completeExceptionally(new NotFoundException("Any PARK role was found"));
