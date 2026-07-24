@@ -86,8 +86,7 @@ public class VehicleService {
     }
 
     @Transactional
-    public AssociateWithVehicleResponseDTO associateToRegisteredVehicle
-            (Long idNotification) {
+    public AssociateWithVehicleResponseDTO associateToRegisteredVehicle(Long idNotification) {
 
         CompletableFuture<FindAssociationNotificationResponse> eventResponse = new CompletableFuture<>();
         applicationEventPublisher.publishEvent(new FindAssociationNotificationEvent(eventResponse, idNotification));
