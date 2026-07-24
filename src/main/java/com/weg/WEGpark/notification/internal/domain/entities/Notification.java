@@ -2,10 +2,7 @@ package com.weg.WEGpark.notification.internal.domain.entities;
 
 import com.weg.WEGpark.notification.internal.domain.enums.NotificationType;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.Generated;
 import org.hibernate.generator.EventType;
 
@@ -14,7 +11,7 @@ import java.util.UUID;
 @Entity
 @Getter
 @Setter
-@RequiredArgsConstructor
+@AllArgsConstructor
 @NoArgsConstructor
 @DiscriminatorColumn(name = "notification_type")
 @Inheritance(strategy = InheritanceType.JOINED)
