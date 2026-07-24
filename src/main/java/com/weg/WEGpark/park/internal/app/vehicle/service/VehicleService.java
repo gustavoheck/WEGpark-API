@@ -52,8 +52,8 @@ public class VehicleService {
     public CreateVehicleResponseDTO registerVehicle(CreateVehicleRequestDTO request, JWTUserData userData) {
         Optional<Vehicle> findedVehicle = vehicleRepository.findByPlate(request.plate());
         if (findedVehicle.isEmpty()) {
-            ParkUser loggedUser = parkUserRepository.findByEmail(userData.email())
-                    .orElseThrow(() -> new NotFoundException("Any park user was found by the logged email"));
+            ParkUser loggedUser = parkUserRepository.findByUuid(userData.uuid())
+                    .orElseThrow(() -> new NotFoundException("Any park user was found by the logged uuid"));
 
             Optional<VehicleUser> possibleUser = vehicleUserRepository.findByParkUserId(loggedUser.getId());
             if (possibleUser.isPresent()) {
@@ -96,7 +96,7 @@ public class VehicleService {
 
         try {
             userToAssociate = parkUserRepository.findById(eventResponse.get().idUserToAssociate())
-                    .orElseThrow(() -> new NotFoundException("Any park user was found by the logged email"));
+                    .orElseThrow(() -> new NotFoundException("Any park user was found by the logged uuid"));
 
             Optional<VehicleUser> possibleUser = vehicleUserRepository.findByParkUserId(userToAssociate.getId());
             if (possibleUser.isPresent()) {
@@ -117,8 +117,8 @@ public class VehicleService {
         return parkUserMapper.toAssociationResponse(userToAssociate);
     }
 
-    public void SendNotificationForAssociate(AssociationNotificationRequestDTO request, JWTUserData jwtUserData) {
-        ParkUser loggedUser = parkUserRepository.findByEmail(jwtUserData.email())
+    public void SendNotificationForAssociate(AssociationNotificationRequestDTO request, JWTUserData userData) {
+        ParkUser loggedUser = parkUserRepository.findByUuid(userData.uuid())
                 .orElseThrow(() -> new NotFoundException("Any park user was found by the logged email"));
         Vehicle vehicle = vehicleRepository.findByPlate(request.plate())
                 .orElseThrow(() -> new NotFoundException("Any vehicle was found by %s plate".formatted(request.plate())));

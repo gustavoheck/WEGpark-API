@@ -13,6 +13,6 @@ public interface ParkUserRepository extends JpaRepository<ParkUser, Long> {
 
     Boolean existsByEmail(String email);
 
-    Optional<ParkUser> findByEmail(String email);
+    Optional<ParkUser> findByUuid(UUID uuid);
 
 }

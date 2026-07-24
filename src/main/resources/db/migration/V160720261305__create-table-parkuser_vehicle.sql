@@ -3,7 +3,7 @@ CREATE TABLE park.parkuser_vehicle (
     vehicle_owner BOOLEAN NOT NULL,
     active BOOLEAN NOT NULL,
     id_parkuser INT NOT NULL,
-    uuid_parkuser UUID UNIQUE NOT NULL,
+    uuid_parkuser UUID NOT NULL,
     id_vehicle INT NOT NULL,
 
     FOREIGN KEY (id_parkuser) REFERENCES park.parkuser(id),

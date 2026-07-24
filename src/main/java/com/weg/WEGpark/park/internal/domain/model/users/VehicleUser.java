@@ -6,6 +6,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @Entity
 @AllArgsConstructor
@@ -22,6 +23,9 @@ public class VehicleUser {
     @ManyToOne
     @JoinColumn(name = "id_parkuser", nullable = false)
     private ParkUser parkUser;
+
+    @Column(name = "uuid_parkuser", nullable = false)
+    private UUID uuidParkUser;
 
     @ManyToOne
     @JoinColumn(name = "id_vehicle", nullable = false)
@@ -44,6 +48,7 @@ public class VehicleUser {
 
     public VehicleUser(ParkUser parkUser, Vehicle vehicle) {
         this.parkUser = parkUser;
+        this.uuidParkUser = parkUser.getUuid();
         this.vehicle = vehicle;
         this.active = true;
     }
