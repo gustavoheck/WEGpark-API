@@ -1,6 +1,6 @@
 package com.weg.WEGpark.notification.internal.listener.association;
 
-import com.weg.WEGpark.notification.internal.app.service.notification.NotificationService;
+import com.weg.WEGpark.notification.internal.app.notification.service.NotificationService;
 import com.weg.WEGpark.park.AssociateToVehicleNotificationEvent;
 import com.weg.WEGpark.park.FindAssociationNotificationEvent;
 import lombok.RequiredArgsConstructor;
