@@ -1,5 +1,6 @@
 package com.weg.WEGpark.park.internal.controller.vehicle;
 
+import com.weg.WEGpark.auth.internal.infra.security.config.JWTUserData;
 import com.weg.WEGpark.park.internal.app.user.service.VehicleUserService;
 import com.weg.WEGpark.park.internal.app.vehicle.service.VehicleService;
 import com.weg.WEGpark.park.internal.dto.vehicle.association.AssociateWithVehicleResponseDTO;
@@ -14,7 +15,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -33,9 +33,9 @@ public class VehicleController {
     @PostMapping
     public ResponseEntity<CreateVehicleResponseDTO> registerVehicle(
             @Valid @RequestBody CreateVehicleRequestDTO request,
-            @AuthenticationPrincipal UserDetails userDetails
+            @AuthenticationPrincipal JWTUserData userData
     ) {
-        CreateVehicleResponseDTO response = vehicleService.registerVehicle(request, userDetails);
+        CreateVehicleResponseDTO response = vehicleService.registerVehicle(request, userData);
 
         URI uri = ServletUriComponentsBuilder
                 .fromCurrentRequest()
@@ -64,9 +64,9 @@ public class VehicleController {
     @PostMapping("/associate/notification")
     public ResponseEntity<Void> sendAssociationNotification (
             @Valid @RequestBody AssociationNotificationRequestDTO request,
-            @AuthenticationPrincipal UserDetails userDetails
+            @AuthenticationPrincipal JWTUserData userData
     ) {
-        vehicleService.SendNotificationForAssociate(request, userDetails);
+        vehicleService.SendNotificationForAssociate(request, userData);
 
         return ResponseEntity.noContent().build();
     }

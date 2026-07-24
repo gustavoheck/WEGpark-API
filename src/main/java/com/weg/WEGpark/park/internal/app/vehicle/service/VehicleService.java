@@ -1,5 +1,6 @@
 package com.weg.WEGpark.park.internal.app.vehicle.service;
 
+import com.weg.WEGpark.auth.internal.infra.security.config.JWTUserData;
 import com.weg.WEGpark.notification.FindAssociationNotificationResponse;
 import com.weg.WEGpark.park.FindAssociationNotificationEvent;
 import com.weg.WEGpark.park.internal.app.user.mapper.ParkUserMapper;
@@ -24,7 +25,6 @@ import com.weg.WEGpark.park.internal.infra.specification.VehicleSpecification;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -49,10 +49,10 @@ public class VehicleService {
     private final VehicleEventMapper vehicleEventMapper;
 
     @Transactional
-    public CreateVehicleResponseDTO registerVehicle(CreateVehicleRequestDTO request, UserDetails userDetails) {
+    public CreateVehicleResponseDTO registerVehicle(CreateVehicleRequestDTO request, JWTUserData userData) {
         Optional<Vehicle> findedVehicle = vehicleRepository.findByPlate(request.plate());
         if (findedVehicle.isEmpty()) {
-            ParkUser loggedUser = parkUserRepository.findByEmail(userDetails.getUsername())
+            ParkUser loggedUser = parkUserRepository.findByEmail(userData.email())
                     .orElseThrow(() -> new NotFoundException("Any park user was found by the logged email"));
 
             Optional<VehicleUser> possibleUser = vehicleUserRepository.findByParkUserId(loggedUser.getId());
@@ -117,8 +117,8 @@ public class VehicleService {
         return parkUserMapper.toAssociationResponse(userToAssociate);
     }
 
-    public void SendNotificationForAssociate(AssociationNotificationRequestDTO request, UserDetails userDetails) {
-        ParkUser loggedUser = parkUserRepository.findByEmail(userDetails.getUsername())
+    public void SendNotificationForAssociate(AssociationNotificationRequestDTO request, JWTUserData jwtUserData) {
+        ParkUser loggedUser = parkUserRepository.findByEmail(jwtUserData.email())
                 .orElseThrow(() -> new NotFoundException("Any park user was found by the logged email"));
         Vehicle vehicle = vehicleRepository.findByPlate(request.plate())
                 .orElseThrow(() -> new NotFoundException("Any vehicle was found by %s plate".formatted(request.plate())));
