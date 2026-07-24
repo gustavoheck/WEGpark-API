@@ -32,6 +32,7 @@ public class Notification {
     @Column(nullable = false)
     private String message;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "notification_type", insertable = false, updatable = false, nullable = false)
     private NotificationType notificationType;
 

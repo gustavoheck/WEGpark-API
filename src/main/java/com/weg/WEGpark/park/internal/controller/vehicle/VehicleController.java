@@ -47,7 +47,7 @@ public class VehicleController {
                 .body(response);
     }
 
-    @PostMapping("/associate/{notificationUuid}")
+    @PostMapping("/associate/{uuidNotification}")
     public ResponseEntity<AssociateWithVehicleResponseDTO> associateVehicle (@PathVariable UUID uuidNotification) {
         AssociateWithVehicleResponseDTO response = vehicleService.associateToRegisteredVehicle(uuidNotification);
 
