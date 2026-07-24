@@ -1,5 +1,6 @@
 package com.weg.WEGpark.park.internal.controller.vehicle;
 
+import com.weg.WEGpark.park.internal.app.user.service.VehicleUserService;
 import com.weg.WEGpark.park.internal.app.vehicle.service.VehicleService;
 import com.weg.WEGpark.park.internal.dto.vehicle.association.AssociateWithVehicleResponseDTO;
 import com.weg.WEGpark.park.internal.dto.vehicle.association.AssociationNotificationRequestDTO;
@@ -27,6 +28,7 @@ import java.util.UUID;
 public class VehicleController {
 
     private final VehicleService vehicleService;
+    private final VehicleUserService vehicleUserService;
 
     @PostMapping
     public ResponseEntity<CreateVehicleResponseDTO> registerVehicle(
@@ -45,9 +47,9 @@ public class VehicleController {
                 .body(response);
     }
 
-    @PostMapping("/associate/notification/{id}")
-    public ResponseEntity<AssociateWithVehicleResponseDTO> associateVehicle (@PathVariable Long id) {
-        AssociateWithVehicleResponseDTO response = vehicleService.associateToRegisteredVehicle(id);
+    @PostMapping("/associate/{notificationUuid}")
+    public ResponseEntity<AssociateWithVehicleResponseDTO> associateVehicle (@PathVariable UUID notificationUuid) {
+        AssociateWithVehicleResponseDTO response = vehicleService.associateToRegisteredVehicle(notificationUuid);
 
         URI uri = ServletUriComponentsBuilder
                 .fromCurrentRequest()
@@ -69,6 +71,12 @@ public class VehicleController {
         return ResponseEntity.noContent().build();
     }
 
+    @PostMapping("/associate/disable/{vehicleUuid}")
+    public ResponseEntity<Void> removeAssociation (@PathVariable UUID vehicleUuid) {
+        vehicleUserService.disassociateVehicle(vehicleUuid);
+
+        return ResponseEntity.noContent().build();
+    }
 
     @GetMapping
     public ResponseEntity<List<GetVehicleResponseDTO>> findVehicles(FilterVehicleRequestDTO filter) {

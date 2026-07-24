@@ -16,8 +16,8 @@ public class VehicleUserService {
 
     private final VehicleUserRepository vehicleUserRepository;
 
-    public void disassociateVehicle (UUID uuid) {
-        VehicleUser vehicleUser = vehicleUserRepository.findByVehicleUuid(uuid)
+    public void disassociateVehicle (UUID vehicleUuid) {
+        VehicleUser vehicleUser = vehicleUserRepository.findByVehicleUuid(vehicleUuid)
                 .orElseThrow(() -> new NotFoundException("Any vehicle user was found by this uuid"));
         if (vehicleUser.getProprietary()) {
             vehicleUser.getVehicle().getParkUsers()
