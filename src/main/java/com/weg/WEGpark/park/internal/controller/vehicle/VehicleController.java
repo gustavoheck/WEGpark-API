@@ -72,8 +72,11 @@ public class VehicleController {
     }
 
     @PostMapping("/associate/disable/{vehicleUuid}")
-    public ResponseEntity<Void> removeAssociation (@PathVariable UUID vehicleUuid) {
-        vehicleUserService.disassociateVehicle(vehicleUuid);
+    public ResponseEntity<Void> removeAssociation (
+            @PathVariable UUID vehicleUuid,
+            @AuthenticationPrincipal JWTUserData jwtUserData
+    ) {
+        vehicleUserService.disassociateVehicle(vehicleUuid, jwtUserData);
 
         return ResponseEntity.noContent().build();
     }
