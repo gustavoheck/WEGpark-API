@@ -2,7 +2,6 @@ CREATE TABLE park.parkuser_vehicle (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     vehicle_owner BOOLEAN NOT NULL,
     active BOOLEAN NOT NULL,
-    proprietary BOOLEAN NOT NULL,
     id_parkuser INT NOT NULL,
     uuid_parkuser UUID UNIQUE NOT NULL,
     id_vehicle INT NOT NULL,

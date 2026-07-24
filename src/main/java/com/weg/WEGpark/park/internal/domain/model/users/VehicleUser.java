@@ -12,7 +12,7 @@ import java.util.List;
 @NoArgsConstructor
 @Getter
 @Setter
-@Table(schema = "auth", name = "parkuser_vehicle")
+@Table(schema = "park", name = "parkuser_vehicle")
 public class VehicleUser {
 
     @Id
@@ -27,8 +27,8 @@ public class VehicleUser {
     @JoinColumn(name = "id_vehicle", nullable = false)
     private Vehicle vehicle;
 
-    @Column(nullable = false)
-    private Boolean proprietary;
+    @Column(nullable = false, name = "vehicle_owner")
+    private Boolean vehicleOwner;
 
     @Column(nullable = false)
     private Boolean active;

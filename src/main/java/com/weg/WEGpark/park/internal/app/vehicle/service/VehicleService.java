@@ -58,7 +58,7 @@ public class VehicleService {
             Optional<VehicleUser> possibleUser = vehicleUserRepository.findByParkUserId(loggedUser.getId());
             if (possibleUser.isPresent()) {
                 possibleUser.get().setActive(true);
-                possibleUser.get().setProprietary(true);
+                possibleUser.get().setVehicleOwner(true);
             } else {
 
                 Vehicle vehicle = vehicleMapper.toEntity(request);
@@ -74,7 +74,7 @@ public class VehicleService {
                 vehicleRepository.saveAndFlush(vehicle);
 
                 VehicleUser vehicleUser = new VehicleUser(loggedUser, vehicle);
-                vehicleUser.setProprietary(true);
+                vehicleUser.setVehicleOwner(true);
 
                 vehicleUserRepository.save(vehicleUser);
 
@@ -101,13 +101,13 @@ public class VehicleService {
             Optional<VehicleUser> possibleUser = vehicleUserRepository.findByParkUserId(userToAssociate.getId());
             if (possibleUser.isPresent()) {
                 possibleUser.get().setActive(true);
-                possibleUser.get().setProprietary(true);
+                possibleUser.get().setVehicleOwner(true);
             } else {
                 vehicleToAssociate = vehicleRepository.findById(eventResponse.get().idVehicleToAssociate())
                         .orElseThrow(() -> new NotFoundException("Any vehicle with this id was found"));
 
                 VehicleUser vehicleUser = new VehicleUser(userToAssociate, vehicleToAssociate);
-                vehicleUser.setProprietary(false);
+                vehicleUser.setVehicleOwner(false);
                 vehicleUserRepository.save(vehicleUser);
             }
         } catch (Exception e) {
@@ -125,7 +125,7 @@ public class VehicleService {
         ParkUser vehicleOwner = vehicle
                 .getParkUsers()
                 .stream()
-                .filter(vehicleUser -> vehicleUser.getProprietary())
+                .filter(vehicleUser -> vehicleUser.getVehicleOwner())
                 .toList()
                 .getFirst()
                 .getParkUser();
