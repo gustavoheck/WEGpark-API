@@ -48,8 +48,8 @@ public class VehicleController {
     }
 
     @PostMapping("/associate/{notificationUuid}")
-    public ResponseEntity<AssociateWithVehicleResponseDTO> associateVehicle (@PathVariable UUID notificationUuid) {
-        AssociateWithVehicleResponseDTO response = vehicleService.associateToRegisteredVehicle(notificationUuid);
+    public ResponseEntity<AssociateWithVehicleResponseDTO> associateVehicle (@PathVariable UUID uuidNotification) {
+        AssociateWithVehicleResponseDTO response = vehicleService.associateToRegisteredVehicle(uuidNotification);
 
         URI uri = ServletUriComponentsBuilder
                 .fromCurrentRequest()

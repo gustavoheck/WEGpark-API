@@ -25,7 +25,7 @@ public class NotificationService {
     }
 
     public void findAssociationNotification (FindAssociationNotificationEvent event) {
-        VehicleAssociationNotification notification = (VehicleAssociationNotification) notificationRepository.findById(event.idNotification())
+        VehicleAssociationNotification notification = (VehicleAssociationNotification) notificationRepository.findByUuid(event.uuidNotification())
                 .orElseThrow(() -> new NotFoundException("Any notification was found to do this association"));
 
         event.eventResponse().complete(new FindAssociationNotificationResponse(

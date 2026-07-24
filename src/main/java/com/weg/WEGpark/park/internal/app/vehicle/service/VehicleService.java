@@ -86,10 +86,10 @@ public class VehicleService {
     }
 
     @Transactional
-    public AssociateWithVehicleResponseDTO associateToRegisteredVehicle(Long idNotification) {
+    public AssociateWithVehicleResponseDTO associateToRegisteredVehicle(UUID uuidNotification) {
 
         CompletableFuture<FindAssociationNotificationResponse> eventResponse = new CompletableFuture<>();
-        applicationEventPublisher.publishEvent(new FindAssociationNotificationEvent(eventResponse, idNotification));
+        applicationEventPublisher.publishEvent(new FindAssociationNotificationEvent(eventResponse, uuidNotification));
 
         Vehicle vehicleToAssociate;
         ParkUser userToAssociate;
