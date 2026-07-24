@@ -1,4 +1,4 @@
-CREATE TABLE notification.notificiation (
+CREATE TABLE notification.notification (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     uuid UUID DEFAULT uuidv7() UNIQUE NOT NULL,
     id_notificated_user BIGINT NOT NULL,

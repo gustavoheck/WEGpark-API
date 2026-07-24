@@ -117,6 +117,7 @@ public class VehicleService {
         return parkUserMapper.toAssociationResponse(userToAssociate);
     }
 
+    @Transactional
     public void SendNotificationForAssociate(AssociationNotificationRequestDTO request, JWTUserData userData) {
         ParkUser loggedUser = parkUserRepository.findByUuid(userData.uuid())
                 .orElseThrow(() -> new NotFoundException("Any park user was found by the logged email"));
