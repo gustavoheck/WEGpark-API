@@ -12,4 +12,6 @@ import java.util.UUID;
 public interface VehicleUserRepository extends JpaRepository<VehicleUser, Long> {
 
     Optional<VehicleUser> findByVehicleUuid (UUID uuid);
+
+    Optional<VehicleUser> findByParkUserId (Long id);
 }
