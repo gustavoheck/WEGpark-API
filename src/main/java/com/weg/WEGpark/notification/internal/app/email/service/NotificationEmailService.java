@@ -1,4 +1,4 @@
-package com.weg.WEGpark.notification.internal.app.service.email;
+package com.weg.WEGpark.notification.internal.app.email.service;
 
 import java.nio.charset.StandardCharsets;
 
