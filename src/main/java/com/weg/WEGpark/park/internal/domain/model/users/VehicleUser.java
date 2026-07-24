@@ -5,6 +5,8 @@ import com.weg.WEGpark.park.internal.domain.model.vehicle.Vehicle;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.List;
+
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
@@ -17,11 +19,11 @@ public class VehicleUser {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToMany
+    @ManyToOne
     @JoinColumn(name = "id_parkuser", nullable = false)
     private ParkUser parkUser;
 
-    @ManyToMany
+    @ManyToOne
     @JoinColumn(name = "id_vehicle", nullable = false)
     private Vehicle vehicle;
 
@@ -38,7 +40,7 @@ public class VehicleUser {
             joinColumns = @JoinColumn(name = "id_parkuser_vehicle"),
             inverseJoinColumns = @JoinColumn(name = "id_occurrence")
     )
-    private Occurrence occurrences;
+    private List<Occurrence> occurrences;
 
     public VehicleUser(ParkUser parkUser, Vehicle vehicle) {
         this.parkUser = parkUser;
