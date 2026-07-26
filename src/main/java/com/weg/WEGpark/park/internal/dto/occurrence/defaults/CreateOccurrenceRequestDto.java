@@ -10,9 +10,6 @@ public record CreateOccurrenceRequestDto(
         @NotBlank(message = "The gate can not be null or blank")
         String gate,
 
-        @NotBlank(message = "The guard can not be null or blank")
-        String guardBadgeNumber,
-
         @NotBlank(message = "The plate of the car can not be null or blank")
         String plate
 ) {

@@ -1,5 +1,6 @@
 package com.weg.WEGpark.park.internal.app.occurrence.service;
 
+import com.weg.WEGpark.auth.internal.infra.security.config.JWTUserData;
 import com.weg.WEGpark.park.internal.app.occurrence.dto.RegisterDefaultInfo;
 import com.weg.WEGpark.park.internal.app.occurrence.mapper.WarningMapper;
 import com.weg.WEGpark.shared.exception.NotFoundException;
@@ -28,9 +29,12 @@ public class WarningService {
     private final WarningMapper warningMapper;
 
     @Transactional
-    public CreateWarningResponseDTO registerWarningOccurrence (CreateWarningRequestDTO request) {
+    public CreateWarningResponseDTO registerWarningOccurrence (
+            CreateWarningRequestDTO request,
+            JWTUserData jwtUserData
+    ) {
 
-        RegisterDefaultInfo info = occurrenceService.findRegisterBasics(request.defaults().plate(), request.defaults().guardBadgeNumber());
+        RegisterDefaultInfo info = occurrenceService.findRegisterBasics(request.defaults().plate(), jwtUserData);
 
         Warning occurrence = warningMapper.toEntity(request, info);
         occurrence.setOccurrenceType(OccurrenceType.WARNING);

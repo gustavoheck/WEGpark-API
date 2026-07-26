@@ -1,5 +1,6 @@
 package com.weg.WEGpark.park.internal.controller.occurrence;
 
+import com.weg.WEGpark.auth.internal.infra.security.config.JWTUserData;
 import com.weg.WEGpark.park.internal.app.occurrence.service.WarningService;
 import com.weg.WEGpark.park.internal.dto.occurrence.trafficaccident.GetTrafficAccidentResponseDTO;
 import com.weg.WEGpark.park.internal.dto.occurrence.trafficaccident.UpdateTrafficAccidentRequestDTO;
@@ -11,6 +12,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -25,8 +27,11 @@ public class WarningController {
     private final WarningService warningService;
 
     @PostMapping
-    public ResponseEntity<CreateWarningResponseDTO> registerWarning (@Valid @RequestBody CreateWarningRequestDTO request) {
-        CreateWarningResponseDTO response = warningService.registerWarningOccurrence(request);
+    public ResponseEntity<CreateWarningResponseDTO> registerWarning (
+            @Valid @RequestBody CreateWarningRequestDTO request,
+            @AuthenticationPrincipal JWTUserData jwtUserData
+    ) {
+        CreateWarningResponseDTO response = warningService.registerWarningOccurrence(request, jwtUserData);
 
         URI uri = ServletUriComponentsBuilder
                 .fromCurrentRequest()

@@ -1,5 +1,6 @@
 package com.weg.WEGpark.park.internal.app.occurrence.service;
 
+import com.weg.WEGpark.auth.internal.infra.security.config.JWTUserData;
 import com.weg.WEGpark.park.internal.app.occurrence.dto.RegisterDefaultInfo;
 import com.weg.WEGpark.park.internal.app.occurrence.mapper.TrafficAccidentMapper;
 import com.weg.WEGpark.shared.exception.NotFoundException;
@@ -28,9 +29,12 @@ public class TrafficAccidentService {
     private final TrafficAccidentMapper trafficAccidentMapper;
 
     @Transactional
-    public CreateTrafficAccidentResponseDTO registerTrafficAccidentOccurrence (CreateTrafficAccidentRequestDTO request) {
+    public CreateTrafficAccidentResponseDTO registerTrafficAccidentOccurrence (
+            CreateTrafficAccidentRequestDTO request,
+            JWTUserData jwtUserData
+    ) {
 
-        RegisterDefaultInfo info = occurrenceService.findRegisterBasics(request.defaults().plate(), request.defaults().guardBadgeNumber());
+        RegisterDefaultInfo info = occurrenceService.findRegisterBasics(request.defaults().plate(), jwtUserData);
 
         TrafficAccident occurrence = trafficAccidentMapper.toEntity(request, info);
         occurrence.setOccurrenceType(OccurrenceType.TRAFFIC_ACCIDENT);
