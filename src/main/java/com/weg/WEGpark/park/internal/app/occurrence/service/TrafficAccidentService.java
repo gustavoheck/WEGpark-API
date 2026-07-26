@@ -1,5 +1,6 @@
 package com.weg.WEGpark.park.internal.app.occurrence.service;
 
+import com.weg.WEGpark.park.internal.app.occurrence.dto.RegisterDefaultInfo;
 import com.weg.WEGpark.park.internal.app.occurrence.mapper.TrafficAccidentMapper;
 import com.weg.WEGpark.shared.exception.NotFoundException;
 import com.weg.WEGpark.park.internal.domain.enums.occurrence.OccurrenceType;
@@ -22,13 +23,16 @@ import java.util.UUID;
 public class TrafficAccidentService {
 
     private final OccurrenceRepository occurrenceRepository;
+    private final OccurrenceService occurrenceService;
 
     private final TrafficAccidentMapper trafficAccidentMapper;
 
     @Transactional
     public CreateTrafficAccidentResponseDTO registerTrafficAccidentOccurrence (CreateTrafficAccidentRequestDTO request) {
 
-        TrafficAccident occurrence = trafficAccidentMapper.toEntity(request);
+        RegisterDefaultInfo info = occurrenceService.findRegisterBasics(request.defaults().plate(), request.defaults().guardBadgeNumber());
+
+        TrafficAccident occurrence = trafficAccidentMapper.toEntity(request, info);
         occurrence.setOccurrenceType(OccurrenceType.TRAFFIC_ACCIDENT);
 
         LocalDateTime date = LocalDateTime.now();

@@ -1,5 +1,6 @@
 package com.weg.WEGpark.park.internal.app.occurrence.mapper;
 
+import com.weg.WEGpark.park.internal.app.occurrence.dto.RegisterDefaultInfo;
 import com.weg.WEGpark.park.internal.domain.model.occurrence.IllegalParking;
 import com.weg.WEGpark.park.internal.domain.model.vehicle.Vehicle;
 import com.weg.WEGpark.park.internal.dto.occurrence.illegalparking.CreateIllegalParkingRequestDTO;
@@ -12,8 +13,9 @@ import org.mapstruct.*;
 @Mapper(componentModel = "spring")
 public interface IllegalParkingMapper {
 
-    @Mapping(source = "defaults", target = ".")
-    IllegalParking toEntity(CreateIllegalParkingRequestDTO request);
+    @Mapping(source = "request.defaults", target = ".")
+    @Mapping(source = "registerInfo", target = ".")
+    IllegalParking toEntity(CreateIllegalParkingRequestDTO request, RegisterDefaultInfo registerInfo);
 
     @Mapping(source = ".", target = "defaults")
     CreateIllegalParkingResponseDTO toCreateResponse(IllegalParking illegalParking);

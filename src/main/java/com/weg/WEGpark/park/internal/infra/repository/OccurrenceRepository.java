@@ -1,12 +1,14 @@
 package com.weg.WEGpark.park.internal.infra.repository;
 
 import com.weg.WEGpark.park.internal.domain.model.occurrence.Occurrence;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -14,5 +16,9 @@ import java.util.UUID;
 public interface OccurrenceRepository extends JpaRepository<Occurrence, Long>, JpaSpecificationExecutor<Occurrence> {
 
     Optional<Occurrence> findByUuid (UUID uuid);
+
+    @EntityGraph(attributePaths = {"vehicleUser", "vehicleUser.vehicle", "guard"})
+    @Query("SELECT c FROM Occurrence c")
+    Page<Occurrence> findAllWithGuardAndVehicle (Pageable pageable);
 
 }

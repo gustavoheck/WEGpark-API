@@ -1,5 +1,6 @@
 package com.weg.WEGpark.park.internal.app.occurrence.service;
 
+import com.weg.WEGpark.park.internal.app.occurrence.dto.RegisterDefaultInfo;
 import com.weg.WEGpark.park.internal.app.occurrence.mapper.WarningMapper;
 import com.weg.WEGpark.shared.exception.NotFoundException;
 import com.weg.WEGpark.park.internal.domain.enums.occurrence.OccurrenceType;
@@ -22,13 +23,16 @@ import java.util.UUID;
 public class WarningService {
 
     private final OccurrenceRepository occurrenceRepository;
+    private final OccurrenceService occurrenceService;
 
     private final WarningMapper warningMapper;
 
     @Transactional
     public CreateWarningResponseDTO registerWarningOccurrence (CreateWarningRequestDTO request) {
 
-        Warning occurrence = warningMapper.toEntity(request);
+        RegisterDefaultInfo info = occurrenceService.findRegisterBasics(request.defaults().plate(), request.defaults().guardBadgeNumber());
+
+        Warning occurrence = warningMapper.toEntity(request, info);
         occurrence.setOccurrenceType(OccurrenceType.WARNING);
 
         LocalDateTime date = LocalDateTime.now();
