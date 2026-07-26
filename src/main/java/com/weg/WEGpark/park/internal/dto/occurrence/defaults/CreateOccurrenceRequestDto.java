@@ -2,8 +2,6 @@ package com.weg.WEGpark.park.internal.dto.occurrence.defaults;
 
 import jakarta.validation.constraints.NotBlank;
 
-import java.util.UUID;
-
 public record CreateOccurrenceRequestDto(
 
         @NotBlank(message = "The location can not be null or blank")

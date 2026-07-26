@@ -23,7 +23,10 @@ import com.weg.WEGpark.park.internal.dto.vehicle.filter.FilterVehicleRequestDTO;
 import com.weg.WEGpark.park.internal.infra.repository.VehicleRepository;
 import com.weg.WEGpark.park.internal.infra.specification.VehicleSpecification;
 import lombok.RequiredArgsConstructor;
+import org.apache.catalina.User;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -133,7 +136,7 @@ public class VehicleService {
         applicationEventPublisher.publishEvent(vehicleEventMapper.toEvent(loggedUser, vehicle, vehicleOwner));
     }
 
-    public List<GetVehicleResponseDTO> findVehicle(FilterVehicleRequestDTO filter) {
+    public Page<GetVehicleResponseDTO> findVehicle(FilterVehicleRequestDTO filter, Pageable pageable) {
         if (FilterUtil.checkMoreThanOneFilter(filter)) {
             String plate = null;
 
@@ -148,14 +151,21 @@ public class VehicleService {
                     .and(VehicleSpecification.hasColor(filter.color()))
                     .and(VehicleSpecification.belongsToUser(filter.userName()));
 
-            List<Vehicle> vehicleList = vehicleRepository.findAll(spec);
+            Page<Vehicle> vehiclePage = vehicleRepository.findAll(spec, pageable);
 
-            return vehicleList
-                    .stream()
-                    .map(vehicleMapper::toGetResponse)
-                    .toList();
+            return vehiclePage
+                    .map(vehicleMapper::toGetResponse);
         }
         throw new MoreThenOneFilterException("You can not use more than one filter");
+    }
+
+    public List<GetVehicleResponseDTO> findMyVehicles (JWTUserData userData) {
+        List<VehicleUser> myAssociateVehicles = vehicleUserRepository.findByUuidParkUser(userData.uuid());
+
+        return myAssociateVehicles
+                .stream()
+                .map(vehicleUser -> vehicleMapper.toGetResponse(vehicleUser.getVehicle()))
+                .toList();
     }
 
     @Transactional
