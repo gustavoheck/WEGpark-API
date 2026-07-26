@@ -12,6 +12,10 @@ import com.weg.WEGpark.park.internal.dto.vehicle.defaults.UpdateVehicleRequestDT
 import com.weg.WEGpark.park.internal.dto.vehicle.filter.FilterVehicleRequestDTO;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -82,12 +86,27 @@ public class VehicleController {
     }
 
     @GetMapping
-    public ResponseEntity<List<GetVehicleResponseDTO>> findVehicles(FilterVehicleRequestDTO filter) {
-        List<GetVehicleResponseDTO> filteredVehicles = vehicleService.findVehicle(filter);
+    public ResponseEntity<Page<GetVehicleResponseDTO>> findVehicles(
+            FilterVehicleRequestDTO filter,
+            @PageableDefault(page = 0, size = 10, sort = "id", direction = Sort.Direction.ASC)
+            Pageable pageable
+    ) {
+        Page<GetVehicleResponseDTO> filteredVehicles = vehicleService.findVehicle(filter, pageable);
 
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(filteredVehicles);
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<List<GetVehicleResponseDTO>> findMyVehicles(
+            @AuthenticationPrincipal JWTUserData jwtUserData
+    ) {
+        List<GetVehicleResponseDTO> myVehicles = vehicleService.findMyVehicles(jwtUserData);
+
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(myVehicles);
     }
 
     @PutMapping("/{uuid}")

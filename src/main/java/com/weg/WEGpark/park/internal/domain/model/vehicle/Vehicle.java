@@ -42,7 +42,7 @@ public class Vehicle {
     @Column(nullable = false)
     private String color;
 
-    @OneToMany(mappedBy = "vehicle")
+    @OneToMany(mappedBy = "vehicle", fetch = FetchType.LAZY)
     private List<VehicleUser> parkUsers;
 
     public Vehicle(String plate, String model, String brand, String color) {

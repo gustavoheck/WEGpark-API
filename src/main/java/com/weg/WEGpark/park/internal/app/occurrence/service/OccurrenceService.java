@@ -1,5 +1,6 @@
 package com.weg.WEGpark.park.internal.app.occurrence.service;
 
+import com.weg.WEGpark.auth.internal.infra.security.config.JWTUserData;
 import com.weg.WEGpark.park.internal.app.occurrence.dto.RegisterDefaultInfo;
 import com.weg.WEGpark.park.internal.app.occurrence.mapper.IllegalParkingMapper;
 import com.weg.WEGpark.park.internal.app.occurrence.mapper.TrafficAccidentMapper;
@@ -79,11 +80,11 @@ public class OccurrenceService {
     }
 
 
-    public RegisterDefaultInfo findRegisterBasics (String plate, String guardBadgeNumber) {
+    public RegisterDefaultInfo findRegisterBasics (String plate, JWTUserData jwtUserData) {
         Vehicle vehicle = vehicleRepository.findByPlate(plate)
                 .orElseThrow(() -> new NotFoundException("Any vehicle was found by %s plate".formatted(plate)));
-        Guard guard = guardRepository.findByBadgeNumber(guardBadgeNumber)
-                .orElseThrow(() -> new NotFoundException("Any guards was found by %s badge number".formatted(guardBadgeNumber)));
+        Guard guard = guardRepository.findByUuid(jwtUserData.uuid())
+                .orElseThrow(() -> new NotFoundException("Any guard was found by the logged uuid"));
 
         return new RegisterDefaultInfo(
             vehicle.getParkUsers(),

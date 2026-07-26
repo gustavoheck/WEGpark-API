@@ -1,5 +1,6 @@
 package com.weg.WEGpark.park.internal.controller.occurrence;
 
+import com.weg.WEGpark.auth.internal.infra.security.config.JWTUserData;
 import com.weg.WEGpark.park.internal.app.occurrence.service.IllegalParkingService;
 import com.weg.WEGpark.park.internal.dto.occurrence.illegalparking.CreateIllegalParkingRequestDTO;
 import com.weg.WEGpark.park.internal.dto.occurrence.illegalparking.CreateIllegalParkingResponseDTO;
@@ -9,6 +10,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -23,8 +25,11 @@ public class IllegalParkingController {
     private final IllegalParkingService illegalParkingService;
 
     @PostMapping
-    public ResponseEntity<CreateIllegalParkingResponseDTO> registerIllegalParking (@Valid @RequestBody CreateIllegalParkingRequestDTO request) {
-        CreateIllegalParkingResponseDTO response = illegalParkingService.registerIllegalParkingOccurrence(request);
+    public ResponseEntity<CreateIllegalParkingResponseDTO> registerIllegalParking (
+            @Valid @RequestBody CreateIllegalParkingRequestDTO request,
+            @AuthenticationPrincipal JWTUserData jwtUserData
+    ) {
+        CreateIllegalParkingResponseDTO response = illegalParkingService.registerIllegalParkingOccurrence(request, jwtUserData);
 
         URI uri = ServletUriComponentsBuilder
                 .fromCurrentRequest()
