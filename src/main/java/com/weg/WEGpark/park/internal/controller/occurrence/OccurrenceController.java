@@ -14,6 +14,10 @@ import com.weg.WEGpark.park.internal.dto.occurrence.warning.CreateWarningRequest
 import com.weg.WEGpark.park.internal.dto.occurrence.warning.CreateWarningResponseDTO;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -30,9 +34,12 @@ public class OccurrenceController {
     private final WarningService warningService;
 
     @GetMapping
-    public ResponseEntity<GetOccurrenceResponseDTO> findOccurrences(FilterOccurrenceRequestDTO filter) {
+    public ResponseEntity<Page<Object>> findOccurrences(
+            FilterOccurrenceRequestDTO filter,
+            @PageableDefault(page = 0, size = 10, sort = "id", direction = Sort.Direction.ASC) Pageable pageable
+    ) {
 
-        GetOccurrenceResponseDTO response = occurrenceService.findAllOccurrences(filter);
+        Page<Object> response = occurrenceService.findAllOccurrences(filter, pageable);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(response);

@@ -14,6 +14,12 @@ public record FilterOccurrenceRequestDTO(
 
         OccurrenceType occurrenceType,
 
-        Boolean recents
+        Boolean recents,
+
+        String plate,
+
+        String responsableName,
+
+        String badgeNumber
 ) {
 }

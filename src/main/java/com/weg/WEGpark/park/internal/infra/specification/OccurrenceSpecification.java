@@ -1,6 +1,11 @@
 package com.weg.WEGpark.park.internal.infra.specification;
 
 import com.weg.WEGpark.park.internal.domain.model.occurrence.Occurrence;
+import com.weg.WEGpark.park.internal.domain.model.users.Collaborator;
+import com.weg.WEGpark.park.internal.domain.model.users.ParkUser;
+import com.weg.WEGpark.park.internal.domain.model.users.VehicleUser;
+import com.weg.WEGpark.park.internal.domain.model.vehicle.Vehicle;
+import jakarta.persistence.criteria.Join;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.time.LocalDateTime;
@@ -59,6 +64,42 @@ public class OccurrenceSpecification {
             LocalDateTime endOfMonth = YearMonth.now().atEndOfMonth().atTime(LocalTime.MAX);
 
             return cb.between(root.get("dateHour"), startOfMonth, endOfMonth);
+        };
+    }
+
+    public static Specification<Occurrence> hasPlate (String plate) {
+        return (root, query, cb) -> {
+            if (plate == null || plate.trim().isEmpty()) {
+                return null;
+            }
+            Join<Occurrence, VehicleUser> vehicleUser = root.join("vehicleUser");
+            Join<VehicleUser, Vehicle> vehicle = vehicleUser.join("vehicle");
+
+            return cb.equal(cb.lower(vehicle.get("plate")), plate.toLowerCase());
+        };
+    }
+
+    public static Specification<Occurrence> hasResponsibleName (String name) {
+        return (root, query, cb) -> {
+            if (name == null || name.trim().isEmpty()) {
+                return null;
+            }
+            Join<Occurrence, VehicleUser> vehicleUser = root.join("vehicleUser");
+            Join<VehicleUser, ParkUser> parkUser = vehicleUser.join("parkUser");
+
+            return cb.equal(cb.lower(parkUser.get("name")), name.toLowerCase());
+        };
+    }
+
+    public static Specification<Occurrence> hasBadgeNumber (String badgeNumber) {
+        return (root, query, cb) -> {
+            if (badgeNumber == null || badgeNumber.trim().isEmpty()) {
+                return null;
+            }
+            Join<Occurrence, VehicleUser> vehicleUser = root.join("vehicleUser");
+            Join<VehicleUser, Collaborator> collaborator = vehicleUser.join("parkUser");
+
+            return cb.equal(cb.lower(collaborator.get("badgeNumber")), badgeNumber);
         };
     }
 }

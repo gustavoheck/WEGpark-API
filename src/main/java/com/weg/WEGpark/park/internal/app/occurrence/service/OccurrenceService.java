@@ -17,6 +17,8 @@ import com.weg.WEGpark.park.internal.dto.occurrence.warning.GetWarningResponseDT
 import com.weg.WEGpark.park.internal.infra.repository.OccurrenceRepository;
 import com.weg.WEGpark.park.internal.infra.specification.OccurrenceSpecification;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,7 +37,7 @@ public class OccurrenceService {
     private final TrafficAccidentMapper trafficAccidentMapper;
     private final WarningMapper warningMapper;
 
-    public GetOccurrenceResponseDTO findAllOccurrences(FilterOccurrenceRequestDTO filter) {
+    public Page<Object> findAllOccurrences(FilterOccurrenceRequestDTO filter, Pageable pageable) {
 
         if (FilterUtil.checkMoreThanOneFilter(filter)) {
             Specification<Occurrence> spec = Specification
@@ -43,29 +45,47 @@ public class OccurrenceService {
                     .and(OccurrenceSpecification.hasGate(filter.gate()))
                     .and(OccurrenceSpecification.hasDate(filter.yearMonth()))
                     .and(OccurrenceSpecification.hasType(filter.occurrenceType() == null ? null : filter.occurrenceType().toString()))
-                    .and(OccurrenceSpecification.hasRecents(filter.recents()));
+                    .and(OccurrenceSpecification.hasRecents(filter.recents()))
+                    .and(OccurrenceSpecification.hasPlate(filter.plate()))
+                    .and(OccurrenceSpecification.hasResponsibleName(filter.responsableName()))
+                    .and(OccurrenceSpecification.hasBadgeNumber(filter.badgeNumber()));
 
-            List<Occurrence> occurrenceList = occurrenceRepository.findAll(spec);
+            Page<Occurrence> occurrencePage = occurrenceRepository.findAll(spec, pageable);
 
-            List<GetTrafficAccidentResponseDTO> responseTrafficAccidentList = new ArrayList<>();
-            List<GetWarningResponseDTO> responseWarningList = new ArrayList<>();
-            List<GetIllegalParkingResponseDTO> responseIllegalParkingList = new ArrayList<>();
-
-            for(Occurrence occurrence : occurrenceList) {
+            Page<Object> occurrenceResponsePage  = occurrencePage.map(occurrence -> {
                 switch (occurrence) {
                     case Warning warning -> {
-                        responseWarningList.add(warningMapper.toGetResponse(warning));
+                        return warningMapper.toGetResponse(warning);
                     }
                     case IllegalParking illegalParking -> {
-                        responseIllegalParkingList.add(illegalParkingMapper.toGetResponse(illegalParking));
+                        return illegalParkingMapper.toGetResponse(illegalParking);
                     }
                     case TrafficAccident trafficAccident -> {
-                        responseTrafficAccidentList.add(trafficAccidentMapper.toGetResponse(trafficAccident));
+                        return trafficAccidentMapper.toGetResponse(trafficAccident);
                     }
                     default -> throw new IllegalStateException("Unexpected value: " + occurrence);
                 }
-            }
-            return new GetOccurrenceResponseDTO(responseIllegalParkingList, responseTrafficAccidentList, responseWarningList);
+            });
+
+//            List<GetTrafficAccidentResponseDTO> responseTrafficAccidentList = new ArrayList<>();
+//            List<GetWarningResponseDTO> responseWarningList = new ArrayList<>();
+//            List<GetIllegalParkingResponseDTO> responseIllegalParkingList = new ArrayList<>();
+//            for(Occurrence occurrence : occurrencePage) {
+//                switch (occurrence) {
+//                    case Warning warning -> {
+//                        responseWarningList.add(warningMapper.toGetResponse(warning));
+//                    }
+//                    case IllegalParking illegalParking -> {
+//                        responseIllegalParkingList.add(illegalParkingMapper.toGetResponse(illegalParking));
+//                    }
+//                    case TrafficAccident trafficAccident -> {
+//                        responseTrafficAccidentList.add(trafficAccidentMapper.toGetResponse(trafficAccident));
+//                    }
+//                    default -> throw new IllegalStateException("Unexpected value: " + occurrence);
+//                }
+//            }
+//            return new GetOccurrenceResponseDTO(responseIllegalParkingList, responseTrafficAccidentList, responseWarningList);
+            return occurrenceResponsePage;
         }
         throw new MoreThenOneFilterException("You can't use more than one filter");
     }
