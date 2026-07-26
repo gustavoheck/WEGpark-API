@@ -13,6 +13,7 @@ import org.hibernate.annotations.Generated;
 import org.hibernate.generator.EventType;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -46,11 +47,11 @@ public class Occurrence {
     @Column(name = "occurrence_type", insertable = false, updatable = false, nullable = false)
     private OccurrenceType occurrenceType;
 
-    @ManyToMany(fetch = FetchType.LAZY, mappedBy = "occurrences")
+    @ManyToOne(fetch = FetchType.EAGER)
     private Guard guard;
 
     @ManyToMany(fetch = FetchType.LAZY, mappedBy = "occurrences")
-    private VehicleUser vehicleUser;
+    private List<VehicleUser> vehicleUser;
 
     public Occurrence(String location, String gate, OccurrenceType occurrenceType) {
         this.location = location;

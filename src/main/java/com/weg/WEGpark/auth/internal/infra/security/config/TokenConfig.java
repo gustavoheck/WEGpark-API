@@ -48,16 +48,26 @@ public class TokenConfig {
 
     public Optional<JWTUserData> validateToken(String token) {
         try {
+            // Se a string do token contiver "Bearer ", remova!
+            if (token != null && token.startsWith("Bearer ")) {
+                token = token.substring(7).trim();
+            }
+
             DecodedJWT decode = JWT.require(algorithm)
-                    .build().verify(token);
+                    .build()
+                    .verify(token);
+
+            String uuidRaw = decode.getClaim("uuid").asString();
+            UUID userUuid = UUID.fromString(uuidRaw.trim());
 
             return Optional.of(JWTUserData.builder()
-                    .uuid(UUID.fromString(decode.getClaim("userUuid").asString()))
+                    .uuid(userUuid)
                     .email(decode.getSubject())
                     .roles(decode.getClaim("roles").asList(String.class))
                     .build()
             );
-        } catch (JWTVerificationException e) {
+
+        } catch (Throwable e) {
             throw new InvalidTokenException();
         }
     }

@@ -10,6 +10,12 @@ public record AssociateToVehicleNotificationEvent(
 
         Long idUserToAssociate,
 
-        Long idVehicleToAssociate
+        String userToAssociateName,
+
+        Long idVehicleToAssociate,
+
+        String vehicleBrand,
+
+        String vehicleModel
 ) {
 }

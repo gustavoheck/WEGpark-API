@@ -1,10 +1,11 @@
 package com.weg.WEGpark.park.internal.app.vehicle.service;
 
+import com.weg.WEGpark.auth.internal.infra.security.config.JWTUserData;
 import com.weg.WEGpark.notification.FindAssociationNotificationResponse;
 import com.weg.WEGpark.park.FindAssociationNotificationEvent;
 import com.weg.WEGpark.park.internal.app.user.mapper.ParkUserMapper;
 import com.weg.WEGpark.park.internal.app.vehicle.exception.NotificationNotFoundException;
-import com.weg.WEGpark.park.internal.app.vehicle.mapper.EventMapper;
+import com.weg.WEGpark.park.internal.app.vehicle.mapper.VehicleEventMapper;
 import com.weg.WEGpark.park.internal.domain.model.users.ParkUser;
 import com.weg.WEGpark.park.internal.domain.model.users.VehicleUser;
 import com.weg.WEGpark.park.internal.dto.vehicle.association.AssociateWithVehicleResponseDTO;
@@ -24,7 +25,6 @@ import com.weg.WEGpark.park.internal.infra.specification.VehicleSpecification;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -46,19 +46,19 @@ public class VehicleService {
     private final ParkUserRepository parkUserRepository;
 
     private final ApplicationEventPublisher applicationEventPublisher;
-    private final EventMapper eventMapper;
+    private final VehicleEventMapper vehicleEventMapper;
 
     @Transactional
-    public CreateVehicleResponseDTO registerVehicle(CreateVehicleRequestDTO request, UserDetails userDetails) {
+    public CreateVehicleResponseDTO registerVehicle(CreateVehicleRequestDTO request, JWTUserData userData) {
         Optional<Vehicle> findedVehicle = vehicleRepository.findByPlate(request.plate());
         if (findedVehicle.isEmpty()) {
-            ParkUser loggedUser = parkUserRepository.findByEmail(userDetails.getUsername())
-                    .orElseThrow(() -> new NotFoundException("Any park user was found by the logged email"));
+            ParkUser loggedUser = parkUserRepository.findByUuid(userData.uuid())
+                    .orElseThrow(() -> new NotFoundException("Any park user was found by the logged uuid"));
 
             Optional<VehicleUser> possibleUser = vehicleUserRepository.findByParkUserId(loggedUser.getId());
             if (possibleUser.isPresent()) {
                 possibleUser.get().setActive(true);
-                possibleUser.get().setProprietary(true);
+                possibleUser.get().setVehicleOwner(true);
             } else {
 
                 Vehicle vehicle = vehicleMapper.toEntity(request);
@@ -74,7 +74,7 @@ public class VehicleService {
                 vehicleRepository.saveAndFlush(vehicle);
 
                 VehicleUser vehicleUser = new VehicleUser(loggedUser, vehicle);
-                vehicleUser.setProprietary(true);
+                vehicleUser.setVehicleOwner(true);
 
                 vehicleUserRepository.save(vehicleUser);
 
@@ -86,29 +86,28 @@ public class VehicleService {
     }
 
     @Transactional
-    public AssociateWithVehicleResponseDTO associateToRegisteredVehicle
-            (Long idNotification) {
+    public AssociateWithVehicleResponseDTO associateToRegisteredVehicle(UUID uuidNotification) {
 
         CompletableFuture<FindAssociationNotificationResponse> eventResponse = new CompletableFuture<>();
-        applicationEventPublisher.publishEvent(new FindAssociationNotificationEvent(eventResponse, idNotification));
+        applicationEventPublisher.publishEvent(new FindAssociationNotificationEvent(eventResponse, uuidNotification));
 
         Vehicle vehicleToAssociate;
         ParkUser userToAssociate;
 
         try {
             userToAssociate = parkUserRepository.findById(eventResponse.get().idUserToAssociate())
-                    .orElseThrow(() -> new NotFoundException("Any park user was found by the logged email"));
+                    .orElseThrow(() -> new NotFoundException("Any park user was found by the logged uuid"));
 
             Optional<VehicleUser> possibleUser = vehicleUserRepository.findByParkUserId(userToAssociate.getId());
             if (possibleUser.isPresent()) {
                 possibleUser.get().setActive(true);
-                possibleUser.get().setProprietary(true);
+                possibleUser.get().setVehicleOwner(true);
             } else {
                 vehicleToAssociate = vehicleRepository.findById(eventResponse.get().idVehicleToAssociate())
                         .orElseThrow(() -> new NotFoundException("Any vehicle with this id was found"));
 
                 VehicleUser vehicleUser = new VehicleUser(userToAssociate, vehicleToAssociate);
-                vehicleUser.setProprietary(false);
+                vehicleUser.setVehicleOwner(false);
                 vehicleUserRepository.save(vehicleUser);
             }
         } catch (Exception e) {
@@ -118,19 +117,20 @@ public class VehicleService {
         return parkUserMapper.toAssociationResponse(userToAssociate);
     }
 
-    public void SendNotificationForAssociate(AssociationNotificationRequestDTO request, UserDetails userDetails) {
-        ParkUser loggedUser = parkUserRepository.findByEmail(userDetails.getUsername())
+    @Transactional
+    public void SendNotificationForAssociate(AssociationNotificationRequestDTO request, JWTUserData userData) {
+        ParkUser loggedUser = parkUserRepository.findByUuid(userData.uuid())
                 .orElseThrow(() -> new NotFoundException("Any park user was found by the logged email"));
         Vehicle vehicle = vehicleRepository.findByPlate(request.plate())
                 .orElseThrow(() -> new NotFoundException("Any vehicle was found by %s plate".formatted(request.plate())));
         ParkUser vehicleOwner = vehicle
                 .getParkUsers()
                 .stream()
-                .filter(vehicleUser -> vehicleUser.getProprietary())
+                .filter(vehicleUser -> vehicleUser.getVehicleOwner())
                 .toList()
                 .getFirst()
                 .getParkUser();
-        applicationEventPublisher.publishEvent(eventMapper.toEvent(loggedUser, vehicle, vehicleOwner));
+        applicationEventPublisher.publishEvent(vehicleEventMapper.toEvent(loggedUser, vehicle, vehicleOwner));
     }
 
     public List<GetVehicleResponseDTO> findVehicle(FilterVehicleRequestDTO filter) {

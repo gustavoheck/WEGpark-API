@@ -23,13 +23,7 @@ public class Guard extends Collaborator{
     @Column(nullable = false)
     private String boss;
 
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(
-            name = "guard_occurrence",
-            schema = "park",
-            joinColumns = @JoinColumn(name = "id_guard"),
-            inverseJoinColumns = @JoinColumn(name = "id_occurrence")
-    )
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "guard")
     private List<Occurrence> occurrences;
 
     public Guard(Long id, UUID uuid, String email, String telephone,

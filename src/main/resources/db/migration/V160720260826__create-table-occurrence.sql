@@ -4,5 +4,6 @@ CREATE TABLE park.occurrence (
     date_hour TIMESTAMP NOT NULL,
     location VARCHAR(255) NOT NULL,
     gate VARCHAR(255) NOT NULL,
-    occurrence_type VARCHAR(50) NOT NULL
+    occurrence_type VARCHAR(50) NOT NULL,
+    id_guard BIGINT NOT NULL
 );

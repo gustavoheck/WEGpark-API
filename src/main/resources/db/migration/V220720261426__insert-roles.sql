@@ -1,19 +1,19 @@
 INSERT INTO auth.role
     (role)
 VALUES
-    ('GUARD');
+    ('ROLE_GUARD');
 
 INSERT INTO auth.role
     (role)
 VALUES
-    ('RH');
+    ('ROLE_RH');
 
 INSERT INTO auth.role
     (role)
 VALUES
-    ('ADMIN');
+    ('ROLE_ADMIN');
 
 INSERT INTO auth.role
     (role)
 VALUES
-    ('PARK');
+    ('ROLE_PARK');

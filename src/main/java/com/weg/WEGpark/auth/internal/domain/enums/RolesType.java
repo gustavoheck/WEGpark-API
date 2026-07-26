@@ -1,10 +1,10 @@
 package com.weg.WEGpark.auth.internal.domain.enums;
 
 public enum RolesType {
-    GUARD(3),
-    RH(3),
-    ADMIN(3),
-    PARK(1);
+    ROLE_GUARD(3),
+    ROLE_RH(3),
+    ROLE_ADMIN(3),
+    ROLE_PARK(1);
 
     private final int tokenExpirationTime;
 

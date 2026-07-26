@@ -4,5 +4,5 @@ CREATE TABLE park.vehicle_user_occurrence (
 
     PRIMARY KEY(id_parkuser_vehicle, id_occurrence),
     FOREIGN KEY (id_occurrence) REFERENCES park.occurrence(id),
-    FOREIGN KEY (id_user_vehicle) REFERENCES park.parkuser_vehicle(id)
+    FOREIGN KEY (id_parkuser_vehicle) REFERENCES park.parkuser_vehicle(id)
 );
