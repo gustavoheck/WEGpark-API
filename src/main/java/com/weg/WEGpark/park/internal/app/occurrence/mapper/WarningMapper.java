@@ -1,5 +1,6 @@
 package com.weg.WEGpark.park.internal.app.occurrence.mapper;
 
+import com.weg.WEGpark.park.internal.app.occurrence.dto.RegisterDefaultInfo;
 import com.weg.WEGpark.park.internal.domain.model.occurrence.TrafficAccident;
 import com.weg.WEGpark.park.internal.domain.model.occurrence.Warning;
 import com.weg.WEGpark.park.internal.dto.occurrence.trafficaccident.UpdateTrafficAccidentRequestDTO;
@@ -12,8 +13,9 @@ import org.mapstruct.*;
 @Mapper(componentModel = "spring")
 public interface WarningMapper {
 
-    @Mapping(source = "defaults", target = ".")
-    Warning toEntity(CreateWarningRequestDTO request);
+    @Mapping(source = "request.defaults", target = ".")
+    @Mapping(source = "registerInfo", target = ".")
+    Warning toEntity(CreateWarningRequestDTO request, RegisterDefaultInfo registerInfo);
 
     @Mapping(source = ".", target = "defaults")
     CreateWarningResponseDTO toCreateResponse(Warning warning);

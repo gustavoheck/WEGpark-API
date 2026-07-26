@@ -1,5 +1,6 @@
 package com.weg.WEGpark.park.internal.app.occurrence.service;
 
+import com.weg.WEGpark.park.internal.app.occurrence.dto.RegisterDefaultInfo;
 import com.weg.WEGpark.park.internal.app.occurrence.mapper.IllegalParkingMapper;
 import com.weg.WEGpark.shared.exception.NotFoundException;
 import com.weg.WEGpark.park.internal.domain.enums.occurrence.OccurrenceType;
@@ -22,13 +23,16 @@ import java.util.UUID;
 public class IllegalParkingService {
 
     private final IllegalParkingMapper illegalParkingMapper;
+    private final OccurrenceService occurrenceService;
 
     private final OccurrenceRepository occurrenceRepository;
 
     @Transactional
     public CreateIllegalParkingResponseDTO registerIllegalParkingOccurrence (CreateIllegalParkingRequestDTO request) {
 
-        IllegalParking occurrence = illegalParkingMapper.toEntity(request);
+        RegisterDefaultInfo info = occurrenceService.findRegisterBasics(request.defaults().plate(), request.defaults().guardBadgeNumber());
+
+        IllegalParking occurrence = illegalParkingMapper.toEntity(request, info);
         occurrence.setOccurrenceType(OccurrenceType.ILLEGAL_PARKING);
 
         LocalDateTime date = LocalDateTime.now();

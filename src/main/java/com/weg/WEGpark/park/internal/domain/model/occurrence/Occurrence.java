@@ -51,7 +51,7 @@ public class Occurrence {
     private Guard guard;
 
     @ManyToMany(fetch = FetchType.LAZY, mappedBy = "occurrences")
-    private List<VehicleUser> vehicleUser;
+    private List<VehicleUser> vehicleUsers;
 
     public Occurrence(String location, String gate, OccurrenceType occurrenceType) {
         this.location = location;
