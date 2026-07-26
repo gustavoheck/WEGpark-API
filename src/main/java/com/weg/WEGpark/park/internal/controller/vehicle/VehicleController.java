@@ -98,6 +98,17 @@ public class VehicleController {
                 .body(filteredVehicles);
     }
 
+    @GetMapping("/me")
+    public ResponseEntity<List<GetVehicleResponseDTO>> findMyVehicles(
+            @AuthenticationPrincipal JWTUserData jwtUserData
+    ) {
+        List<GetVehicleResponseDTO> myVehicles = vehicleService.findMyVehicles(jwtUserData);
+
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(myVehicles);
+    }
+
     @PutMapping("/{uuid}")
     public ResponseEntity<GetVehicleResponseDTO> updateVehicle(
             @Valid @RequestBody
