@@ -1,6 +1,7 @@
 package com.weg.WEGpark.auth.internal.app.mapper;
 
 import com.weg.WEGpark.auth.CollaboratorRegisteredEvent;
+import com.weg.WEGpark.auth.DefaultRegisteredEvent;
 import com.weg.WEGpark.auth.GuardRegisteredEvent;
 import com.weg.WEGpark.auth.VisitorRegisteredEvent;
 import com.weg.WEGpark.auth.internal.domain.model.User;
@@ -41,4 +42,6 @@ public interface AuthEventMapper {
             RegisterGuardEvent event,
             User user
     );
+
+    DefaultRegisteredEvent toDefaultRegisteredEvent (User user);
 }

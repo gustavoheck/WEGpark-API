@@ -17,6 +17,7 @@ import com.weg.WEGpark.auth.internal.infra.repository.UserRepository;
 import com.weg.WEGpark.auth.internal.infra.security.config.SecurityConfig;
 import com.weg.WEGpark.auth.shared.dto.register.RegisterCollaboratorRequestDTO;
 import com.weg.WEGpark.rh.RegisterGuardEvent;
+import com.weg.WEGpark.rh.RegisterRhEvent;
 import com.weg.WEGpark.shared.exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
@@ -117,6 +118,16 @@ public class RegisterService {
     }
 
     @Transactional
+    public void registerRhAccount (RegisterRhEvent event) {
+        User user = userMapper.toEntityFromRhEvent(event);
+        Optional<Role> role = roleRepository.findByRole(RolesType.ROLE_RH);
+        if (role.isEmpty()) {
+            event.eventResponse().completeExceptionally(new NotFoundException("Any RH role was found"));
+        }
+        event.eventResponse().complete(authEventMapper.toDefaultRegisteredEvent(user));
+    }
+
+    @Transactional
     private User registerAccount (User user, Role role) {
         user.setRole(role);
         user.setPassword(securityConfig.passwordEncoder().encode(user.getPassword()));
@@ -150,7 +161,7 @@ public class RegisterService {
             (RegisterGuardEvent event)
     {
         CompletableFuture<RegisterAccountResponseDTO> futureResponse = new CompletableFuture<>();
-        applicationEventPublisher.publishEvent(new ValidateCollaboratorByEvent(futureResponse, event));
+        applicationEventPublisher.publishEvent(new ValidateCollaboratorByEvent(event));
         return futureResponse;
     }
 }
