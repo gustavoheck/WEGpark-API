@@ -40,7 +40,7 @@ public class Rh {
     private String badgeNumber;
 
     @OneToMany(mappedBy = "rh", fetch = FetchType.LAZY)
-    private List<Historic> historicList;
+    private List<Operation> operations;
 
     public Rh(String email, String telephone, String name, String badgeNumber) {
         this.email = email;

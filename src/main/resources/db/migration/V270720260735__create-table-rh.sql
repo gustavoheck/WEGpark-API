@@ -4,5 +4,6 @@ CREATE TABLE rh.rh (
     email VARCHAR(255) NOT NULL,
     telephone VARCHAR(255) NOT NULL,
     name VARCHAR(255) NOT NULL,
-    badge_number VARCHAR(255) NOT NULL
-)
+    badge_number VARCHAR(255) NOT NULL,
+    id_operation BIGINT NOT NULL
+);

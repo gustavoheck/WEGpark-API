@@ -35,8 +35,8 @@ public class Operation {
     @Column(nullable = false)
     private UUID uuid_operated_user;
 
-    @OneToMany(mappedBy = "operation", fetch = FetchType.LAZY)
-    private List<Historic> historicList;
+    @ManyToOne(fetch = FetchType.EAGER)
+    private Rh rh;
 
     public Operation(OperationType operationType, UUID uuid_operated_user) {
         this.operationType = operationType;
