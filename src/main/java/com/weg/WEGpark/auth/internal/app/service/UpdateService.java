@@ -6,8 +6,8 @@ import com.weg.WEGpark.auth.internal.app.mapper.UserMapper;
 import com.weg.WEGpark.auth.internal.domain.enums.TokenType;
 import com.weg.WEGpark.auth.internal.domain.model.AuthToken;
 import com.weg.WEGpark.auth.internal.domain.model.User;
-import com.weg.WEGpark.auth.internal.dto.update.UpdateUserRequestDTO;
-import com.weg.WEGpark.auth.internal.dto.update.UpdateUserResponseDTO;
+import com.weg.WEGpark.auth.shared.dto.update.UpdateUserRequestDTO;
+import com.weg.WEGpark.auth.shared.dto.update.UpdateUserResponseDTO;
 import com.weg.WEGpark.auth.internal.infra.repository.AuthTokenRepository;
 import com.weg.WEGpark.auth.internal.infra.repository.UserRepository;
 import com.weg.WEGpark.shared.exception.NotFoundException;
@@ -43,6 +43,9 @@ public class UpdateService {
         boolean isPasswordCorrect = passwordEncoder.matches(request.actualPassword(), user.getPassword());
         if (isPasswordCorrect) {
             userMapper.updateFromDTO(request, user);
+            if (request.password() != null) {
+                user.setPassword(passwordEncoder.encode(request.password()));
+            }
             userRepository.save(user);
             return userMapper.toUpdateResponse(user);
         }
@@ -50,11 +53,14 @@ public class UpdateService {
     }
 
     @Transactional
-    public void updateUserAuthDataEvent (UpdateUserAuthEvent event, UUID uuid) {
-        User user = userRepository.findByUuid(uuid)
-                .orElseThrow(() -> new NotFoundException("Any user was found by %s uuid".formatted(uuid)));
+    public void updateUserAuthDataEvent (UpdateUserAuthEvent event) {
+        User user = userRepository.findByUuid(event.targetUuid())
+                .orElseThrow(() -> new NotFoundException("Any user was found by %s uuid".formatted(event.targetUuid())));
 
         userMapper.updateFromEvent(event, user);
+        if (event.password() != null) {
+            user.setPassword(passwordEncoder.encode(event.password()));
+        }
         userRepository.save(user);
         event.eventResponse().complete(userMapper.toUpdateResponse(user));
     }
