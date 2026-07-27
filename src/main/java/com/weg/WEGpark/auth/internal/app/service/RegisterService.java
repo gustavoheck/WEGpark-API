@@ -1,5 +1,6 @@
 package com.weg.WEGpark.auth.internal.app.service;
 
+import com.weg.WEGpark.auth.ValidateCollaboratorByEvent;
 import com.weg.WEGpark.auth.ValidateCollaboratorEvent;
 import com.weg.WEGpark.auth.ValidateVisitorEvent;
 import com.weg.WEGpark.auth.internal.app.exception.AlreadyHaveAccountException;
@@ -8,13 +9,14 @@ import com.weg.WEGpark.auth.internal.app.mapper.UserMapper;
 import com.weg.WEGpark.auth.internal.domain.enums.RolesType;
 import com.weg.WEGpark.auth.internal.domain.model.Role;
 import com.weg.WEGpark.auth.internal.domain.model.User;
-import com.weg.WEGpark.auth.internal.dto.register.defaults.RegisterAccountRequestDTO;
+import com.weg.WEGpark.auth.shared.dto.register.RegisterAccountRequestDTO;
 import com.weg.WEGpark.auth.internal.dto.register.defaults.RegisterAccountResponseDTO;
 import com.weg.WEGpark.auth.shared.dto.register.RegisterVisitorRequestDTO;
 import com.weg.WEGpark.auth.internal.infra.repository.RoleRepository;
 import com.weg.WEGpark.auth.internal.infra.repository.UserRepository;
 import com.weg.WEGpark.auth.internal.infra.security.config.SecurityConfig;
 import com.weg.WEGpark.auth.shared.dto.register.RegisterCollaboratorRequestDTO;
+import com.weg.WEGpark.rh.RegisterGuardEvent;
 import com.weg.WEGpark.shared.exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
@@ -42,24 +44,35 @@ public class RegisterService {
             CompletableFuture<RegisterAccountResponseDTO> futureResponse,
             RegisterCollaboratorRequestDTO request,
             Long collaboratorId) {
-        boolean canRegister;
-        if (collaboratorId != null ) {
-            User user = userRepository.findById(collaboratorId).get();
-            if (user.getRole().getRole().equals(RolesType.ROLE_PARK)) {
-                canRegister = false;
-            } else {
-                canRegister = true;
-            }
-        } else {
-            canRegister = true;
-        }
-        if (canRegister) {
+        if (verifyCollaboratorRegistering(collaboratorId, RolesType.ROLE_PARK)) {
             User user = registerParkAccount(request.defaults(), futureResponse);
             applicationEventPublisher.publishEvent(authEventMapper.toCollaboratorRegisteredEvent(request, futureResponse, user));
             return userMapper.toResponse(user);
         }
         futureResponse.completeExceptionally(new AlreadyHaveAccountException("An account with this badge number or email is already registered!"));
         return null;
+    }
+
+    @Transactional
+    public void registerGuard (RegisterGuardEvent event, Long collaboratorId) {
+        if (verifyCollaboratorRegistering(collaboratorId, RolesType.ROLE_GUARD)) {
+            User user = registerGuardAccount(event);
+            applicationEventPublisher.publishEvent(authEventMapper.ToGuardRegisteredEvent(event, user));
+        }
+        event.registerResponse().completeExceptionally(new AlreadyHaveAccountException("An account with this badge number or email is already registered!"));
+    }
+
+    private boolean verifyCollaboratorRegistering (Long collaboratorId,RolesType roleToCompare) {
+        if (collaboratorId != null ) {
+            User user = userRepository.findById(collaboratorId).get();
+            if (user.getRole().getRole().equals(roleToCompare)) {
+                return false;
+            } else {
+                return true;
+            }
+        } else {
+            return true;
+        }
     }
 
     @Transactional
@@ -81,16 +94,31 @@ public class RegisterService {
     private User registerParkAccount (
             RegisterAccountRequestDTO request,
             CompletableFuture<RegisterAccountResponseDTO> futureResponse) {
-        User user = userMapper.toEntity(request);
 
+        User user = userMapper.toEntity(request);
         Optional<Role> role = roleRepository.findByRole(RolesType.ROLE_PARK);
 
         if (role.isEmpty()) {
             futureResponse.completeExceptionally(new NotFoundException("Any PARK role was found"));
             return null;
         }
+        return registerAccount(user, role.get());
+    }
 
-        user.setRole(role.get());
+    @Transactional
+    private User registerGuardAccount (RegisterGuardEvent event) {
+        User user = userMapper.toEntityFromGuardEvent(event);
+        Optional<Role> role = roleRepository.findByRole(RolesType.ROLE_GUARD);
+        if (role.isEmpty()) {
+            event.registerResponse().completeExceptionally(new NotFoundException("Any GUARD role was found"));
+            return null;
+        }
+        return registerAccount(user, role.get());
+    }
+
+    @Transactional
+    private User registerAccount (User user, Role role) {
+        user.setRole(role);
         user.setPassword(securityConfig.passwordEncoder().encode(user.getPassword()));
         user.setActive(false);
 
@@ -114,6 +142,15 @@ public class RegisterService {
     {
         CompletableFuture<RegisterAccountResponseDTO> futureResponse = new CompletableFuture<>();
         applicationEventPublisher.publishEvent(new ValidateCollaboratorEvent(futureResponse, request));
+        return futureResponse;
+    }
+
+    @Transactional
+    public CompletableFuture<RegisterAccountResponseDTO> checkBadgeNumberBeforeRegisteringEvent
+            (RegisterGuardEvent event)
+    {
+        CompletableFuture<RegisterAccountResponseDTO> futureResponse = new CompletableFuture<>();
+        applicationEventPublisher.publishEvent(new ValidateCollaboratorByEvent(futureResponse, event));
         return futureResponse;
     }
 }

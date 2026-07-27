@@ -20,7 +20,6 @@ import java.util.UUID;
 public class Rh {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Generated(event = EventType.INSERT)
@@ -42,7 +41,9 @@ public class Rh {
     @OneToMany(mappedBy = "rh", fetch = FetchType.LAZY)
     private List<Operation> operations;
 
-    public Rh(String email, String telephone, String name, String badgeNumber) {
+    public Rh(Long id, UUID uuid, String email, String telephone, String name, String badgeNumber) {
+        this.id = id;
+        this.uuid = uuid;
         this.email = email;
         this.telephone = telephone;
         this.name = name;

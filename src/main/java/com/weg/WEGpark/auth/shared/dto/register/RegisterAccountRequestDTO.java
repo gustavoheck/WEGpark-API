@@ -1,4 +1,4 @@
-package com.weg.WEGpark.auth.internal.dto.register.defaults;
+package com.weg.WEGpark.auth.shared.dto.register;
 
 import com.weg.WEGpark.auth.internal.dto.validation.ValidPassword;
 import jakarta.validation.constraints.Email;

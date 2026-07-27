@@ -1,6 +1,8 @@
 package com.weg.WEGpark.park.internal.listener.validation;
 
+import com.weg.WEGpark.auth.ValidateCollaboratorByEvent;
 import com.weg.WEGpark.auth.ValidateCollaboratorEvent;
+import com.weg.WEGpark.park.ValidatedCollaboratorByEvent;
 import com.weg.WEGpark.park.ValidatedCollaboratorEvent;
 import com.weg.WEGpark.park.internal.app.user.service.CollaboratorService;
 import lombok.RequiredArgsConstructor;
@@ -19,5 +21,11 @@ public class ValidateCollaboratorListener {
     public void validateCollaborator (ValidateCollaboratorEvent event) {
         Long id = collaboratorService.verifyCollaboratorToRegister(event.request().badgeNumber(), event.request().defaults().email());
         applicationEventPublisher.publishEvent(new ValidatedCollaboratorEvent(event.futureResponse(), event.request(), id));
+    }
+
+    @EventListener
+    public void validateCollaboratorByEvent (ValidateCollaboratorByEvent event) {
+        Long id = collaboratorService.verifyCollaboratorToRegister(event.event().badgeNumber(), event.event().email());
+        applicationEventPublisher.publishEvent(new ValidatedCollaboratorByEvent(event.event(), id));
     }
 }
