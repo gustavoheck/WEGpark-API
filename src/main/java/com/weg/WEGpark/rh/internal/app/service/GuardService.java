@@ -32,6 +32,7 @@ public class GuardService {
     private final RhRepository rhRepository;
     private final OperationRepository operationRepository;
 
+    @Transactional
     public RegisterGuardResponseDTO createGuard (RegisterGuardRequestDTO request, JWTUserData jwtUserData) {
         CompletableFuture<GuardParkRegisteredEvent> guardRegisteredEvent = new CompletableFuture<>();
         applicationEventPublisher.publishEvent(rhGuardMapper.toGuardRegisterEvent(request, guardRegisteredEvent));
@@ -46,6 +47,7 @@ public class GuardService {
         return null;
     }
 
+    @Transactional
     public UpdateGuardResponseDTO updateRegistrationData (UpdateGuardRequestDTO request, UUID guardUuid) {
         CompletableFuture<GuardUpdatedEvent> eventResponse = new CompletableFuture<>();
         applicationEventPublisher.publishEvent(rhGuardMapper.toGuardUpdateEvent(request, guardUuid, eventResponse));
