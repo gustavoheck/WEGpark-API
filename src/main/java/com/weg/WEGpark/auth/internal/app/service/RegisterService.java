@@ -48,7 +48,7 @@ public class RegisterService {
         if (verifyCollaboratorRegistering(collaboratorId, RolesType.ROLE_PARK)) {
             User user = registerParkAccount(request.defaults(), futureResponse);
             applicationEventPublisher.publishEvent(authEventMapper.toCollaboratorRegisteredEvent(request, futureResponse, user));
-            return userMapper.toResponse(user);
+            return userMapper.toRegisterResponse(user);
         }
         futureResponse.completeExceptionally(new AlreadyHaveAccountException("An account with this badge number or email is already registered!"));
         return null;
@@ -85,7 +85,7 @@ public class RegisterService {
         if (!alreadyExists) {
             User user = registerParkAccount(request.defaults(), futureResponse);
             applicationEventPublisher.publishEvent(authEventMapper.toVisitorRegisteredEvent(request, futureResponse, user));
-            return userMapper.toResponse(user);
+            return userMapper.toRegisterResponse(user);
         }
         futureResponse.completeExceptionally(new AlreadyHaveAccountException("An account with this email is already registered!"));
         return null;
