@@ -16,7 +16,7 @@ public class UpdateListener {
     private final UpdateService updateService;
 
     @EventListener
-    public void updateUser (UpdateUserAuthEvent event, UUID userUuid) {
-        updateService.updateUserAuthDataEvent(event, userUuid);
+    public void updateUser (UpdateUserAuthEvent event) {
+        updateService.updateUserAuthDataEvent(event);
     }
 }

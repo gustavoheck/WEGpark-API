@@ -18,7 +18,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 @RequiredArgsConstructor
@@ -54,15 +56,19 @@ public class UpdateService {
 
     @Transactional
     public void updateUserAuthDataEvent (UpdateUserAuthEvent event) {
-        User user = userRepository.findByUuid(event.targetUuid())
-                .orElseThrow(() -> new NotFoundException("Any user was found by %s uuid".formatted(event.targetUuid())));
+        Optional<User> optUser = userRepository.findByUuid(event.targetUuid());
 
-        userMapper.updateFromEvent(event, user);
-        if (event.password() != null) {
-            user.setPassword(passwordEncoder.encode(event.password()));
+        if (optUser.isPresent()) {
+            User user = optUser.get();
+            userMapper.updateFromEvent(event, user);
+            if (event.password() != null) {
+                user.setPassword(passwordEncoder.encode(event.password()));
+            }
+            userRepository.save(user);
+            event.eventResponse().complete(userMapper.toUpdateResponse(user));
+        } else {
+            event.eventResponse().completeExceptionally(new NotFoundException("Any user was found by %s uuid".formatted(event.targetUuid())));
         }
-        userRepository.save(user);
-        event.eventResponse().complete(userMapper.toUpdateResponse(user));
     }
 
     @Transactional

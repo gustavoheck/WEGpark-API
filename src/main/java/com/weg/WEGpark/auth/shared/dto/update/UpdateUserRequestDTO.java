@@ -1,4 +1,6 @@
-package com.weg.WEGpark.auth.internal.dto.update;
+package com.weg.WEGpark.auth.shared.dto.update;
+
+import java.util.UUID;
 
 public record UpdateUserRequestDTO(
 
