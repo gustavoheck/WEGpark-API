@@ -48,10 +48,16 @@ public class GuardService {
     }
 
     @Transactional
-    public UpdateGuardResponseDTO updateRegistrationData (UpdateGuardRequestDTO request, UUID guardUuid) {
+    public UpdateGuardResponseDTO updateRegistrationData (UpdateGuardRequestDTO request, UUID guardUuid, JWTUserData jwtUserData) {
         CompletableFuture<GuardUpdatedEvent> eventResponse = new CompletableFuture<>();
         applicationEventPublisher.publishEvent(rhGuardMapper.toGuardUpdateEvent(request, guardUuid, eventResponse));
-        eventResponse.thenApply(rhGuardMapper::toGuardUpdateResponse);
+        eventResponse.thenApply(response -> {
+            Rh rh = rhRepository.findByUuid(jwtUserData.uuid())
+                    .orElseThrow(() -> new NotFoundException("Any user was found by the logged uuid"));
+            Operation operation = new Operation(OperationType.CREATE, response.uuid());
+            operationRepository.save(operation);
+            return rhGuardMapper.toGuardUpdateResponse(response);
+        });
         return null;
     }
 }
