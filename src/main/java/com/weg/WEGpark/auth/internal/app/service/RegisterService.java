@@ -10,7 +10,7 @@ import com.weg.WEGpark.auth.internal.domain.enums.RolesType;
 import com.weg.WEGpark.auth.internal.domain.model.Role;
 import com.weg.WEGpark.auth.internal.domain.model.User;
 import com.weg.WEGpark.auth.shared.dto.register.RegisterAccountRequestDTO;
-import com.weg.WEGpark.auth.internal.dto.register.defaults.RegisterAccountResponseDTO;
+import com.weg.WEGpark.auth.shared.dto.register.RegisterAccountResponseDTO;
 import com.weg.WEGpark.auth.shared.dto.register.RegisterVisitorRequestDTO;
 import com.weg.WEGpark.auth.internal.infra.repository.RoleRepository;
 import com.weg.WEGpark.auth.internal.infra.repository.UserRepository;

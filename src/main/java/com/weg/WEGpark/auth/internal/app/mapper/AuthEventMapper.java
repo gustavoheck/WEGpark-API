@@ -4,13 +4,12 @@ import com.weg.WEGpark.auth.CollaboratorRegisteredEvent;
 import com.weg.WEGpark.auth.GuardRegisteredEvent;
 import com.weg.WEGpark.auth.VisitorRegisteredEvent;
 import com.weg.WEGpark.auth.internal.domain.model.User;
-import com.weg.WEGpark.auth.internal.dto.register.defaults.RegisterAccountResponseDTO;
+import com.weg.WEGpark.auth.shared.dto.register.RegisterAccountResponseDTO;
 import com.weg.WEGpark.auth.shared.dto.register.RegisterCollaboratorRequestDTO;
 import com.weg.WEGpark.auth.shared.dto.register.RegisterVisitorRequestDTO;
 import com.weg.WEGpark.rh.RegisterGuardEvent;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.w3c.dom.events.Event;
 
 import java.util.concurrent.CompletableFuture;
 

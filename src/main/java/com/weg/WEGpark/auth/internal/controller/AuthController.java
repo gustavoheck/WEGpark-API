@@ -4,7 +4,7 @@ import com.weg.WEGpark.auth.internal.app.service.LoginService;
 import com.weg.WEGpark.auth.internal.app.service.RegisterService;
 import com.weg.WEGpark.auth.internal.dto.login.LoginRequestDTO;
 import com.weg.WEGpark.auth.internal.dto.login.LoginResponseDTO;
-import com.weg.WEGpark.auth.internal.dto.register.defaults.RegisterAccountResponseDTO;
+import com.weg.WEGpark.auth.shared.dto.register.RegisterAccountResponseDTO;
 import com.weg.WEGpark.auth.shared.dto.register.RegisterCollaboratorRequestDTO;
 import com.weg.WEGpark.auth.shared.dto.register.RegisterVisitorRequestDTO;
 import jakarta.validation.Valid;

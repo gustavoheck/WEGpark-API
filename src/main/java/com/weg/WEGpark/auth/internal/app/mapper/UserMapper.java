@@ -2,7 +2,7 @@ package com.weg.WEGpark.auth.internal.app.mapper;
 
 import com.weg.WEGpark.auth.internal.domain.model.User;
 import com.weg.WEGpark.auth.shared.dto.register.RegisterAccountRequestDTO;
-import com.weg.WEGpark.auth.internal.dto.register.defaults.RegisterAccountResponseDTO;
+import com.weg.WEGpark.auth.shared.dto.register.RegisterAccountResponseDTO;
 import com.weg.WEGpark.rh.RegisterGuardEvent;
 import org.mapstruct.Mapper;
 

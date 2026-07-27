@@ -1,7 +1,7 @@
 package com.weg.WEGpark.park.internal.app.user.service;
 
 import com.weg.WEGpark.auth.CollaboratorRegisteredEvent;
-import com.weg.WEGpark.auth.internal.dto.register.defaults.RegisterAccountResponseDTO;
+import com.weg.WEGpark.auth.shared.dto.register.RegisterAccountResponseDTO;
 import com.weg.WEGpark.park.internal.app.user.mapper.CollaboratorMapper;
 import com.weg.WEGpark.park.internal.domain.enums.user.ParkUserType;
 import com.weg.WEGpark.park.internal.domain.model.users.Collaborator;
