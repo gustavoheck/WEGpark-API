@@ -1,6 +1,6 @@
 CREATE TABLE rh.operation (
-    id BIGINT PRIMARY KEY,
-    uuid UUID UNIQUE NOT NULL,
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    uuid UUID DEFAULT uuidv7() UNIQUE NOT NULL,
     operation VARCHAR(255) NOT NULL,
     date_hour TIMESTAMP NOT NULL,
     id_operated_user BIGINT NOT NULL,
