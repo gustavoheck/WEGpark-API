@@ -2,6 +2,7 @@ package com.weg.WEGpark.rh.internal.app.service;
 
 import com.weg.WEGpark.auth.shared.dto.update.UpdateUserRequestDTO;
 import com.weg.WEGpark.auth.shared.dto.update.UpdateUserResponseDTO;
+import com.weg.WEGpark.rh.DesactivateAndActivateUserEvent;
 import com.weg.WEGpark.rh.internal.app.mapper.UserOperationMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
@@ -27,5 +28,10 @@ public class UserOperationService {
 
         eventResponse.thenApply(response -> response);
         return null;
+    }
+
+    @Transactional
+    public void desactivateAndActivateUser (UUID uuid) {
+        applicationEventPublisher.publishEvent(new DesactivateAndActivateUserEvent(uuid));
     }
 }

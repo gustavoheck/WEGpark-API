@@ -10,6 +10,7 @@ import com.weg.WEGpark.auth.shared.dto.update.UpdateUserRequestDTO;
 import com.weg.WEGpark.auth.shared.dto.update.UpdateUserResponseDTO;
 import com.weg.WEGpark.auth.internal.infra.repository.AuthTokenRepository;
 import com.weg.WEGpark.auth.internal.infra.repository.UserRepository;
+import com.weg.WEGpark.rh.DesactivateAndActivateUserEvent;
 import com.weg.WEGpark.shared.exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -69,6 +70,16 @@ public class UpdateService {
         } else {
             event.eventResponse().completeExceptionally(new NotFoundException("Any user was found by %s uuid".formatted(event.targetUuid())));
         }
+    }
+
+    @Transactional
+    public void activateAndDesactivateUser (DesactivateAndActivateUserEvent event) {
+        User user = userRepository.findByUuid(event.uuid())
+                .orElseThrow(() -> new NotFoundException("Any user was found by %s uuid".formatted(event.uuid())));
+
+        user.setActive(!user.getActive());
+
+        userRepository.save(user);
     }
 
     @Transactional
