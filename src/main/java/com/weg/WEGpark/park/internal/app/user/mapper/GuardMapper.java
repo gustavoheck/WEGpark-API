@@ -2,12 +2,19 @@ package com.weg.WEGpark.park.internal.app.user.mapper;
 
 import com.weg.WEGpark.auth.GuardRegisteredEvent;
 import com.weg.WEGpark.park.GuardParkRegisteredEvent;
+import com.weg.WEGpark.park.GuardUpdatedEvent;
 import com.weg.WEGpark.park.internal.domain.model.users.Guard;
-import org.mapstruct.Mapper;
+import com.weg.WEGpark.rh.UpdateGuardEvent;
+import org.mapstruct.*;
 
 @Mapper(componentModel = "spring")
 public interface GuardMapper {
     Guard toEntity (GuardRegisteredEvent event);
 
     GuardParkRegisteredEvent toEventResponse (GuardRegisteredEvent event);
+
+    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+    void updateFromEvent(UpdateGuardEvent event, @MappingTarget Guard guard);
+
+    GuardUpdatedEvent toUpdatedEvent(Guard guard);
 }

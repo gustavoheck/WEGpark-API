@@ -1,5 +1,6 @@
 package com.weg.WEGpark.park.internal.infra.repository;
 
+import com.weg.WEGpark.park.internal.domain.enums.user.ParkUserType;
 import com.weg.WEGpark.park.internal.domain.model.users.ParkUser;
 import com.weg.WEGpark.park.internal.domain.model.vehicle.Vehicle;
 import org.springframework.data.jpa.repository.JpaRepository;
