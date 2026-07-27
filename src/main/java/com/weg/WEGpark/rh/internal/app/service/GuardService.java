@@ -54,7 +54,7 @@ public class GuardService {
         eventResponse.thenApply(response -> {
             Rh rh = rhRepository.findByUuid(jwtUserData.uuid())
                     .orElseThrow(() -> new NotFoundException("Any user was found by the logged uuid"));
-            Operation operation = new Operation(OperationType.CREATE, response.uuid());
+            Operation operation = new Operation(OperationType.UPDATE, response.uuid());
             operationRepository.save(operation);
             return rhGuardMapper.toGuardUpdateResponse(response);
         });
