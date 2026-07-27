@@ -8,6 +8,7 @@ import lombok.Setter;
 import org.hibernate.annotations.Generated;
 import org.hibernate.generator.EventType;
 
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -37,6 +38,9 @@ public class Rh {
 
     @Column(nullable = false, name = "badge_number")
     private String badgeNumber;
+
+    @OneToMany(mappedBy = "rh", fetch = FetchType.LAZY)
+    private List<Historic> historicList;
 
     public Rh(String email, String telephone, String name, String badgeNumber) {
         this.email = email;

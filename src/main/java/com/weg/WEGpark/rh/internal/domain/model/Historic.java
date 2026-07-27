@@ -1,10 +1,7 @@
 package com.weg.WEGpark.rh.internal.domain.model;
 
 import com.weg.WEGpark.rh.internal.domain.embeddable.HistoricId;
-import jakarta.persistence.Column;
-import jakarta.persistence.EmbeddedId;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -25,6 +22,16 @@ public class Historic {
 
     @Column(name = "date_hour", nullable = false)
     private LocalDateTime dateHour;
+
+    @ManyToOne
+    @MapsId("idRh")
+    @JoinColumn(name = "id_rh")
+    private Rh rh;
+
+    @ManyToOne
+    @MapsId("idOperation")
+    @JoinColumn(name = "id_operation")
+    private Operation operation;
 
     public Historic(HistoricId id) {
         this.id = id;
