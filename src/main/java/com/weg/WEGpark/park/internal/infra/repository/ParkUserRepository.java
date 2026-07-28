@@ -3,6 +3,8 @@ package com.weg.WEGpark.park.internal.infra.repository;
 import com.weg.WEGpark.park.internal.domain.enums.user.ParkUserType;
 import com.weg.WEGpark.park.internal.domain.model.users.ParkUser;
 import com.weg.WEGpark.park.internal.domain.model.vehicle.Vehicle;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -16,4 +18,5 @@ public interface ParkUserRepository extends JpaRepository<ParkUser, Long> {
 
     Optional<ParkUser> findByUuid(UUID uuid);
 
+    Page<ParkUser> findByNameLike (String name, Pageable pageable);
 }
