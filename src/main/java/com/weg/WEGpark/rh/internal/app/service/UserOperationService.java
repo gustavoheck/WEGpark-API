@@ -22,7 +22,7 @@ public class UserOperationService {
     private final ApplicationEventPublisher applicationEventPublisher;
     private final UserOperationMapper userOperationMapper;
 
-    public Page<Object> listObject (FindUserFilter filter) {
+    public Page<Object> listUsers (FindUserFilter filter) {
 
     }
 
