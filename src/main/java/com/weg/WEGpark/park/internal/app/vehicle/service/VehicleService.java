@@ -16,7 +16,7 @@ import com.weg.WEGpark.park.internal.infra.repository.ParkUserRepository;
 import com.weg.WEGpark.park.internal.infra.repository.VehicleUserRepository;
 import com.weg.WEGpark.shared.exception.NotFoundException;
 import com.weg.WEGpark.shared.util.FilterUtil;
-import com.weg.WEGpark.park.internal.app.vehicle.exception.MoreThenOneFilterException;
+import com.weg.WEGpark.shared.exception.MoreThenOneFilterException;
 import com.weg.WEGpark.park.internal.app.vehicle.exception.VehicleAlreadyRegisteredException;
 import com.weg.WEGpark.park.internal.app.vehicle.mapper.VehicleMapper;
 import com.weg.WEGpark.park.internal.domain.model.vehicle.Vehicle;

@@ -1,4 +1,4 @@
-package com.weg.WEGpark.park.internal.app.vehicle.exception;
+package com.weg.WEGpark.shared.exception;
 
 public class MoreThenOneFilterException extends RuntimeException {
     public MoreThenOneFilterException(String message) {

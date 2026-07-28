@@ -6,7 +6,7 @@ import com.weg.WEGpark.park.internal.app.occurrence.mapper.IllegalParkingMapper;
 import com.weg.WEGpark.park.internal.app.occurrence.mapper.TrafficAccidentMapper;
 import com.weg.WEGpark.park.internal.app.occurrence.mapper.WarningMapper;
 import com.weg.WEGpark.shared.util.FilterUtil;
-import com.weg.WEGpark.park.internal.app.vehicle.exception.MoreThenOneFilterException;
+import com.weg.WEGpark.shared.exception.MoreThenOneFilterException;
 import com.weg.WEGpark.park.internal.domain.model.occurrence.IllegalParking;
 import com.weg.WEGpark.park.internal.domain.model.occurrence.Occurrence;
 import com.weg.WEGpark.park.internal.domain.model.occurrence.TrafficAccident;

@@ -7,6 +7,7 @@ import com.weg.WEGpark.park.internal.domain.model.users.Guard;
 import com.weg.WEGpark.rh.RegisterRhEvent;
 import com.weg.WEGpark.rh.UpdateGuardEvent;
 import com.weg.WEGpark.rh.internal.domain.model.Rh;
+import com.weg.WEGpark.rh.internal.dto.rh.GetRhResponseDTO;
 import com.weg.WEGpark.rh.internal.dto.rh.RegisterRhRequestDTO;
 import com.weg.WEGpark.rh.internal.dto.rh.RegisterRhResponseDTO;
 import com.weg.WEGpark.rh.internal.dto.rh.UpdateRhRequestDTO;
@@ -25,6 +26,8 @@ public interface RhMapper {
     RegisterRhResponseDTO toRegisterResponse (Rh rh);
 
     UpdateRhRequestDTO toUpdateResponse (Rh rh);
+
+    GetRhResponseDTO toGetResponse (Rh rh);
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     void updateFromDTO(UpdateRhRequestDTO request, @MappingTarget Rh rh);

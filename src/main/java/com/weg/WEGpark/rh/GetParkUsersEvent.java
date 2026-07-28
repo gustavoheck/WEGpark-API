@@ -9,8 +9,8 @@ import java.util.concurrent.CompletableFuture;
 public record GetParkUsersEvent(
         CompletableFuture<Page<Record>> eventResponse,
 
-        Pageable pageable,
+        FindUserFilter findUserFilter,
 
-        FindUserFilter findUserFilter
+        Pageable pageable
 ) {
 }
