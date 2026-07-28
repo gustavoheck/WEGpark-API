@@ -14,12 +14,15 @@ import com.weg.WEGpark.shared.util.FilterUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -36,6 +39,18 @@ public class UserOperationService {
         Page<Record> parkUsersResponse = eventResponse.join();
         Page<GetRhResponseDTO> rhUsersList = rhService.listRhUsers(filter, pageable);
 
+
+        List<Record> responseList = Stream.of(
+                        parkUsersResponse,
+                        rhUsersList
+                                .map(response -> (Record) response)
+                )
+                .flatMap(page -> page.getContent().stream())
+                .toList();
+
+        long totalElements = parkUsersResponse.getTotalElements() + rhUsersList.getTotalElements();
+
+        return new PageImpl<>(responseList, pageable, totalElements);
     }
 
     @Transactional
