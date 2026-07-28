@@ -14,7 +14,9 @@ public interface GuardMapper {
 
     GuardParkRegisteredEvent toEventResponse (GuardRegisteredEvent event);
 
-    GetGuardResponseDTO toGetResponse (Guard guard);
+    @Mapping(source = "guard", target = ".")
+    @Mapping(source = "active", target = "defaults.active")
+    GetGuardResponseDTO toGetResponse (Guard guard, Boolean active);
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     void updateFromEvent(UpdateGuardEvent event, @MappingTarget Guard guard);

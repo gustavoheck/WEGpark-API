@@ -15,7 +15,9 @@ public interface CollaboratorMapper {
 
     Collaborator toEntity (CollaboratorRegisteredEvent event);
 
-    GetCollaboratorResponseDTO toResponse (Collaborator collaborator);
+    @Mapping(source = "collaborator", target = ".")
+    @Mapping(source = "active", target = "defaults.active")
+    GetCollaboratorResponseDTO toResponse (Collaborator collaborator, Boolean active);
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     @Mapping(source = "event", target = ".")

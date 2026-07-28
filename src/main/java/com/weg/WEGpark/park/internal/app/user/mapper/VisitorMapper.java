@@ -17,7 +17,9 @@ public interface VisitorMapper {
 
     Visitor toEntity (VisitorRegisteredEvent event);
 
-    GetVisitorResponseDTO toResponse (Visitor visitor);
+    @Mapping(source = "visitor", target = ".")
+    @Mapping(source = "active", target = "defaults.active")
+    GetVisitorResponseDTO toResponse (Visitor visitor, Boolean active);
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     @Mapping(source = "event", target = ".")

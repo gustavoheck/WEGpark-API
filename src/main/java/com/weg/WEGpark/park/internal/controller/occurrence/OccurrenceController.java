@@ -34,12 +34,12 @@ public class OccurrenceController {
     private final WarningService warningService;
 
     @GetMapping
-    public ResponseEntity<Page<Object>> findOccurrences(
+    public ResponseEntity<Page<Record>> findOccurrences(
             FilterOccurrenceRequestDTO filter,
             @PageableDefault(page = 0, size = 10, sort = "id", direction = Sort.Direction.ASC) Pageable pageable
     ) {
 
-        Page<Object> response = occurrenceService.findAllOccurrences(filter, pageable);
+        Page<Record> response = occurrenceService.findAllOccurrences(filter, pageable);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(response);

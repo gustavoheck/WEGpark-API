@@ -1,8 +1,7 @@
-package com.weg.WEGpark.park.internal.app.shared.util;
+package com.weg.WEGpark.shared.util;
 
 import java.util.Arrays;
 import java.util.Objects;
-import java.util.stream.Stream;
 
 public class FilterUtil {
 
