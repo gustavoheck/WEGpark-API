@@ -4,6 +4,7 @@ import com.weg.WEGpark.auth.internal.infra.security.config.JWTUserData;
 import com.weg.WEGpark.notification.FindAssociationNotificationResponse;
 import com.weg.WEGpark.park.FindAssociationNotificationEvent;
 import com.weg.WEGpark.park.internal.app.user.mapper.ParkUserMapper;
+import com.weg.WEGpark.park.internal.app.user.mapper.VehicleUserMapper;
 import com.weg.WEGpark.park.internal.app.vehicle.exception.NotificationNotFoundException;
 import com.weg.WEGpark.park.internal.app.vehicle.mapper.VehicleEventMapper;
 import com.weg.WEGpark.park.internal.domain.model.users.ParkUser;
@@ -49,6 +50,7 @@ public class VehicleService {
 
     private final ApplicationEventPublisher applicationEventPublisher;
     private final VehicleEventMapper vehicleEventMapper;
+    private final VehicleUserMapper vehicleUserMapper;
 
     @Transactional
     public CreateVehicleResponseDTO registerVehicle(CreateVehicleRequestDTO request, JWTUserData userData) {
@@ -153,7 +155,15 @@ public class VehicleService {
             Page<Vehicle> vehiclePage = vehicleRepository.findAll(spec, pageable);
 
             return vehiclePage
-                    .map(vehicleMapper::toGetResponse);
+                    .map(vehicle -> {
+                        List<GetVehicleUserResponseDTO> userResponseList = vehicle
+                                .getParkUsers()
+                                .stream()
+                                .map(vehicleUserMapper::toResponse)
+                                .toList();
+
+                        return vehicleMapper.toGetResponse(vehicle, userResponseList);
+                    });
         }
         throw new MoreThenOneFilterException("You can not use more than one filter");
     }
@@ -163,12 +173,20 @@ public class VehicleService {
 
         return myAssociateVehicles
                 .stream()
-                .map(vehicleUser -> vehicleMapper.toGetResponse(vehicleUser.getVehicle()))
+                .map(vehicleUser -> {
+                    List<GetVehicleUserResponseDTO> userResponseList = vehicleUser.getVehicle()
+                            .getParkUsers()
+                            .stream()
+                            .map(vehicleUserMapper::toResponse)
+                            .toList();
+
+                    return vehicleMapper.toGetResponse(vehicleUser.getVehicle(), userResponseList);
+                })
                 .toList();
     }
 
     @Transactional
-    public GetVehicleResponseDTO updateVehicle(UUID uuid, UpdateVehicleRequestDTO request) {
+    public UpdateVehicleResponseDTO updateVehicle(UUID uuid, UpdateVehicleRequestDTO request) {
 
         Vehicle vehicle = vehicleRepository.findByUuid(uuid)
                 .orElseThrow(() -> new NotFoundException(("The vehicle was not found by %s uuid".formatted(uuid))));
@@ -177,6 +195,6 @@ public class VehicleService {
 
         vehicleRepository.save(vehicle);
 
-        return vehicleMapper.toGetResponse(vehicle);
+        return vehicleMapper.toUpdateResponse(vehicle);
     }
 }
