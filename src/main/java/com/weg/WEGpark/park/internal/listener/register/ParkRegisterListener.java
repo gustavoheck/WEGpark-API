@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class RegisterListener {
+public class ParkRegisterListener {
 
     private final CollaboratorService collaboratorService;
     private final VisitorService visitorService;

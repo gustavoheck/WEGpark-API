@@ -7,10 +7,13 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 public interface CollaboratorRepository extends JpaRepository<Collaborator, Long> {
 
     Optional<Collaborator> findByBadgeNumberOrEmail (String badgeNumber, String email);
 
     Page<Collaborator> findByBadgeNumber (String badgeNumber, Pageable pageable);
+
+    Optional<Collaborator> findByUuid (UUID uuid);
 }
