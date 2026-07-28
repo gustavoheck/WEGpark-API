@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -36,5 +37,9 @@ public class CollaboratorService {
         parkUserRepository.save(collaborator);
 
         event.futureResponse().complete(new RegisterAccountResponseDTO(collaborator.getUuid(), collaborator.getEmail()));
+    }
+
+    public void updateCollaborator ( UUID parkUserUuid) {
+
     }
 }
