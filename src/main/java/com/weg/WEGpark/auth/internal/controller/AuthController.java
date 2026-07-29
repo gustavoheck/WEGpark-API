@@ -30,7 +30,7 @@ public class AuthController {
     @GetMapping
     public ResponseEntity<List<SelectAccountResponseDTO>> getUserRoles (
             @RequestParam(name = "email") String email
-            ) {
+    ) {
         List<SelectAccountResponseDTO> response = loginService.preLogin(email);
 
         return ResponseEntity

@@ -73,16 +73,6 @@ public class AuthUpdateService {
     }
 
     @Transactional
-    public void sendAccountEmailValidation (String email, RolesType role) {
-        User user = userRepository.findByEmailAndRole(email, role)
-                .orElseThrow(() -> new NotFoundException("Any %s user was found by %s email".formatted(role, email)));
-
-        authTokenService.createToken(user, TokenType.EMAIL_VALIDATION);
-
-
-    }
-
-    @Transactional
     public void activateAndDesactivateUser (DesactivateAndActivateUserEvent event) {
         User user = userRepository.findByUuid(event.uuid())
                 .orElseThrow(() -> new NotFoundException("Any user was found by %s uuid".formatted(event.uuid())));
