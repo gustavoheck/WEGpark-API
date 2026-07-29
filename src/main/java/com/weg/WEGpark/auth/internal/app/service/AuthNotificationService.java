@@ -35,14 +35,16 @@ public class AuthNotificationService {
     public void validateAccount (UUID token) {
         AuthToken authToken = authTokenService.findToken(token);
 
-        if (authToken.getTargetUser().getEmailValidated()) {
-            if (authToken.getUsed() || authToken.getExpirationTime().isAfter(LocalDateTime.now())) {
+        if (!authToken.getTargetUser().getEmailValidated()) {
+            if (!authToken.getUsed() && !authToken.getExpirationTime().isAfter(LocalDateTime.now())) {
                 authToken.getTargetUser().setEmailValidated(true);
                 authToken.getTargetUser().setActive(true);
                 authToken.setUsed(true);
+            } else {
+                throw new InvalidTokenException("This validation token is already used or expired");
             }
-            throw new InvalidTokenException("This validation token is already used or expired");
+        } else {
+            throw new InvalidEmailValidationException("Your account email is already validated");
         }
-        throw new InvalidEmailValidationException("Your account email is already validated");
     }
 }

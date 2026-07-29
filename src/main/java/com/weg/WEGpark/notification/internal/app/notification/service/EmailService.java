@@ -44,9 +44,9 @@ public class EmailService {
         context.setVariable("systemUrl", emailVariables.url());
         context.setVariable("noticeMessage", warningMessage);
 
-        if (useButton == null || !useButton) {
-            context.setVariable("urlAcao", buttonUrl);
-            context.setVariable("textoBotao", buttonText != null ? buttonText : "Ver Notificação");
+        if (useButton != null && useButton) {
+            context.setVariable("actionUrl", buttonUrl);
+            context.setVariable("buttonText", buttonText != null ? buttonText : "Ver Notificação");
             htmlContent = templateEngine.process("email-template-button", context);
         } else {
             htmlContent = templateEngine.process("email-template", context);
