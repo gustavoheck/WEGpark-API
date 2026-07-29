@@ -42,7 +42,7 @@ public class RhControllerGuard {
                 .body(response);
     }
 
-    @PutMapping("/{uuid}")
+    @PutMapping("/{guardUuid}")
     public ResponseEntity<UpdateGuardResponseDTO> updateGuard (
             @RequestBody @Valid UpdateGuardRequestDTO request,
             @AuthenticationPrincipal JWTUserData jwtUserData,
