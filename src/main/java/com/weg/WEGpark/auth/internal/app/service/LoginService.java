@@ -1,5 +1,6 @@
 package com.weg.WEGpark.auth.internal.app.service;
 
+import com.weg.WEGpark.auth.internal.app.exception.AccountEmailNotActiveException;
 import com.weg.WEGpark.auth.internal.app.exception.InvalidLoginException;
 import com.weg.WEGpark.auth.shared.enums.RolesType;
 import com.weg.WEGpark.auth.internal.domain.model.User;
@@ -27,6 +28,7 @@ public class LoginService {
     private final UserRepository userRepository;
     private final AuthenticationManager authenticationManager;
     private final TokenConfig tokenConfig;
+    private final AuthNotificationService authNotificationService;
 
     public List<SelectAccountResponseDTO> preLogin (String email) {
         List<User> users = userRepository.findByEmail(email);
@@ -49,18 +51,22 @@ public class LoginService {
             if (users.isEmpty()) throw new InvalidLoginException();
             userLogin = users.getFirst();
         }
-        UsernamePasswordAuthenticationToken userAndPass =
-                new UsernamePasswordAuthenticationToken(userLogin.getId(), request.password());
-        try {
-            Authentication authentication = authenticationManager.authenticate(userAndPass);
+        if (userLogin.getEmailValidated() == true) {
+            UsernamePasswordAuthenticationToken userAndPass =
+                    new UsernamePasswordAuthenticationToken(userLogin.getId(), request.password());
+            try {
+                Authentication authentication = authenticationManager.authenticate(userAndPass);
 
-            User userToken = (User) authentication.getPrincipal();
+                User userToken = (User) authentication.getPrincipal();
 
-            String token = tokenConfig.generateToken(userToken);
+                String token = tokenConfig.generateToken(userToken);
 
-            return new LoginResponseDTO(token);
-        } catch (UsernameNotFoundException | BadCredentialsException e) {
-            throw new InvalidLoginException();
+                return new LoginResponseDTO(token);
+            } catch (UsernameNotFoundException | BadCredentialsException e) {
+                throw new InvalidLoginException();
+            }
         }
+        authNotificationService.sendAccountEmailValidation(userLogin.getEmail(), userLogin.getRole().getRole());
+        throw new AccountEmailNotActiveException("Your email is not active");
     }
 }
