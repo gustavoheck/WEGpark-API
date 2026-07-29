@@ -1,14 +1,10 @@
 package com.weg.WEGpark.park.internal.app.user.mapper;
 
 import com.weg.WEGpark.auth.VisitorRegisteredEvent;
-import com.weg.WEGpark.park.internal.domain.model.users.Collaborator;
 import com.weg.WEGpark.park.internal.domain.model.users.Visitor;
-import com.weg.WEGpark.park.internal.dto.user.collaborator.UpdateCollaboratorRequestDTO;
 import com.weg.WEGpark.park.internal.dto.user.visitor.GetVisitorResponseDTO;
-import com.weg.WEGpark.park.internal.dto.user.visitor.UpdateVisitorRequestDTO;
-import com.weg.WEGpark.park.shared.dto.update.UpdateCollaboratorResponseDTO;
+import com.weg.WEGpark.park.shared.dto.update.UpdateVisitorRequestDTO;
 import com.weg.WEGpark.park.shared.dto.update.UpdateVisitorResponseDTO;
-import com.weg.WEGpark.rh.UpdateCollaboratorEvent;
 import com.weg.WEGpark.rh.UpdateVisitorEvent;
 import org.mapstruct.*;
 

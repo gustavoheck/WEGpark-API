@@ -1,8 +1,8 @@
 package com.weg.WEGpark.park.shared.dto.update;
 
-public record UpdateVisitorResponseDTO(
+public record UpdateVisitorRequestDTO(
 
-        UpdateParkUserResponseDTO defaults,
+        UpdateParkUserRequestDTO defaults,
 
         String company,
 

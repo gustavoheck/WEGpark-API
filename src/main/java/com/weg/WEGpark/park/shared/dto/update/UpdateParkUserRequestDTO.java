@@ -1,4 +1,4 @@
-package com.weg.WEGpark.park.internal.dto.user.defaults;
+package com.weg.WEGpark.park.shared.dto.update;
 
 public record UpdateParkUserRequestDTO(
 

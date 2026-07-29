@@ -7,10 +7,7 @@ import com.weg.WEGpark.park.internal.domain.model.users.Guard;
 import com.weg.WEGpark.rh.RegisterRhEvent;
 import com.weg.WEGpark.rh.UpdateGuardEvent;
 import com.weg.WEGpark.rh.internal.domain.model.Rh;
-import com.weg.WEGpark.rh.internal.dto.rh.GetRhResponseDTO;
-import com.weg.WEGpark.rh.internal.dto.rh.RegisterRhRequestDTO;
-import com.weg.WEGpark.rh.internal.dto.rh.RegisterRhResponseDTO;
-import com.weg.WEGpark.rh.internal.dto.rh.UpdateRhRequestDTO;
+import com.weg.WEGpark.rh.internal.dto.rh.*;
 import org.mapstruct.*;
 
 import java.util.concurrent.CompletableFuture;
@@ -25,7 +22,7 @@ public interface RhMapper {
 
     RegisterRhResponseDTO toRegisterResponse (Rh rh);
 
-    UpdateRhRequestDTO toUpdateResponse (Rh rh);
+    UpdateRhResponseDTO toUpdateResponse (Rh rh);
 
     GetRhResponseDTO toGetResponse (Rh rh);
 

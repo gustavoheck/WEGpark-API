@@ -1,15 +1,13 @@
 package com.weg.WEGpark.rh.internal.app.service;
 
 import com.weg.WEGpark.auth.DefaultRegisteredEvent;
+import com.weg.WEGpark.auth.internal.infra.security.config.JWTUserData;
 import com.weg.WEGpark.auth.shared.dto.register.RegisterAccountResponseDTO;
 import com.weg.WEGpark.rh.internal.app.mapper.RhMapper;
 import com.weg.WEGpark.rh.internal.domain.enums.OperationType;
 import com.weg.WEGpark.rh.internal.domain.model.Operation;
 import com.weg.WEGpark.rh.internal.domain.model.Rh;
-import com.weg.WEGpark.rh.internal.dto.rh.GetRhResponseDTO;
-import com.weg.WEGpark.rh.internal.dto.rh.RegisterRhRequestDTO;
-import com.weg.WEGpark.rh.internal.dto.rh.RegisterRhResponseDTO;
-import com.weg.WEGpark.rh.internal.dto.rh.UpdateRhRequestDTO;
+import com.weg.WEGpark.rh.internal.dto.rh.*;
 import com.weg.WEGpark.rh.internal.infra.repository.OperationRepository;
 import com.weg.WEGpark.rh.internal.infra.repository.RhRepository;
 import com.weg.WEGpark.rh.shared.filter.FindUserFilter;
@@ -39,7 +37,7 @@ public class RhService {
     private final OperationRepository operationRepository;
     private final ApplicationEventPublisher applicationEventPublisher;
 
-    public RegisterRhResponseDTO registerRh (RegisterRhRequestDTO request) {
+    public RegisterRhResponseDTO registerRh (RegisterRhRequestDTO request, JWTUserData jwtUserData) {
         CompletableFuture<DefaultRegisteredEvent> eventResponse = new CompletableFuture<>();
         applicationEventPublisher.publishEvent(rhMapper.toRegisterEvent(request.defaults(), eventResponse));
         eventResponse.thenApply(response -> {
@@ -47,14 +45,14 @@ public class RhService {
             rh.setId(response.id());
             rh.setUuid(response.uuid());
             rh.setEmail(response.email());
-            Operation operation = new Operation(OperationType.CREATE, response.uuid());
+            Operation operation = new Operation(OperationType.CREATE, jwtUserData.uuid());
             operationRepository.save(operation);
             return rhMapper.toRegisterResponse(rh);
         });
         return null;
     }
 
-    public UpdateRhRequestDTO updateRh (UpdateRhRequestDTO request, UUID uuid) {
+    public UpdateRhResponseDTO updateRh (UpdateRhRequestDTO request, UUID uuid, JWTUserData jwtUserData) {
         Rh rh = rhRepository.findByUuid(uuid)
                 .orElseThrow(() -> new NotFoundException("Any rh account was found by %s uuid".formatted(uuid)));
 
@@ -62,7 +60,7 @@ public class RhService {
 
         rhRepository.save(rh);
 
-        Operation operation = new Operation(OperationType.UPDATE, uuid);
+        Operation operation = new Operation(OperationType.UPDATE, jwtUserData.uuid());
         operationRepository.save(operation);
 
         return rhMapper.toUpdateResponse(rh);

@@ -6,7 +6,7 @@ import com.weg.WEGpark.park.internal.app.user.mapper.CollaboratorMapper;
 import com.weg.WEGpark.park.internal.domain.enums.user.ParkUserType;
 import com.weg.WEGpark.park.internal.domain.model.users.Collaborator;
 import com.weg.WEGpark.park.internal.domain.model.users.ParkUser;
-import com.weg.WEGpark.park.internal.dto.user.collaborator.UpdateCollaboratorRequestDTO;
+import com.weg.WEGpark.park.shared.dto.update.UpdateCollaboratorRequestDTO;
 import com.weg.WEGpark.park.internal.infra.repository.CollaboratorRepository;
 import com.weg.WEGpark.park.internal.infra.repository.ParkUserRepository;
 import com.weg.WEGpark.park.shared.dto.update.UpdateCollaboratorResponseDTO;
