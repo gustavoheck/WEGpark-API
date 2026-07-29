@@ -1,9 +1,7 @@
 package com.weg.WEGpark.auth.internal.app.mapper;
 
-import com.weg.WEGpark.auth.CollaboratorRegisteredEvent;
-import com.weg.WEGpark.auth.DefaultRegisteredEvent;
-import com.weg.WEGpark.auth.GuardRegisteredEvent;
-import com.weg.WEGpark.auth.VisitorRegisteredEvent;
+import com.weg.WEGpark.auth.*;
+import com.weg.WEGpark.auth.internal.domain.model.AuthToken;
 import com.weg.WEGpark.auth.internal.domain.model.User;
 import com.weg.WEGpark.auth.shared.dto.register.RegisterAccountResponseDTO;
 import com.weg.WEGpark.auth.shared.dto.register.RegisterCollaboratorRequestDTO;
@@ -45,4 +43,5 @@ public interface AuthEventMapper {
     );
 
     DefaultRegisteredEvent toDefaultRegisteredEvent (User user);
+
 }

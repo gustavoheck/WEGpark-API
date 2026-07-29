@@ -150,9 +150,8 @@ public class RegisterService {
         user.setPassword(securityConfig.passwordEncoder().encode(user.getPassword()));
         user.setActive(false);
         user.setEmailValidated(false);
-        authNotificationService.sendAccountEmailValidation(user.getEmail(), user.getRole().getRole());
         userRepository.saveAndFlush(user);
-
+        authNotificationService.sendAccountEmailValidation(user);
         return user;
     }
 

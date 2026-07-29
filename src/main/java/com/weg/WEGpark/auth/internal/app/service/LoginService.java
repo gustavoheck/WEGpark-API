@@ -44,7 +44,7 @@ public class LoginService {
     public LoginResponseDTO login (LoginRequestDTO request) {
         User userLogin;
         if (request.role() != null) {
-            userLogin = userRepository.findByEmailAndRole(request.email(), RolesType.valueOf(request.role()))
+            userLogin = userRepository.findByEmailAndRole_Role(request.email(), RolesType.valueOf(request.role()))
                     .orElseThrow(() -> new InvalidLoginException());
         } else {
             List<User> users = userRepository.findByEmail(request.email());
@@ -66,7 +66,7 @@ public class LoginService {
                 throw new InvalidLoginException();
             }
         }
-        authNotificationService.sendAccountEmailValidation(userLogin.getEmail(), userLogin.getRole().getRole());
+        authNotificationService.sendAccountEmailValidation(userLogin);
         throw new AccountEmailNotActiveException("Your email is not active");
     }
 }

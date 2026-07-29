@@ -21,14 +21,11 @@ public class AuthTokenService {
     private final AuthTokenRepository authTokenRepository;
 
     @Transactional
-    public void createToken (User user, TokenType tokenType) {
+    public AuthToken createToken (User user, TokenType tokenType) {
         if (userRepository.existsById(user.getId())) {
-            authTokenRepository.save(
-                    new AuthToken(
-                            tokenType,
-                            user
-                    )
-            );
+            AuthToken authToken = new AuthToken(tokenType,user);
+            authTokenRepository.save(authToken);
+            return authToken;
         }
         throw new NotFoundException("Any user was found by %s id to create a token".formatted(user));
     }

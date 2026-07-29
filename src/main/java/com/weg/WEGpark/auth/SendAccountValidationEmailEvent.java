@@ -6,8 +6,6 @@ public record SendAccountValidationEmailEvent(
 
         UUID authToken,
 
-        String email,
-
-        String name
+        String email
 ) {
 }

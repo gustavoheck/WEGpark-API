@@ -1,9 +1,8 @@
 package com.weg.WEGpark.notification.internal.listener.notification;
 
 import com.weg.WEGpark.auth.SendAccountValidationEmailEvent;
-import com.weg.WEGpark.notification.internal.app.email.service.NotificationEmailService;
+import com.weg.WEGpark.notification.internal.app.notification.service.EmailService;
 import com.weg.WEGpark.notification.internal.dto.EmailVariables;
-import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
@@ -12,15 +11,14 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class EmailNotificationListener {
 
-    private final NotificationEmailService notificationEmailService;
+    private final EmailService emailService;
     private final EmailVariables emailVariables;
 
     @EventListener
     public void sendValidationEmail (SendAccountValidationEmailEvent event) {
 
-        notificationEmailService.sendNotification(
+        emailService.sendNotification(
                 event.email(),
-                event.name(),
                 "Valide sua conta no WEGPark!",
                 "Você precisa validar sua conta para usar o sistema do WEGPark!",
                 true,

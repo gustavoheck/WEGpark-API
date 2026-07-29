@@ -1,4 +1,4 @@
-package com.weg.WEGpark.notification.internal.app.exception;
+package com.weg.WEGpark.notification.internal.app.notification.exception;
 
 public class ImageNotEncounteredException extends RuntimeException {
     public ImageNotEncounteredException() {

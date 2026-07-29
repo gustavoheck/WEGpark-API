@@ -1,29 +1,32 @@
-package com.weg.WEGpark.notification.internal.app.email.service;
+package com.weg.WEGpark.notification.internal.app.notification.service;
 
 import java.nio.charset.StandardCharsets;
 
-import com.weg.WEGpark.notification.internal.app.exception.CreatingEmailMessageErrorException;
-import com.weg.WEGpark.notification.internal.app.exception.ImageNotEncounteredException;
+import com.weg.WEGpark.notification.internal.app.notification.exception.CreatingEmailMessageErrorException;
+import com.weg.WEGpark.notification.internal.app.notification.exception.ImageNotEncounteredException;
+import com.weg.WEGpark.notification.internal.dto.EmailVariables;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 
-public class NotificationEmailService {
+@Service
+@RequiredArgsConstructor
+public class EmailService {
 
-    @Autowired
-    private JavaMailSender mailSender;
-
-    @Autowired
-    private TemplateEngine templateEngine;
+    private final JavaMailSender mailSender;
+    private final TemplateEngine templateEngine;
+    private final EmailVariables emailVariables;
 
     public void sendNotification(
             String destinationEmail,
-            String userName,
             String subject,
             String warningMessage,
             Boolean useButton,
@@ -38,8 +41,7 @@ public class NotificationEmailService {
         context.setVariable("subject", subject);
         context.setVariable("notificationSummary", warningMessage);
         context.setVariable("systemName", "WEGpark");
-        context.setVariable("systemUrl", "https://wegpark.com.br");
-        context.setVariable("userName", userName);
+        context.setVariable("systemUrl", emailVariables.url());
         context.setVariable("noticeMessage", warningMessage);
 
         if (useButton == null || useButton) {
