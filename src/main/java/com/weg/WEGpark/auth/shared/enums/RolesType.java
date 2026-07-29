@@ -1,4 +1,4 @@
-package com.weg.WEGpark.auth.internal.domain.enums;
+package com.weg.WEGpark.auth.shared.enums;
 
 public enum RolesType {
     ROLE_GUARD(3),

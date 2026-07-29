@@ -1,14 +1,13 @@
 package com.weg.WEGpark.auth.internal.app.service;
 
 import com.weg.WEGpark.auth.internal.app.exception.InvalidLoginException;
-import com.weg.WEGpark.auth.internal.domain.enums.RolesType;
+import com.weg.WEGpark.auth.shared.enums.RolesType;
 import com.weg.WEGpark.auth.internal.domain.model.User;
 import com.weg.WEGpark.auth.internal.dto.login.LoginRequestDTO;
 import com.weg.WEGpark.auth.internal.dto.login.LoginResponseDTO;
 import com.weg.WEGpark.auth.internal.dto.login.SelectAccountResponseDTO;
 import com.weg.WEGpark.auth.internal.infra.repository.UserRepository;
 import com.weg.WEGpark.auth.internal.infra.security.config.TokenConfig;
-import io.swagger.v3.oas.annotations.info.Contact;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;

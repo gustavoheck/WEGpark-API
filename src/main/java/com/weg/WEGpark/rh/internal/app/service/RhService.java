@@ -1,14 +1,12 @@
 package com.weg.WEGpark.rh.internal.app.service;
 
 import com.weg.WEGpark.auth.DefaultRegisteredEvent;
+import com.weg.WEGpark.auth.shared.exception.AlreadyHaveAccountException;
 import com.weg.WEGpark.auth.internal.infra.security.config.JWTUserData;
-import com.weg.WEGpark.auth.shared.dto.register.RegisterAccountResponseDTO;
 import com.weg.WEGpark.rh.internal.app.mapper.RhMapper;
 import com.weg.WEGpark.rh.internal.domain.enums.OperationType;
-import com.weg.WEGpark.rh.internal.domain.model.Operation;
 import com.weg.WEGpark.rh.internal.domain.model.Rh;
 import com.weg.WEGpark.rh.internal.dto.rh.*;
-import com.weg.WEGpark.rh.internal.infra.repository.OperationRepository;
 import com.weg.WEGpark.rh.internal.infra.repository.RhRepository;
 import com.weg.WEGpark.rh.shared.filter.FindUserFilter;
 import com.weg.WEGpark.shared.IsParkUserActiveEvent;
@@ -34,7 +32,7 @@ public class RhService {
 
     private final RhMapper rhMapper;
     private final RhRepository rhRepository;
-    private final OperationRepository operationRepository;
+    private final OperationService operationService;
     private final ApplicationEventPublisher applicationEventPublisher;
 
     @Transactional
@@ -43,27 +41,17 @@ public class RhService {
         applicationEventPublisher.publishEvent(rhMapper.toRegisterEvent(request.defaults(), eventResponse));
         DefaultRegisteredEvent response = eventResponse.join();
 
-        Rh rh = rhMapper.toEntity(request);
-        rh.setId(response.id());
-        rh.setUuid(response.uuid());
-        rh.setEmail(response.email());
-
-        System.out.println(response.email());
-        System.out.println(response.id());
-        System.out.println(response.uuid());
-
-        rhRepository.save(rh);
-
-        //Ele esta cadastrando um usuario igual duas vezes para rh, voce precisa passar pelos filtros para bloquear isso
-
-//        Operation operation = new Operation(OperationType.CREATE, response.uuid());
-//
-////        Rh executorRh = rhRepository.findByUuid(jwtUserData.uuid())
-////                .orElseThrow(() -> new NotFoundException("Any rh account was found by the logged uuid"));
-////        operation.setRh(executorRh);
-////        operationRepository.save(operation);
-
-        return rhMapper.toRegisterResponse(rh);
+        if (!rhRepository.existsByEmail(request.defaults().email())) {
+            Rh rh = rhMapper.toEntity(request);
+            rh.setId(response.id());
+            rh.setUuid(response.uuid());
+            rh.setEmail(response.email());
+            rhRepository.save(rh);
+            operationService.saveOperation(jwtUserData, response.uuid(), OperationType.CREATE);
+            return rhMapper.toRegisterResponse(rh);
+        } else {
+            throw new AlreadyHaveAccountException("An rh account with this email is already registered");
+        }
     }
 
     @Transactional
@@ -75,13 +63,7 @@ public class RhService {
 
         rhRepository.save(rh);
 
-        Rh executorRh = rhRepository.findByUuid(jwtUserData.uuid())
-                .orElseThrow(() -> new NotFoundException("Any rh account was found by the logged uuid"));
-
-        Operation operation = new Operation(OperationType.UPDATE, rh.getUuid());
-        operation.setRh(executorRh);
-        operationRepository.save(operation);
-
+        operationService.saveOperation(jwtUserData, rh.getUuid(), OperationType.CREATE);
         return rhMapper.toUpdateResponse(rh);
     }
 
@@ -93,6 +75,7 @@ public class RhService {
                     responseList = rhRepository
                             .findAll()
                             .stream()
+                            .filter(user -> getUserActive(user.getUuid()) == findUserFilter.active())
                             .map(rhMapper::toGetResponse)
                             .toList();
                     return new PageImpl<>(responseList, pageable, responseList.size());
