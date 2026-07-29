@@ -1,6 +1,6 @@
 package com.weg.WEGpark.rh.internal.app.mapper;
 
-import com.weg.WEGpark.park.GuardParkRegisteredEvent;
+import com.weg.WEGpark.park.ParkGuardRegisteredEvent;
 import com.weg.WEGpark.park.GuardUpdatedEvent;
 import com.weg.WEGpark.rh.RegisterGuardEvent;
 import com.weg.WEGpark.rh.UpdateGuardEvent;
@@ -20,9 +20,9 @@ public interface RhGuardMapper {
     @Mapping(source = "request.collaboratorDefaults", target = ".")
     @Mapping(source = "request.collaboratorDefaults.defaults", target = ".")
     @Mapping(source = "request.collaboratorDefaults.parkUserDefaults", target = ".")
-    RegisterGuardEvent toGuardRegisterEvent (RegisterGuardRequestDTO request, CompletableFuture<GuardParkRegisteredEvent> registerResponse);
+    RegisterGuardEvent toGuardRegisterEvent (RegisterGuardRequestDTO request, CompletableFuture<ParkGuardRegisteredEvent> registerResponse);
 
-    RegisterGuardResponseDTO toGuardRegisterResponse (GuardParkRegisteredEvent event);
+    RegisterGuardResponseDTO toGuardRegisterResponse (ParkGuardRegisteredEvent event);
 
     UpdateGuardEvent toGuardUpdateEvent (UpdateGuardRequestDTO request, UUID uuid, CompletableFuture<GuardUpdatedEvent> eventResponse);
 

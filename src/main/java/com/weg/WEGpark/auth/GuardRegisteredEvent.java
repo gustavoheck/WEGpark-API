@@ -1,13 +1,13 @@
 package com.weg.WEGpark.auth;
 
-import com.weg.WEGpark.park.GuardParkRegisteredEvent;
+import com.weg.WEGpark.park.ParkGuardRegisteredEvent;
 
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 public record GuardRegisteredEvent(
 
-        CompletableFuture<GuardParkRegisteredEvent> registerResponse,
+        CompletableFuture<ParkGuardRegisteredEvent> registerResponse,
 
         Long id,
 

@@ -1,7 +1,7 @@
 package com.weg.WEGpark.park.internal.app.user.mapper;
 
 import com.weg.WEGpark.auth.GuardRegisteredEvent;
-import com.weg.WEGpark.park.GuardParkRegisteredEvent;
+import com.weg.WEGpark.park.ParkGuardRegisteredEvent;
 import com.weg.WEGpark.park.GuardUpdatedEvent;
 import com.weg.WEGpark.park.internal.domain.model.users.Guard;
 import com.weg.WEGpark.park.internal.dto.user.guard.GetGuardResponseDTO;
@@ -12,7 +12,7 @@ import org.mapstruct.*;
 public interface GuardMapper {
     Guard toEntity (GuardRegisteredEvent event);
 
-    GuardParkRegisteredEvent toEventResponse (GuardRegisteredEvent event);
+    ParkGuardRegisteredEvent toEventResponse (GuardRegisteredEvent event);
 
     @Mapping(source = "guard", target = ".")
     @Mapping(source = "active", target = "defaults.active")

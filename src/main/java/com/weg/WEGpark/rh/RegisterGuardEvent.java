@@ -1,11 +1,11 @@
 package com.weg.WEGpark.rh;
 
-import com.weg.WEGpark.park.GuardParkRegisteredEvent;
+import com.weg.WEGpark.park.ParkGuardRegisteredEvent;
 
 import java.util.concurrent.CompletableFuture;
 
 public record RegisterGuardEvent(
-        CompletableFuture<GuardParkRegisteredEvent> registerResponse,
+        CompletableFuture<ParkGuardRegisteredEvent> registerResponse,
 
         String email,
 

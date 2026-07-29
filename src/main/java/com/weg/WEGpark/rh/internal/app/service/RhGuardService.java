@@ -1,7 +1,7 @@
 package com.weg.WEGpark.rh.internal.app.service;
 
 import com.weg.WEGpark.auth.internal.infra.security.config.JWTUserData;
-import com.weg.WEGpark.park.GuardParkRegisteredEvent;
+import com.weg.WEGpark.park.ParkGuardRegisteredEvent;
 import com.weg.WEGpark.park.GuardUpdatedEvent;
 import com.weg.WEGpark.rh.internal.app.mapper.RhGuardMapper;
 import com.weg.WEGpark.rh.internal.domain.enums.OperationType;
@@ -34,19 +34,12 @@ public class RhGuardService {
 
     @Transactional
     public RegisterGuardResponseDTO createGuard (RegisterGuardRequestDTO request, JWTUserData jwtUserData) {
-        CompletableFuture<GuardParkRegisteredEvent> guardRegisteredEvent = new CompletableFuture<>();
+        CompletableFuture<ParkGuardRegisteredEvent> guardRegisteredEvent = new CompletableFuture<>();
         applicationEventPublisher.publishEvent(rhGuardMapper.toGuardRegisterEvent(request, guardRegisteredEvent));
 
-        guardRegisteredEvent.thenApply( event -> {
-            Rh rh = rhRepository.findByUuid(jwtUserData.uuid())
-                    .orElseThrow(() -> new NotFoundException("Any user was found by the logged uuid"));
-            Operation operation = new Operation(OperationType.CREATE, event.uuid());
-            operation.setRh(rh);
-            operationRepository.save(operation);
-            return rhGuardMapper.toGuardRegisterResponse(event);
-        });
-        System.out.println("red");
-        return null;
+        ParkGuardRegisteredEvent eventResponse = guardRegisteredEvent.join();
+        return rhGuardMapper.toGuardRegisterResponse(eventResponse);
+
     }
 
     @Transactional

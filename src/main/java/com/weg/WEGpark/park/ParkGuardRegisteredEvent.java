@@ -2,9 +2,7 @@ package com.weg.WEGpark.park;
 
 import java.util.UUID;
 
-public record GuardParkRegisteredEvent(
-        Long id,
-
+public record ParkGuardRegisteredEvent(
         UUID uuid,
 
         String email,
