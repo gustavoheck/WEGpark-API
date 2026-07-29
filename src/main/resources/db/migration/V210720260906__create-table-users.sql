@@ -4,6 +4,7 @@ CREATE TABLE auth.users (
     email VARCHAR(255) NOT NULL,
     password VARCHAR(255) NOT NULL,
     active BOOLEAN NOT NULL,
+    email_validated BOOLEAN NOT NULL,
     id_role BIGINT NOT NULL,
     FOREIGN KEY (id_role) REFERENCES auth.role(id)
 );

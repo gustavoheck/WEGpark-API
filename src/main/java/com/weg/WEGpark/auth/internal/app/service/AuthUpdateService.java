@@ -10,6 +10,7 @@ import com.weg.WEGpark.auth.shared.dto.update.UpdateUserRequestDTO;
 import com.weg.WEGpark.auth.shared.dto.update.UpdateUserResponseDTO;
 import com.weg.WEGpark.auth.internal.infra.repository.AuthTokenRepository;
 import com.weg.WEGpark.auth.internal.infra.repository.UserRepository;
+import com.weg.WEGpark.auth.shared.enums.RolesType;
 import com.weg.WEGpark.rh.DesactivateAndActivateUserEvent;
 import com.weg.WEGpark.shared.exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -29,7 +30,7 @@ public class AuthUpdateService {
 
     private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
-    private final AuthTokenRepository authTokenRepository;
+    private final AuthTokenService authTokenService;
 
     private final UserMapper userMapper;
 
@@ -72,6 +73,16 @@ public class AuthUpdateService {
     }
 
     @Transactional
+    public void sendAccountEmailValidation (String email, RolesType role) {
+        User user = userRepository.findByEmailAndRole(email, role)
+                .orElseThrow(() -> new NotFoundException("Any %s user was found by %s email".formatted(role, email)));
+
+        authTokenService.createToken(user, TokenType.EMAIL_VALIDATION);
+
+
+    }
+
+    @Transactional
     public void activateAndDesactivateUser (DesactivateAndActivateUserEvent event) {
         User user = userRepository.findByUuid(event.uuid())
                 .orElseThrow(() -> new NotFoundException("Any user was found by %s uuid".formatted(event.uuid())));
@@ -83,8 +94,7 @@ public class AuthUpdateService {
 
     @Transactional
     private User checkToken (UUID uuid, TokenType operation) {
-        AuthToken token = authTokenRepository.findById(uuid)
-                .orElseThrow(() -> new NotFoundException("This uuid dont correspond to any token"));
+        AuthToken token = authTokenService.findToken(uuid);
         if (LocalDateTime.now().isAfter(token.getExpirationTime())) throw new InvalidTokenException("This token is already expired");
         if (token.getUsed()) throw new InvalidTokenException("This token is already used");
         if (!(token.getTokenType().equals(operation.toString()))) throw new InvalidTokenException("You can not use a token of %s to %s"

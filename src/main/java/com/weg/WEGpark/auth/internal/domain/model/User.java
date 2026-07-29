@@ -40,6 +40,9 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private Boolean active;
 
+    @Column(name = "email_validated", nullable = false)
+    private Boolean emailValidated;
+
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "id_role")
     private Role role;
