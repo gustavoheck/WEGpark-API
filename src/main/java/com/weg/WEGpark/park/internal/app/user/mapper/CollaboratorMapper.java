@@ -18,7 +18,7 @@ public interface CollaboratorMapper {
     GetCollaboratorResponseDTO toResponse (Collaborator collaborator, Boolean active);
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
-    @Mapping(source = "event", target = ".")
+    @Mapping(source = "request", target = ".")
     void updateFromDTO(UpdateCollaboratorRequestDTO request, @MappingTarget Collaborator collaborator);
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)

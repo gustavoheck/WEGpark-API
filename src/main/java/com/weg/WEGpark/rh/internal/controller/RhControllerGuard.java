@@ -1,7 +1,7 @@
 package com.weg.WEGpark.rh.internal.controller;
 
 import com.weg.WEGpark.auth.internal.infra.security.config.JWTUserData;
-import com.weg.WEGpark.rh.internal.app.service.GuardService;
+import com.weg.WEGpark.rh.internal.app.service.RhGuardService;
 import com.weg.WEGpark.rh.internal.dto.guard.RegisterGuardRequestDTO;
 import com.weg.WEGpark.rh.internal.dto.guard.RegisterGuardResponseDTO;
 import com.weg.WEGpark.rh.internal.dto.guard.UpdateGuardRequestDTO;
@@ -22,7 +22,7 @@ import java.util.UUID;
 @RequestMapping("/rh/guard")
 public class RhControllerGuard {
 
-    private final GuardService guardService;
+    private final RhGuardService rhGuardService;
 
     @PutMapping("/{uuid}")
     public ResponseEntity<UpdateGuardResponseDTO> updateGuard (
@@ -30,7 +30,7 @@ public class RhControllerGuard {
             @AuthenticationPrincipal JWTUserData jwtUserData,
             @PathVariable UUID guardUuid
     ) {
-        UpdateGuardResponseDTO response = guardService.updateRegistrationData(request, guardUuid, jwtUserData);
+        UpdateGuardResponseDTO response = rhGuardService.updateRegistrationData(request, guardUuid, jwtUserData);
 
         return ResponseEntity
                 .status(HttpStatus.OK)
@@ -42,7 +42,7 @@ public class RhControllerGuard {
             @RequestBody @Valid RegisterGuardRequestDTO request,
             @AuthenticationPrincipal JWTUserData jwtUserData
     ) {
-        RegisterGuardResponseDTO response = guardService.createGuard(request, jwtUserData);
+        RegisterGuardResponseDTO response = rhGuardService.createGuard(request, jwtUserData);
 
         URI uri = ServletUriComponentsBuilder
                 .fromCurrentRequest()

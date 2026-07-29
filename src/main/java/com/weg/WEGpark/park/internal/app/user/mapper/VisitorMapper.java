@@ -18,7 +18,7 @@ public interface VisitorMapper {
     GetVisitorResponseDTO toResponse (Visitor visitor, Boolean active);
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
-    @Mapping(source = "event", target = ".")
+    @Mapping(source = "request", target = ".")
     void updateFromDTO(UpdateVisitorRequestDTO request, @MappingTarget Visitor visitor);
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)

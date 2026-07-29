@@ -36,6 +36,7 @@ public interface AuthEventMapper {
     );
 
     @Mapping(source = "event", target = ".")
+    @Mapping(source = "event.email", target = "email")
     @Mapping(source = "user.uuid", target = "uuid")
     @Mapping(source = "user.id", target = "id")
     GuardRegisteredEvent ToGuardRegisteredEvent (

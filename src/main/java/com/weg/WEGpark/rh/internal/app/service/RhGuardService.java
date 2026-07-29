@@ -25,7 +25,7 @@ import java.util.concurrent.CompletableFuture;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class GuardService {
+public class RhGuardService {
 
     private final ApplicationEventPublisher applicationEventPublisher;
     private final RhGuardMapper rhGuardMapper;

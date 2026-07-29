@@ -1,14 +1,9 @@
 package com.weg.WEGpark.rh.internal.controller;
 
 import com.weg.WEGpark.auth.internal.infra.security.config.JWTUserData;
-import com.weg.WEGpark.rh.RegisterRhEvent;
-import com.weg.WEGpark.rh.internal.app.service.GuardService;
+import com.weg.WEGpark.rh.internal.app.service.RhGuardService;
 import com.weg.WEGpark.rh.internal.app.service.RhService;
 import com.weg.WEGpark.rh.internal.app.service.UserOperationService;
-import com.weg.WEGpark.rh.internal.dto.guard.RegisterGuardRequestDTO;
-import com.weg.WEGpark.rh.internal.dto.guard.RegisterGuardResponseDTO;
-import com.weg.WEGpark.rh.internal.dto.guard.UpdateGuardRequestDTO;
-import com.weg.WEGpark.rh.internal.dto.guard.UpdateGuardResponseDTO;
 import com.weg.WEGpark.rh.internal.dto.rh.RegisterRhRequestDTO;
 import com.weg.WEGpark.rh.internal.dto.rh.RegisterRhResponseDTO;
 import com.weg.WEGpark.rh.internal.dto.rh.UpdateRhRequestDTO;
@@ -30,7 +25,7 @@ import java.util.UUID;
 public class RhController {
 
     private final RhService rhService;
-    private final GuardService guardService;
+    private final RhGuardService rhGuardService;
     private final UserOperationService userOperationService;
 
     @PostMapping
