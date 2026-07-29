@@ -27,6 +27,15 @@ public class AuthController {
     private final LoginService loginService;
     private final RegisterService registerService;
 
+    @RequestMapping("/admin")
+    public ResponseEntity<RegisterAccountResponseDTO> registerAdmin () {
+        RegisterAccountResponseDTO response = registerService.registerAdminAccount();
+
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(response);
+    }
+
     @RequestMapping("/login")
     public ResponseEntity<LoginResponseDTO> login (@Valid @RequestBody LoginRequestDTO request) {
         LoginResponseDTO response = loginService.login(request);

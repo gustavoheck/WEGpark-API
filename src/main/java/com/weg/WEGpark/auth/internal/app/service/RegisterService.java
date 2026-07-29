@@ -129,6 +129,20 @@ public class RegisterService {
     }
 
     @Transactional
+    public RegisterAccountResponseDTO registerAdminAccount () {
+        User user = new User(
+                "admin@gmail.com",
+                "admin"
+        );
+        Optional<Role> role = roleRepository.findByRole(RolesType.ROLE_ADMIN);
+        if (role.isEmpty()) {
+            throw new NotFoundException("Any Admin role was found");
+        }
+        registerAccount(user, role.get());
+        return userMapper.toRegisterResponse(user);
+    }
+
+    @Transactional
     private User registerAccount (User user, Role role) {
         user.setRole(role);
         user.setPassword(securityConfig.passwordEncoder().encode(user.getPassword()));
