@@ -45,7 +45,7 @@ public class RhControllerOperation {
                 .body(response);
     }
 
-    @PostMapping("/user/desactivate")
+    @PostMapping("/user/{userUuid}/desactivate")
     public ResponseEntity<Void> desactivateUser (
             @PathVariable UUID userUuid,
             @AuthenticationPrincipal JWTUserData jwtUserData
