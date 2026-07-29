@@ -8,12 +8,14 @@ import com.weg.WEGpark.rh.GetParkUsersEvent;
 import com.weg.WEGpark.rh.internal.app.mapper.UserOperationMapper;
 import com.weg.WEGpark.rh.internal.domain.enums.OperationType;
 import com.weg.WEGpark.rh.internal.domain.model.Operation;
+import com.weg.WEGpark.rh.internal.domain.model.Rh;
 import com.weg.WEGpark.rh.internal.dto.rh.GetRhResponseDTO;
 import com.weg.WEGpark.rh.internal.infra.repository.OperationRepository;
 import com.weg.WEGpark.rh.internal.infra.repository.RhRepository;
 import com.weg.WEGpark.rh.shared.filter.FindUserFilter;
 import com.weg.WEGpark.shared.IsParkUserActiveEvent;
 import com.weg.WEGpark.shared.exception.MoreThenOneFilterException;
+import com.weg.WEGpark.shared.exception.NotFoundException;
 import com.weg.WEGpark.shared.util.FilterUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
@@ -36,6 +38,7 @@ public class UserOperationService {
     private final ApplicationEventPublisher applicationEventPublisher;
     private final UserOperationMapper userOperationMapper;
     private final RhService rhService;
+    private final RhRepository rhRepository;
     private final OperationRepository operationRepository;
 
     public Page<Record> listUsers (FindUserFilter filter, Pageable pageable) {
@@ -63,10 +66,16 @@ public class UserOperationService {
 
         applicationEventPublisher.publishEvent(userOperationMapper.toUpdateAuthEvent(request, eventResponse, targetUuid));
 
-        Operation operation = new Operation(OperationType.UPDATE, jwtUserData.uuid());
+        UpdateUserResponseDTO response = eventResponse.join();
+
+        Rh executorRh = rhRepository.findByUuid(jwtUserData.uuid())
+                .orElseThrow(() -> new NotFoundException("Any rh account was found by the logged uuid"));
+
+        Operation operation = new Operation(OperationType.UPDATE, response.uuid());
+        operation.setRh(executorRh);
         operationRepository.save(operation);
 
-        return eventResponse.join();
+        return response;
     }
 
 
@@ -75,6 +84,9 @@ public class UserOperationService {
     public void desactivateAndActivateUser (UUID uuid, JWTUserData jwtUserData) {
         applicationEventPublisher.publishEvent(new DesactivateAndActivateUserEvent(uuid));
         Operation operation = new Operation(OperationType.DESACTIVATE, jwtUserData.uuid());
+        Rh executorRh = rhRepository.findByUuid(jwtUserData.uuid())
+                .orElseThrow(() -> new NotFoundException("Any rh account was found by the logged uuid"));
+        operation.setRh(executorRh);
         operationRepository.save(operation);
     }
 }

@@ -45,7 +45,10 @@ public class RhService {
             rh.setId(response.id());
             rh.setUuid(response.uuid());
             rh.setEmail(response.email());
-            Operation operation = new Operation(OperationType.CREATE, jwtUserData.uuid());
+            Operation operation = new Operation(OperationType.CREATE, response.uuid());
+            Rh executorRh = rhRepository.findByUuid(jwtUserData.uuid())
+                    .orElseThrow(() -> new NotFoundException("Any rh account was found by the logged uuid"));
+            operation.setRh(executorRh);
             operationRepository.save(operation);
             return rhMapper.toRegisterResponse(rh);
         });
@@ -60,7 +63,11 @@ public class RhService {
 
         rhRepository.save(rh);
 
-        Operation operation = new Operation(OperationType.UPDATE, jwtUserData.uuid());
+        Rh executorRh = rhRepository.findByUuid(jwtUserData.uuid())
+                .orElseThrow(() -> new NotFoundException("Any rh account was found by the logged uuid"));
+
+        Operation operation = new Operation(OperationType.UPDATE, rh.getUuid());
+        operation.setRh(executorRh);
         operationRepository.save(operation);
 
         return rhMapper.toUpdateResponse(rh);

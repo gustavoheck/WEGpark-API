@@ -41,6 +41,7 @@ public class RhGuardService {
             Rh rh = rhRepository.findByUuid(jwtUserData.uuid())
                     .orElseThrow(() -> new NotFoundException("Any user was found by the logged uuid"));
             Operation operation = new Operation(OperationType.CREATE, event.uuid());
+            operation.setRh(rh);
             operationRepository.save(operation);
             return rhGuardMapper.toGuardRegisterResponse(event);
         });
@@ -55,6 +56,7 @@ public class RhGuardService {
             Rh rh = rhRepository.findByUuid(jwtUserData.uuid())
                     .orElseThrow(() -> new NotFoundException("Any user was found by the logged uuid"));
             Operation operation = new Operation(OperationType.UPDATE, response.uuid());
+            operation.setRh(rh);
             operationRepository.save(operation);
             return rhGuardMapper.toGuardUpdateResponse(response);
         });
