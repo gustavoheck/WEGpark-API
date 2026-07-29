@@ -61,12 +61,12 @@ public class LoginService {
 
                 String token = tokenConfig.generateToken(userToken);
 
-                return new LoginResponseDTO(token);
+                return new LoginResponseDTO(true, "User authenticated", token);
             } catch (UsernameNotFoundException | BadCredentialsException e) {
                 throw new InvalidLoginException();
             }
         }
         authNotificationService.sendAccountEmailValidation(userLogin);
-        throw new AccountEmailNotActiveException("Your email is not active");
+        return new LoginResponseDTO(false, "Email not validated", null);
     }
 }

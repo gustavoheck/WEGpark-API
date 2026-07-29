@@ -36,7 +36,7 @@ public class AuthNotificationService {
         AuthToken authToken = authTokenService.findToken(token);
 
         if (!authToken.getTargetUser().getEmailValidated()) {
-            if (!authToken.getUsed() && !authToken.getExpirationTime().isAfter(LocalDateTime.now())) {
+            if (!authToken.getUsed() && authToken.getExpirationTime().isAfter(LocalDateTime.now())) {
                 authToken.getTargetUser().setEmailValidated(true);
                 authToken.getTargetUser().setActive(true);
                 authToken.setUsed(true);
