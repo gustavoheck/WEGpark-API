@@ -46,7 +46,7 @@ public class RhController {
                 .body(response);
     }
 
-    @PutMapping("/rhUuid")
+    @PutMapping("/{rhUuid}")
     public ResponseEntity<UpdateRhResponseDTO> updateRh (
             @RequestBody @Valid UpdateRhRequestDTO request,
             @AuthenticationPrincipal JWTUserData jwtUserData,
