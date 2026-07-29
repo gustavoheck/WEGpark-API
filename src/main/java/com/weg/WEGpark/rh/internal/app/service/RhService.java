@@ -40,19 +40,26 @@ public class RhService {
     public RegisterRhResponseDTO registerRh (RegisterRhRequestDTO request, JWTUserData jwtUserData) {
         CompletableFuture<DefaultRegisteredEvent> eventResponse = new CompletableFuture<>();
         applicationEventPublisher.publishEvent(rhMapper.toRegisterEvent(request.defaults(), eventResponse));
-        eventResponse.thenApply(response -> {
-            Rh rh = rhMapper.toEntity(request);
-            rh.setId(response.id());
-            rh.setUuid(response.uuid());
-            rh.setEmail(response.email());
-            Operation operation = new Operation(OperationType.CREATE, response.uuid());
-            Rh executorRh = rhRepository.findByUuid(jwtUserData.uuid())
-                    .orElseThrow(() -> new NotFoundException("Any rh account was found by the logged uuid"));
-            operation.setRh(executorRh);
-            operationRepository.save(operation);
-            return rhMapper.toRegisterResponse(rh);
-        });
-        return null;
+        DefaultRegisteredEvent response = eventResponse.join();
+
+        Rh rh = rhMapper.toEntity(request);
+        rh.setId(response.id());
+        System.out.println(response.uuid());
+        rh.setUuid(response.uuid());
+        rh.setEmail(response.email());
+
+        rhRepository.save(rh);
+
+        //Ele esta cadastrando um usuario igual duas vezes para rh, voce precisa passar pelos filtros para bloquear isso
+
+//        Operation operation = new Operation(OperationType.CREATE, response.uuid());
+//
+////        Rh executorRh = rhRepository.findByUuid(jwtUserData.uuid())
+////                .orElseThrow(() -> new NotFoundException("Any rh account was found by the logged uuid"));
+////        operation.setRh(executorRh);
+////        operationRepository.save(operation);
+
+        return rhMapper.toRegisterResponse(rh);
     }
 
     public UpdateRhResponseDTO updateRh (UpdateRhRequestDTO request, UUID uuid, JWTUserData jwtUserData) {

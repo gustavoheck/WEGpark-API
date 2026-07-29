@@ -20,6 +20,7 @@ public interface RhMapper {
     @Mapping(source = "request", target = ".")
     RegisterRhEvent toRegisterEvent (RegisterAccountRequestDTO request, CompletableFuture<DefaultRegisteredEvent> eventResponse);
 
+    @Mapping(source = "rh", target = "defaults")
     RegisterRhResponseDTO toRegisterResponse (Rh rh);
 
     UpdateRhResponseDTO toUpdateResponse (Rh rh);
