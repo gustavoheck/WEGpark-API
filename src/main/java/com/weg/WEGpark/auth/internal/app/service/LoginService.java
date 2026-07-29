@@ -33,13 +33,9 @@ public class LoginService {
     public List<SelectAccountResponseDTO> preLogin (SelectAccountRequestDTO request) {
         List<User> users = userRepository.findByEmail(request.email());
         if (!users.isEmpty()) {
-            if (users.size() == 1) {
-                return new ArrayList<>();
-            } else {
-                return users.stream()
-                        .map(user -> new SelectAccountResponseDTO(user.getRole().getRole()))
-                        .toList();
-            }
+            return users.stream()
+                    .map(user -> new SelectAccountResponseDTO(user.getRole().getRole()))
+                    .toList();
         }
         throw new InvalidLoginException();
     }
