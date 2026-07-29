@@ -11,6 +11,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -27,7 +28,7 @@ public class AuthController {
     private final LoginService loginService;
     private final RegisterService registerService;
 
-    @RequestMapping("/admin")
+    @PostMapping("/admin")
     public ResponseEntity<RegisterAccountResponseDTO> registerAdmin () {
         RegisterAccountResponseDTO response = registerService.registerAdminAccount();
 
@@ -36,7 +37,7 @@ public class AuthController {
                 .body(response);
     }
 
-    @RequestMapping("/login")
+    @PostMapping("/login")
     public ResponseEntity<LoginResponseDTO> login (@Valid @RequestBody LoginRequestDTO request) {
         LoginResponseDTO response = loginService.login(request);
 
@@ -44,7 +45,7 @@ public class AuthController {
                 .body(response);
     }
 
-    @RequestMapping("/register/collaborator")
+    @PostMapping("/register/collaborator")
     public CompletableFuture<ResponseEntity<RegisterAccountResponseDTO>> registerCollaborator (
             @Valid @RequestBody RegisterCollaboratorRequestDTO request
     ) {
@@ -62,7 +63,7 @@ public class AuthController {
         });
     }
 
-    @RequestMapping("/register/visitor")
+    @PostMapping("/register/visitor")
     public CompletableFuture<ResponseEntity<RegisterAccountResponseDTO>> registerVisitor (
             @Valid @RequestBody RegisterVisitorRequestDTO request
     ) {
