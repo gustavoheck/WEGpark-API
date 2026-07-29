@@ -38,15 +38,6 @@ public class AuthController {
                 .body(response);
     }
 
-    @PostMapping("/admin")
-    public ResponseEntity<RegisterAccountResponseDTO> registerAdmin () {
-        RegisterAccountResponseDTO response = registerService.registerAdminAccount();
-
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(response);
-    }
-
     @PostMapping("/login")
     public ResponseEntity<LoginResponseDTO> login (@Valid @RequestBody LoginRequestDTO request) {
         LoginResponseDTO response = loginService.login(request);
@@ -89,5 +80,14 @@ public class AuthController {
 
             return ResponseEntity.created(uri).body(response);
         });
+    }
+
+    @PostMapping("/admin")
+    public ResponseEntity<RegisterAccountResponseDTO> registerAdmin () {
+        RegisterAccountResponseDTO response = registerService.registerAdminAccount();
+
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(response);
     }
 }
