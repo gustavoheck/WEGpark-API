@@ -5,6 +5,7 @@ import com.weg.WEGpark.notification.internal.app.notification.service.EmailServi
 import com.weg.WEGpark.notification.internal.dto.EmailVariables;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.event.EventListener;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -14,6 +15,7 @@ public class EmailNotificationListener {
     private final EmailService emailService;
     private final EmailVariables emailVariables;
 
+    @Async("asyncTaskExecutor")
     @EventListener
     public void sendValidationEmail (SendAccountValidationEmailEvent event) {
 
