@@ -1,7 +1,6 @@
 package com.weg.WEGpark.auth.internal.app.service;
 
 import com.weg.WEGpark.auth.internal.app.exception.InvalidLoginException;
-import com.weg.WEGpark.auth.internal.dto.login.SelectAccountRequestDTO;
 import com.weg.WEGpark.auth.shared.enums.RolesType;
 import com.weg.WEGpark.auth.internal.domain.model.User;
 import com.weg.WEGpark.auth.internal.dto.login.LoginRequestDTO;
@@ -18,7 +17,6 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -30,8 +28,8 @@ public class LoginService {
     private final AuthenticationManager authenticationManager;
     private final TokenConfig tokenConfig;
 
-    public List<SelectAccountResponseDTO> preLogin (SelectAccountRequestDTO request) {
-        List<User> users = userRepository.findByEmail(request.email());
+    public List<SelectAccountResponseDTO> preLogin (String email) {
+        List<User> users = userRepository.findByEmail(email);
         if (!users.isEmpty()) {
             return users.stream()
                     .map(user -> new SelectAccountResponseDTO(user.getRole().getRole()))
