@@ -9,6 +9,4 @@ import org.mapstruct.Mapper;
 public interface OccurrenceMapper {
 
     Occurrence toEntity(CreateOccurrenceRequestDto occurrenceRequestDto);
-
-    DefaultOccurrenceResponseDto toResponse(Occurrence occurrence);
 }

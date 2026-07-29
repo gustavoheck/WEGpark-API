@@ -5,19 +5,15 @@ import com.weg.WEGpark.park.internal.app.occurrence.dto.RegisterDefaultInfo;
 import com.weg.WEGpark.park.internal.app.occurrence.mapper.IllegalParkingMapper;
 import com.weg.WEGpark.park.internal.app.occurrence.mapper.TrafficAccidentMapper;
 import com.weg.WEGpark.park.internal.app.occurrence.mapper.WarningMapper;
-import com.weg.WEGpark.park.internal.app.shared.util.FilterUtil;
-import com.weg.WEGpark.park.internal.app.vehicle.exception.MoreThenOneFilterException;
+import com.weg.WEGpark.shared.util.FilterUtil;
+import com.weg.WEGpark.shared.exception.MoreThenOneFilterException;
 import com.weg.WEGpark.park.internal.domain.model.occurrence.IllegalParking;
 import com.weg.WEGpark.park.internal.domain.model.occurrence.Occurrence;
 import com.weg.WEGpark.park.internal.domain.model.occurrence.TrafficAccident;
 import com.weg.WEGpark.park.internal.domain.model.occurrence.Warning;
 import com.weg.WEGpark.park.internal.domain.model.users.Guard;
 import com.weg.WEGpark.park.internal.domain.model.vehicle.Vehicle;
-import com.weg.WEGpark.park.internal.dto.occurrence.defaults.GetOccurrenceResponseDTO;
 import com.weg.WEGpark.park.internal.dto.occurrence.filter.FilterOccurrenceRequestDTO;
-import com.weg.WEGpark.park.internal.dto.occurrence.illegalparking.GetIllegalParkingResponseDTO;
-import com.weg.WEGpark.park.internal.dto.occurrence.trafficaccident.GetTrafficAccidentResponseDTO;
-import com.weg.WEGpark.park.internal.dto.occurrence.warning.GetWarningResponseDTO;
 import com.weg.WEGpark.park.internal.infra.repository.*;
 import com.weg.WEGpark.park.internal.infra.specification.OccurrenceSpecification;
 import com.weg.WEGpark.shared.exception.NotFoundException;
@@ -27,10 +23,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -45,7 +37,7 @@ public class OccurrenceService {
     private final TrafficAccidentMapper trafficAccidentMapper;
     private final WarningMapper warningMapper;
 
-    public Page<Object> findAllOccurrences(FilterOccurrenceRequestDTO filter, Pageable pageable) {
+    public Page<Record> findAllOccurrences(FilterOccurrenceRequestDTO filter, Pageable pageable) {
 
         if (FilterUtil.checkMoreThanOneFilter(filter)) {
             Specification<Occurrence> spec = Specification
@@ -60,7 +52,7 @@ public class OccurrenceService {
 
             Page<Occurrence> occurrencePage = occurrenceRepository.findAll(spec, pageable);
 
-            Page<Object> occurrenceResponsePage  = occurrencePage.map(occurrence -> {
+            Page<Record> occurrenceResponsePage  = occurrencePage.map(occurrence -> {
                 switch (occurrence) {
                     case Warning warning -> {
                         return warningMapper.toGetResponse(warning);

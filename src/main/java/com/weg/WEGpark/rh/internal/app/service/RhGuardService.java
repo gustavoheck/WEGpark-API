@@ -1,0 +1,51 @@
+package com.weg.WEGpark.rh.internal.app.service;
+
+import com.weg.WEGpark.auth.internal.infra.security.config.JWTUserData;
+import com.weg.WEGpark.park.ParkGuardRegisteredEvent;
+import com.weg.WEGpark.park.GuardUpdatedEvent;
+import com.weg.WEGpark.rh.internal.app.mapper.RhGuardMapper;
+import com.weg.WEGpark.rh.internal.domain.enums.OperationType;
+import com.weg.WEGpark.rh.internal.dto.guard.RegisterGuardRequestDTO;
+import com.weg.WEGpark.rh.internal.dto.guard.RegisterGuardResponseDTO;
+import com.weg.WEGpark.rh.internal.dto.guard.UpdateGuardRequestDTO;
+import com.weg.WEGpark.rh.internal.dto.guard.UpdateGuardResponseDTO;
+import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+
+@Service
+@RequiredArgsConstructor
+@Transactional(readOnly = true)
+public class RhGuardService {
+
+    private final ApplicationEventPublisher applicationEventPublisher;
+    private final RhGuardMapper rhGuardMapper;
+    private final OperationService operationService;
+
+    @Transactional
+    public RegisterGuardResponseDTO createGuard (RegisterGuardRequestDTO request, JWTUserData jwtUserData) {
+        CompletableFuture<ParkGuardRegisteredEvent> guardRegisteredEvent = new CompletableFuture<>();
+        applicationEventPublisher.publishEvent(rhGuardMapper.toGuardRegisterEvent(request, guardRegisteredEvent));
+
+
+        ParkGuardRegisteredEvent response = guardRegisteredEvent.join();
+
+        operationService.saveOperation(jwtUserData, response.uuid(), OperationType.CREATE);
+        return rhGuardMapper.toGuardRegisterResponse(response);
+    }
+
+    @Transactional
+    public UpdateGuardResponseDTO updateRegistrationData (UpdateGuardRequestDTO request, UUID guardUuid, JWTUserData jwtUserData) {
+        CompletableFuture<GuardUpdatedEvent> eventResponse = new CompletableFuture<>();
+        applicationEventPublisher.publishEvent(rhGuardMapper.toGuardUpdateEvent(request, guardUuid, eventResponse));
+
+        GuardUpdatedEvent response = eventResponse.join();
+
+        operationService.saveOperation(jwtUserData, response.uuid(), OperationType.UPDATE);
+        return rhGuardMapper.toGuardUpdateResponse(response);
+    }
+}

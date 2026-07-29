@@ -48,7 +48,6 @@ public class TokenConfig {
 
     public Optional<JWTUserData> validateToken(String token) {
         try {
-            // Se a string do token contiver "Bearer ", remova!
             if (token != null && token.startsWith("Bearer ")) {
                 token = token.substring(7).trim();
             }

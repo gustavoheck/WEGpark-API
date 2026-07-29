@@ -1,6 +1,6 @@
 package com.weg.WEGpark.auth.internal.domain.model;
 
-import com.weg.WEGpark.auth.internal.domain.enums.RolesType;
+import com.weg.WEGpark.auth.shared.enums.RolesType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

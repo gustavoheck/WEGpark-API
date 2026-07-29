@@ -5,10 +5,7 @@ import com.weg.WEGpark.park.internal.app.user.service.VehicleUserService;
 import com.weg.WEGpark.park.internal.app.vehicle.service.VehicleService;
 import com.weg.WEGpark.park.internal.dto.vehicle.association.AssociateWithVehicleResponseDTO;
 import com.weg.WEGpark.park.internal.dto.vehicle.association.AssociationNotificationRequestDTO;
-import com.weg.WEGpark.park.internal.dto.vehicle.defaults.CreateVehicleRequestDTO;
-import com.weg.WEGpark.park.internal.dto.vehicle.defaults.CreateVehicleResponseDTO;
-import com.weg.WEGpark.park.internal.dto.vehicle.defaults.GetVehicleResponseDTO;
-import com.weg.WEGpark.park.internal.dto.vehicle.defaults.UpdateVehicleRequestDTO;
+import com.weg.WEGpark.park.internal.dto.vehicle.defaults.*;
 import com.weg.WEGpark.park.internal.dto.vehicle.filter.FilterVehicleRequestDTO;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -110,13 +107,13 @@ public class VehicleController {
     }
 
     @PutMapping("/{uuid}")
-    public ResponseEntity<GetVehicleResponseDTO> updateVehicle(
+    public ResponseEntity<UpdateVehicleResponseDTO> updateVehicle(
             @Valid @RequestBody
             UpdateVehicleRequestDTO request,
             @PathVariable
             UUID uuid
     ) {
-        GetVehicleResponseDTO response = vehicleService.updateVehicle(uuid, request);
+        UpdateVehicleResponseDTO response = vehicleService.updateVehicle(uuid, request);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(response);

@@ -1,5 +1,6 @@
 package com.weg.WEGpark.park.internal.dto.vehicle.defaults;
 
+import java.util.List;
 import java.util.UUID;
 
 public record GetVehicleResponseDTO(
@@ -12,6 +13,8 @@ public record GetVehicleResponseDTO(
 
         String brand,
 
-        String color
+        String color,
+
+        List<GetVehicleUserResponseDTO> vehicleUsers
 ) {
 }

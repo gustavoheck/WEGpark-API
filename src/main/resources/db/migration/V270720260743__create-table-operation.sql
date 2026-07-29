@@ -1,0 +1,8 @@
+CREATE TABLE rh.operation (
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    uuid UUID DEFAULT uuidv7() UNIQUE NOT NULL,
+    operation VARCHAR(255) NOT NULL,
+    date_hour TIMESTAMP NOT NULL,
+    id_operated_user BIGINT NOT NULL,
+    id_rh BIGINT NOT NULL
+);

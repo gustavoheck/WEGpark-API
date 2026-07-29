@@ -1,6 +1,6 @@
 package com.weg.WEGpark.auth.internal.dto.login;
 
-import com.weg.WEGpark.auth.internal.domain.enums.RolesType;
+import com.weg.WEGpark.auth.shared.enums.RolesType;
 
 import java.util.List;
 

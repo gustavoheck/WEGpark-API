@@ -13,6 +13,8 @@ public record GetParkUserResponseDTO(
 
         String name,
 
+        Boolean active,
+
         ParkUserType userType
 ) {
 }
