@@ -24,19 +24,6 @@ public class RhControllerGuard {
 
     private final RhGuardService rhGuardService;
 
-    @PutMapping("/{uuid}")
-    public ResponseEntity<UpdateGuardResponseDTO> updateGuard (
-            @RequestBody @Valid UpdateGuardRequestDTO request,
-            @AuthenticationPrincipal JWTUserData jwtUserData,
-            @PathVariable UUID guardUuid
-    ) {
-        UpdateGuardResponseDTO response = rhGuardService.updateRegistrationData(request, guardUuid, jwtUserData);
-
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(response);
-    }
-
     @PostMapping
     public ResponseEntity<RegisterGuardResponseDTO> registerGuard (
             @RequestBody @Valid RegisterGuardRequestDTO request,
@@ -52,6 +39,19 @@ public class RhControllerGuard {
 
         return ResponseEntity
                 .created(uri)
+                .body(response);
+    }
+
+    @PutMapping("/{uuid}")
+    public ResponseEntity<UpdateGuardResponseDTO> updateGuard (
+            @RequestBody @Valid UpdateGuardRequestDTO request,
+            @AuthenticationPrincipal JWTUserData jwtUserData,
+            @PathVariable UUID guardUuid
+    ) {
+        UpdateGuardResponseDTO response = rhGuardService.updateRegistrationData(request, guardUuid, jwtUserData);
+
+        return ResponseEntity
+                .status(HttpStatus.OK)
                 .body(response);
     }
 }
