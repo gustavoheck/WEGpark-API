@@ -36,6 +36,7 @@ public class AuthToken {
     @Column(name = "expiration_time", nullable = false)
     private LocalDateTime expirationTime;
 
+    @ManyToOne
     @JoinColumn(name = "id_target_user", nullable = false)
     private User targetUser;
 
