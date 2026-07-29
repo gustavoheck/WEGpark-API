@@ -1,5 +1,6 @@
 package com.weg.WEGpark.auth.internal.domain.model;
 
+import com.weg.WEGpark.auth.internal.domain.enums.TokenType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -27,7 +28,7 @@ public class AuthToken {
 
     @Enumerated(value = EnumType.STRING)
     @Column(name = "token_type")
-    private String tokenType;
+    private TokenType tokenType;
 
     @Column(nullable = false)
     private Boolean used;
@@ -38,7 +39,7 @@ public class AuthToken {
     @JoinColumn(name = "id_target_user", nullable = false)
     private User targetUser;
 
-    public AuthToken(String tokenType, User targetUser) {
+    public AuthToken(TokenType tokenType, User targetUser) {
         this.tokenType = tokenType;
         this.used = false;
         this.expirationTime = LocalDateTime.now().plusMinutes(15);
