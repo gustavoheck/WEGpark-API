@@ -124,6 +124,7 @@ public class RegisterService {
         if (role.isEmpty()) {
             event.eventResponse().completeExceptionally(new NotFoundException("Any RH role was found"));
         }
+        registerAccount(user, role.get());
         event.eventResponse().complete(authEventMapper.toDefaultRegisteredEvent(user));
     }
 

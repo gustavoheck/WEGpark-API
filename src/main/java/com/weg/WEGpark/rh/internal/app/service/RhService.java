@@ -37,6 +37,7 @@ public class RhService {
     private final OperationRepository operationRepository;
     private final ApplicationEventPublisher applicationEventPublisher;
 
+    @Transactional
     public RegisterRhResponseDTO registerRh (RegisterRhRequestDTO request, JWTUserData jwtUserData) {
         CompletableFuture<DefaultRegisteredEvent> eventResponse = new CompletableFuture<>();
         applicationEventPublisher.publishEvent(rhMapper.toRegisterEvent(request.defaults(), eventResponse));
@@ -44,9 +45,12 @@ public class RhService {
 
         Rh rh = rhMapper.toEntity(request);
         rh.setId(response.id());
-        System.out.println(response.uuid());
         rh.setUuid(response.uuid());
         rh.setEmail(response.email());
+
+        System.out.println(response.email());
+        System.out.println(response.id());
+        System.out.println(response.uuid());
 
         rhRepository.save(rh);
 
@@ -62,6 +66,7 @@ public class RhService {
         return rhMapper.toRegisterResponse(rh);
     }
 
+    @Transactional
     public UpdateRhResponseDTO updateRh (UpdateRhRequestDTO request, UUID uuid, JWTUserData jwtUserData) {
         Rh rh = rhRepository.findByUuid(uuid)
                 .orElseThrow(() -> new NotFoundException("Any rh account was found by %s uuid".formatted(uuid)));

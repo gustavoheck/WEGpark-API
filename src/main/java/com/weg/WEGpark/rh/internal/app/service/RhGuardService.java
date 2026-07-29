@@ -41,7 +41,7 @@ public class RhGuardService {
         ParkGuardRegisteredEvent eventResponse = guardRegisteredEvent.join();
 
         Rh rh = rhRepository.findByUuid(jwtUserData.uuid())
-                .orElseThrow(() -> new NotFoundException("Any user was found by the logged uuid"));
+                .orElseThrow(() -> new NotFoundException("Any rh was found by the logged uuid"));
         Operation operation = new Operation(OperationType.CREATE, eventResponse.uuid());
         operation.setRh(rh);
         operationRepository.save(operation);
