@@ -45,6 +45,7 @@ public class RhGuardService {
             operationRepository.save(operation);
             return rhGuardMapper.toGuardRegisterResponse(event);
         });
+        System.out.println("red");
         return null;
     }
 

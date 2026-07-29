@@ -24,6 +24,7 @@ public class CollaboratorRegisteringListener {
         registerService.checkBadgeNumberBeforeRegisteringEvent(event);
     }
 
+    @EventListener
     public void registeringGuard (ValidatedCollaboratorByEvent event) {
         registerService.registerGuard(event.event(), event.collaboratorId());
     }
