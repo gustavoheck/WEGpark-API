@@ -1,6 +1,7 @@
 package com.weg.WEGpark.auth.internal.app.service;
 
 import com.weg.WEGpark.auth.internal.app.exception.InvalidLoginException;
+import com.weg.WEGpark.auth.internal.dto.login.SelectAccountRequestDTO;
 import com.weg.WEGpark.auth.shared.enums.RolesType;
 import com.weg.WEGpark.auth.internal.domain.model.User;
 import com.weg.WEGpark.auth.internal.dto.login.LoginRequestDTO;
@@ -29,20 +30,15 @@ public class LoginService {
     private final AuthenticationManager authenticationManager;
     private final TokenConfig tokenConfig;
 
-    public SelectAccountResponseDTO preLogin (LoginRequestDTO request) {
+    public List<SelectAccountResponseDTO> preLogin (SelectAccountRequestDTO request) {
         List<User> users = userRepository.findByEmail(request.email());
         if (!users.isEmpty()) {
             if (users.size() == 1) {
-                List<RolesType> emptyList = new ArrayList<>();
-                return new SelectAccountResponseDTO(
-                       emptyList
-                );
+                return new ArrayList<>();
             } else {
-                return new SelectAccountResponseDTO(
-                        users.stream()
-                                .map(user -> user.getRole().getRole())
-                                .toList()
-                );
+                return users.stream()
+                        .map(user -> new SelectAccountResponseDTO(user.getRole().getRole()))
+                        .toList();
             }
         }
         throw new InvalidLoginException();

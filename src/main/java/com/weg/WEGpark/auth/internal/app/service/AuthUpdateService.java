@@ -21,12 +21,11 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class UpdateService {
+public class AuthUpdateService {
 
     private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
