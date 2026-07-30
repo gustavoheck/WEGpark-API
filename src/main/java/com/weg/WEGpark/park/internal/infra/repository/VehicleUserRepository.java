@@ -14,7 +14,7 @@ public interface VehicleUserRepository extends JpaRepository<VehicleUser, Long> 
 
     Optional<VehicleUser> findByVehicleUuidAndParkUserUuid (UUID uuidVehicle, UUID uuidParkUser);
 
-    Optional<VehicleUser> findByParkUserId (Long id);
+    List<VehicleUser> findByParkUserId (Long id);
 
     List<VehicleUser> findByUuidParkUser(UUID uuid);
 }

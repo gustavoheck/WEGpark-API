@@ -1,10 +1,15 @@
 package com.weg.WEGpark.park.internal.app.occurrence.service;
 
 import com.weg.WEGpark.auth.internal.infra.security.config.JWTUserData;
+import com.weg.WEGpark.park.SendOccurrenceWarnEvent;
+import com.weg.WEGpark.park.SendOccurrenceWarnToGuardEvent;
 import com.weg.WEGpark.park.internal.app.occurrence.dto.RegisterDefaultInfo;
 import com.weg.WEGpark.park.internal.app.occurrence.mapper.IllegalParkingMapper;
+import com.weg.WEGpark.park.internal.app.occurrence.mapper.OccurrenceNotificationMapper;
 import com.weg.WEGpark.park.internal.app.occurrence.mapper.TrafficAccidentMapper;
 import com.weg.WEGpark.park.internal.app.occurrence.mapper.WarningMapper;
+import com.weg.WEGpark.park.internal.domain.model.users.ParkUser;
+import com.weg.WEGpark.park.internal.domain.model.users.VehicleUser;
 import com.weg.WEGpark.shared.util.FilterUtil;
 import com.weg.WEGpark.shared.exception.MoreThenOneFilterException;
 import com.weg.WEGpark.park.internal.domain.model.occurrence.IllegalParking;
@@ -18,11 +23,15 @@ import com.weg.WEGpark.park.internal.infra.repository.*;
 import com.weg.WEGpark.park.internal.infra.specification.OccurrenceSpecification;
 import com.weg.WEGpark.shared.exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -35,7 +44,11 @@ public class OccurrenceService {
     private final VehicleRepository vehicleRepository;
     private final GuardRepository guardRepository;
     private final TrafficAccidentMapper trafficAccidentMapper;
+    private final VehicleUserRepository vehicleUserRepository;
     private final WarningMapper warningMapper;
+
+    private final OccurrenceNotificationMapper occurrenceNotificationMapper;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     public Page<Record> findAllOccurrences(FilterOccurrenceRequestDTO filter, Pageable pageable) {
 
@@ -71,6 +84,43 @@ public class OccurrenceService {
         throw new MoreThenOneFilterException("You can't use more than one filter");
     }
 
+    private void checkAndThrowFiveOccurrenceWarning (ParkUser parkUser) {
+        Integer qtdOccurrences = occurrenceRepository.countHowManyOccurrencesLastDays(parkUser.getId(), LocalDateTime.now().minusDays(30));
+        if (qtdOccurrences >= 5) {
+            applicationEventPublisher.publishEvent(occurrenceNotificationMapper.toFiveOccurrenceWarnNotification(
+                    parkUser,
+                    "Foram registradas %s ocorrencias no seu nome nos últimos 30 dias. Tome mais cuidado!".formatted(qtdOccurrences)
+            ));
+            List<Guard> allGuards = guardRepository.findAll();
+            List<String> allGuardsEmail = allGuards
+                    .stream()
+                    .map(ParkUser::getEmail)
+                    .toList();
+
+            List<Long> allGuardsId = allGuards
+                    .stream()
+                    .map(guard -> guard.getId())
+                    .toList();
+
+            StringBuilder sb = new StringBuilder();
+
+            sb.append("O usuario %s está cometendo muitas ocorrencias nos últimos 30 dias, nesse momento ele chegou a %s," +
+                    "tomem cuidado com os veiculos: ");
+
+            List<Vehicle> userVehicles = vehicleUserRepository.findByParkUserId(parkUser.getId())
+                            .stream()
+                            .map(VehicleUser::getVehicle)
+                            .toList();
+
+            userVehicles.forEach(vehicle -> sb.append(vehicle.getPlate()).append(" "));
+
+            applicationEventPublisher.publishEvent(new SendOccurrenceWarnToGuardEvent(
+                    allGuardsId,
+                    allGuardsEmail,
+                    sb.toString()
+            ));
+        }
+    }
 
     public RegisterDefaultInfo findRegisterBasics (String plate, JWTUserData jwtUserData) {
         Vehicle vehicle = vehicleRepository.findByPlate(plate)

@@ -1,7 +1,9 @@
 package com.weg.WEGpark.park.internal.app.occurrence.mapper;
 
 import com.weg.WEGpark.park.SendOccurrenceNotificationEvent;
+import com.weg.WEGpark.park.SendOccurrenceWarnEvent;
 import com.weg.WEGpark.park.internal.domain.model.occurrence.Occurrence;
+import com.weg.WEGpark.park.internal.domain.model.users.ParkUser;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -23,6 +25,14 @@ public class OccurrenceNotificationMapper {
                         .stream()
                         .map(vehicleUser -> vehicleUser.getParkUser().getEmail())
                         .toList()
+        );
+    }
+
+    public SendOccurrenceWarnEvent toFiveOccurrenceWarnNotification (ParkUser parkUser, String message) {
+        return new SendOccurrenceWarnEvent(
+                parkUser.getId(),
+                parkUser.getEmail(),
+                message
         );
     }
 }
