@@ -30,7 +30,7 @@ public class NotificationService {
     }
 
     public void CreateNewOccurrenceNotification (SendOccurrenceNotificationEvent event) {
-        Notification notification = new Notification(event.idNotificatedUser(), NotificationType.DEFAULT);
+        Notification notification = new Notification(event.idNotificatedUser(), NotificationType.OCCURRENCE);
     }
 
     public void findAssociationNotification (FindAssociationNotificationEvent event) {

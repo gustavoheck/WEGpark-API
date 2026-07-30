@@ -52,12 +52,12 @@ public class EmailNotificationListener {
     public void sendOccurrenceNotification (SendOccurrenceNotificationEvent event) {
 
         emailService.sendNotification(
-                event.nome(),
+                event.userName(),
                 event.email(),
                 "Nova ocorrência registrada no seu nome.",
                 "Identificamos uma ocorrência vinculada à sua conta no WEGpark.<br>Clique no botão abaixo para conferir os detalhes e resolver o quanto antes.",
                 true,
-                "%s/ocorrencias/%s".formatted(emailVariables.websiteUrl(), event.uuid()),
+                "%s/ocorrencias/%s".formatted(emailVariables.websiteUrl(), event.occurrenceUuid()),
                 "Ver Ocorrência"
         );
     }

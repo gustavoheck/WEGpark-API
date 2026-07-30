@@ -2,7 +2,9 @@ package com.weg.WEGpark.park.internal.app.occurrence.service;
 
 import com.weg.WEGpark.auth.internal.infra.security.config.JWTUserData;
 import com.weg.WEGpark.park.internal.app.occurrence.dto.RegisterDefaultInfo;
+import com.weg.WEGpark.park.internal.app.occurrence.mapper.OccurrenceNotificationMapper;
 import com.weg.WEGpark.park.internal.app.occurrence.mapper.TrafficAccidentMapper;
+import com.weg.WEGpark.park.internal.domain.model.vehicle.Vehicle;
 import com.weg.WEGpark.shared.exception.NotFoundException;
 import com.weg.WEGpark.park.internal.domain.enums.occurrence.OccurrenceType;
 import com.weg.WEGpark.park.internal.domain.model.occurrence.TrafficAccident;
@@ -12,6 +14,7 @@ import com.weg.WEGpark.park.internal.dto.occurrence.trafficaccident.GetTrafficAc
 import com.weg.WEGpark.park.internal.dto.occurrence.trafficaccident.UpdateTrafficAccidentRequestDTO;
 import com.weg.WEGpark.park.internal.infra.repository.OccurrenceRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,7 +29,10 @@ public class TrafficAccidentService {
     private final OccurrenceRepository occurrenceRepository;
     private final OccurrenceService occurrenceService;
 
+    private final ApplicationEventPublisher applicationEventPublisher;
     private final TrafficAccidentMapper trafficAccidentMapper;
+
+    private final OccurrenceNotificationMapper occurrenceNotificationMapper;
 
     @Transactional
     public CreateTrafficAccidentResponseDTO registerTrafficAccidentOccurrence (
@@ -43,6 +49,16 @@ public class TrafficAccidentService {
         occurrence.setDateHour(date);
 
         occurrenceRepository.save(occurrence);
+
+        Vehicle vehicle = occurrence.getVehicleUsers().getFirst().getVehicle();
+        applicationEventPublisher.publishEvent(occurrenceNotificationMapper.toNotification(
+                occurrence,
+                """
+                        Uma nova ocorrencia foi registrada para o seu veículo %s da placa %s,
+                        este veículo acabou sofrendo um sinistro de transito,
+                        confira mais acessando a ocorrência!
+                """.formatted("%s %s".formatted(vehicle.getBrand(), vehicle.getModel()), vehicle.getPlate())
+        ));
 
         return trafficAccidentMapper.toCreateResponse(occurrence);
     }

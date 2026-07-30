@@ -1,15 +1,18 @@
 package com.weg.WEGpark.park;
 
+import java.util.List;
 import java.util.UUID;
 
 public record SendOccurrenceNotificationEvent(
 
-        Long idNotificatedUser,
+        List<Long> notificatedUsersId,
 
-        UUID uuid,
+        String defaultNotificationMessage,
 
-        String nome,
+        UUID occurrenceUuid,
 
-        String email
+        List<String> usernames,
+
+        List<String> email
 ) {
 }

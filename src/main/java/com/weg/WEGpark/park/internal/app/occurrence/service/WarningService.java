@@ -2,7 +2,9 @@ package com.weg.WEGpark.park.internal.app.occurrence.service;
 
 import com.weg.WEGpark.auth.internal.infra.security.config.JWTUserData;
 import com.weg.WEGpark.park.internal.app.occurrence.dto.RegisterDefaultInfo;
+import com.weg.WEGpark.park.internal.app.occurrence.mapper.OccurrenceNotificationMapper;
 import com.weg.WEGpark.park.internal.app.occurrence.mapper.WarningMapper;
+import com.weg.WEGpark.park.internal.domain.model.vehicle.Vehicle;
 import com.weg.WEGpark.shared.exception.NotFoundException;
 import com.weg.WEGpark.park.internal.domain.enums.occurrence.OccurrenceType;
 import com.weg.WEGpark.park.internal.domain.model.occurrence.Warning;
@@ -12,6 +14,7 @@ import com.weg.WEGpark.park.internal.dto.occurrence.warning.GetWarningResponseDT
 import com.weg.WEGpark.park.internal.dto.occurrence.warning.UpdateWarningRequestDTO;
 import com.weg.WEGpark.park.internal.infra.repository.OccurrenceRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,6 +31,9 @@ public class WarningService {
 
     private final WarningMapper warningMapper;
 
+    private final ApplicationEventPublisher applicationEventPublisher;
+    private final OccurrenceNotificationMapper occurrenceNotificationMapper;
+
     @Transactional
     public CreateWarningResponseDTO registerWarningOccurrence (
             CreateWarningRequestDTO request,
@@ -43,6 +49,15 @@ public class WarningService {
         occurrence.setDateHour(date);
 
         occurrenceRepository.save(occurrence);
+
+        Vehicle vehicle = occurrence.getVehicleUsers().getFirst().getVehicle();
+        applicationEventPublisher.publishEvent(occurrenceNotificationMapper.toNotification(
+                occurrence,
+                """
+                        Uma nova ocorrencia foi registrada para o seu veículo %s da placa %s,
+                        este veículo acabou rcebendo um aviso, confira mais acessando a ocorrência!
+                """.formatted("%s %s".formatted(vehicle.getBrand(), vehicle.getModel()), vehicle.getPlate())
+        ));
 
         return warningMapper.toCreateResponse(occurrence);
     }
