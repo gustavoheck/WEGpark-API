@@ -5,5 +5,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "wegpark.config")
 public record EmailVariables(
 
-        String url
+        String url,
+
+        String websiteUrl
 ) { }
