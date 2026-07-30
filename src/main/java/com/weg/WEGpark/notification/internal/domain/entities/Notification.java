@@ -33,6 +33,7 @@ public class Notification {
     @Column(nullable = false)
     private String message;
 
+    @Column(nullable = false, name = "notification_time")
     private LocalDateTime notificationTime;
 
     @Enumerated(EnumType.STRING)
