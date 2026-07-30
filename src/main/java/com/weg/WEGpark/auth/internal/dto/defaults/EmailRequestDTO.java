@@ -9,6 +9,7 @@ public record EmailRequestDTO(
         @NotBlank(message = "The email can not be null or blank")
         String email,
 
+        @NotBlank(message = "Can not find a unique user without it's role")
         String role
 ) {
 }

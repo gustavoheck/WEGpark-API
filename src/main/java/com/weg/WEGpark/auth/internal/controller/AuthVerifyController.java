@@ -5,6 +5,7 @@ import com.weg.WEGpark.auth.internal.app.service.AuthTokenService;
 import com.weg.WEGpark.auth.internal.dto.defaults.EmailRequestDTO;
 import com.weg.WEGpark.auth.internal.dto.reset.NewTokenResponseDTO;
 import com.weg.WEGpark.auth.internal.dto.reset.NumberTokenVerificateTryRequestDTO;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -30,7 +31,7 @@ public class AuthVerifyController {
 
     @PostMapping("/check-email")
     public ResponseEntity<NewTokenResponseDTO> checkAccountEmail (
-            EmailRequestDTO request
+            @Valid @RequestBody EmailRequestDTO request
     ) {
         NewTokenResponseDTO response = authNotificationService.resetPasswordEmailCheck(request);
 
