@@ -26,6 +26,7 @@ public class EmailService {
     private final EmailVariables emailVariables;
 
     public void sendNotification(
+            String userName,
             String destinationEmail,
             String subject,
             String warningMessage,
@@ -37,6 +38,7 @@ public class EmailService {
         String htmlContent;
 
         Context context = new Context();
+        context.setVariable("userName", userName);
         context.setVariable("isEmail", true);
         context.setVariable("subject", subject);
         context.setVariable("notificationSummary", warningMessage);
