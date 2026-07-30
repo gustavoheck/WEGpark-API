@@ -35,6 +35,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/auth/register/visitor").permitAll()
                         .requestMatchers(HttpMethod.GET, "/auth").permitAll()
                         .requestMatchers("/auth/validate-email/*").permitAll()
+                        .requestMatchers("/auth/reset-password/*").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/admin").permitAll()
                         .anyRequest().authenticated()
                 )

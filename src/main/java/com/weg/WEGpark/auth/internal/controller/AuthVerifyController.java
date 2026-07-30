@@ -29,7 +29,7 @@ public class AuthVerifyController {
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping("/check-email")
+    @PostMapping("/reset-password/check-email")
     public ResponseEntity<NewTokenResponseDTO> checkAccountEmail (
             @Valid @RequestBody EmailRequestDTO request
     ) {
@@ -46,7 +46,7 @@ public class AuthVerifyController {
                 .body(response);
     }
 
-    @PostMapping("/check-email/answer")
+    @PostMapping("/reset-password/check-email/answer")
     public ResponseEntity<NewTokenResponseDTO> checkAccountEmailAnswer (
             NumberTokenVerificateTryRequestDTO request
     ) {
