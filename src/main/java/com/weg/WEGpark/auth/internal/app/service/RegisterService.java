@@ -39,6 +39,7 @@ public class RegisterService {
 
     private final AuthEventMapper authEventMapper;
     private final ApplicationEventPublisher applicationEventPublisher;
+    private final AuthNotificationService authNotificationService;
 
     @Transactional
     public RegisterAccountResponseDTO registerCollaborator (
@@ -59,8 +60,9 @@ public class RegisterService {
         if (verifyCollaboratorRegistering(collaboratorId, RolesType.ROLE_GUARD)) {
             User user = registerGuardAccount(event);
             applicationEventPublisher.publishEvent(authEventMapper.ToGuardRegisteredEvent(event, user));
+        } else {
+            event.registerResponse().completeExceptionally(new AlreadyHaveAccountException("An account with this badge number or email is already registered!"));
         }
-        event.registerResponse().completeExceptionally(new AlreadyHaveAccountException("An account with this badge number or email is already registered!"));
     }
 
     private boolean verifyCollaboratorRegistering (Long collaboratorId,RolesType roleToCompare) {
@@ -147,9 +149,9 @@ public class RegisterService {
         user.setRole(role);
         user.setPassword(securityConfig.passwordEncoder().encode(user.getPassword()));
         user.setActive(false);
-
+        user.setEmailValidated(false);
         userRepository.saveAndFlush(user);
-
+        authNotificationService.sendAccountEmailValidation(user);
         return user;
     }
 

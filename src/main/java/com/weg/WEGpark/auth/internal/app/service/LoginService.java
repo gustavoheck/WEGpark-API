@@ -1,5 +1,6 @@
 package com.weg.WEGpark.auth.internal.app.service;
 
+import com.weg.WEGpark.auth.internal.app.exception.AccountEmailNotActiveException;
 import com.weg.WEGpark.auth.internal.app.exception.InvalidLoginException;
 import com.weg.WEGpark.auth.shared.enums.RolesType;
 import com.weg.WEGpark.auth.internal.domain.model.User;
@@ -17,7 +18,6 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -28,22 +28,14 @@ public class LoginService {
     private final UserRepository userRepository;
     private final AuthenticationManager authenticationManager;
     private final TokenConfig tokenConfig;
+    private final AuthNotificationService authNotificationService;
 
-    public SelectAccountResponseDTO preLogin (LoginRequestDTO request) {
-        List<User> users = userRepository.findByEmail(request.email());
+    public List<SelectAccountResponseDTO> preLogin (String email) {
+        List<User> users = userRepository.findByEmail(email);
         if (!users.isEmpty()) {
-            if (users.size() == 1) {
-                List<RolesType> emptyList = new ArrayList<>();
-                return new SelectAccountResponseDTO(
-                       emptyList
-                );
-            } else {
-                return new SelectAccountResponseDTO(
-                        users.stream()
-                                .map(user -> user.getRole().getRole())
-                                .toList()
-                );
-            }
+            return users.stream()
+                    .map(user -> new SelectAccountResponseDTO(user.getRole().getRole()))
+                    .toList();
         }
         throw new InvalidLoginException();
     }
@@ -52,25 +44,29 @@ public class LoginService {
     public LoginResponseDTO login (LoginRequestDTO request) {
         User userLogin;
         if (request.role() != null) {
-            userLogin = userRepository.findByEmailAndRole(request.email(), RolesType.valueOf(request.role()))
+            userLogin = userRepository.findByEmailAndRole_Role(request.email(), RolesType.valueOf(request.role()))
                     .orElseThrow(() -> new InvalidLoginException());
         } else {
             List<User> users = userRepository.findByEmail(request.email());
             if (users.isEmpty()) throw new InvalidLoginException();
             userLogin = users.getFirst();
         }
-        UsernamePasswordAuthenticationToken userAndPass =
-                new UsernamePasswordAuthenticationToken(userLogin.getId(), request.password());
-        try {
-            Authentication authentication = authenticationManager.authenticate(userAndPass);
+        if (userLogin.getEmailValidated() == true) {
+            UsernamePasswordAuthenticationToken userAndPass =
+                    new UsernamePasswordAuthenticationToken(userLogin.getId(), request.password());
+            try {
+                Authentication authentication = authenticationManager.authenticate(userAndPass);
 
-            User userToken = (User) authentication.getPrincipal();
+                User userToken = (User) authentication.getPrincipal();
 
-            String token = tokenConfig.generateToken(userToken);
+                String token = tokenConfig.generateToken(userToken);
 
-            return new LoginResponseDTO(token);
-        } catch (UsernameNotFoundException | BadCredentialsException e) {
-            throw new InvalidLoginException();
+                return new LoginResponseDTO(true, "User authenticated", token);
+            } catch (UsernameNotFoundException | BadCredentialsException e) {
+                throw new InvalidLoginException();
+            }
         }
+        authNotificationService.sendAccountEmailValidation(userLogin);
+        return new LoginResponseDTO(false, "Email not validated", null);
     }
 }
