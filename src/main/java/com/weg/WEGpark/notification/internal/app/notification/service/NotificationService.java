@@ -2,10 +2,13 @@ package com.weg.WEGpark.notification.internal.app.notification.service;
 
 import com.weg.WEGpark.notification.FindAssociationNotificationResponse;
 import com.weg.WEGpark.notification.internal.app.notification.mapper.NotificationEventMapper;
+import com.weg.WEGpark.notification.internal.domain.entities.Notification;
 import com.weg.WEGpark.notification.internal.domain.entities.VehicleAssociationNotification;
+import com.weg.WEGpark.notification.internal.domain.enums.NotificationType;
 import com.weg.WEGpark.notification.internal.infra.repository.NotificationRepository;
 import com.weg.WEGpark.park.AssociateToVehicleNotificationEvent;
 import com.weg.WEGpark.park.FindAssociationNotificationEvent;
+import com.weg.WEGpark.park.SendOccurrenceNotificationEvent;
 import com.weg.WEGpark.shared.exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -24,6 +27,10 @@ public class NotificationService {
         notification.setMessage("Do you want to permit the user %s associate with your vehicle %s %s"
                 .formatted(event.userToAssociateName(), event.vehicleBrand(), event.vehicleModel()));
         notificationRepository.save(notification);
+    }
+
+    public void CreateNewOccurrenceNotification (SendOccurrenceNotificationEvent event) {
+        Notification notification = new Notification(event.idNotificatedUser(), NotificationType.DEFAULT);
     }
 
     public void findAssociationNotification (FindAssociationNotificationEvent event) {

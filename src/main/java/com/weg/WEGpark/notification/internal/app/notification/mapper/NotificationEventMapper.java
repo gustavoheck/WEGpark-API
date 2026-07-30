@@ -1,5 +1,6 @@
 package com.weg.WEGpark.notification.internal.app.notification.mapper;
 
+import com.weg.WEGpark.notification.internal.domain.entities.Notification;
 import com.weg.WEGpark.notification.internal.domain.entities.VehicleAssociationNotification;
 import com.weg.WEGpark.park.AssociateToVehicleNotificationEvent;
 import org.mapstruct.Mapper;

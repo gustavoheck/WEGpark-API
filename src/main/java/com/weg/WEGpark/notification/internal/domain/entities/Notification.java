@@ -6,6 +6,7 @@ import lombok.*;
 import org.hibernate.annotations.Generated;
 import org.hibernate.generator.EventType;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
@@ -32,6 +33,8 @@ public class Notification {
     @Column(nullable = false)
     private String message;
 
+    private LocalDateTime notificationTime;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "notification_type", insertable = false, updatable = false, nullable = false)
     private NotificationType notificationType;
@@ -39,5 +42,6 @@ public class Notification {
     public Notification(Long idNotificatedUser, NotificationType notificationType) {
         this.idNotificatedUser = idNotificatedUser;
         this.notificationType = notificationType;
+        this.notificationTime = LocalDateTime.now();
     }
 }
