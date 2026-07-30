@@ -1,5 +1,6 @@
 package com.weg.WEGpark.auth.internal.infra.security.config;
 
+import io.swagger.v3.oas.models.PathItem;
 import jakarta.servlet.DispatcherType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -34,9 +35,9 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/auth/register/collaborator").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/register/visitor").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth").permitAll()
-                        .requestMatchers("/auth/validate-email/*").permitAll()
-                        .requestMatchers("/auth/reset-password").permitAll()
-                        .requestMatchers("/auth/reset-password/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/auth/validate-email/*").permitAll()
+                        .requestMatchers(HttpMethod.PATCH, "/auth/reset-password").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/auth/reset-password/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/admin").permitAll()
                         .anyRequest().authenticated()
                 )
