@@ -44,7 +44,7 @@ public class AuthUpdateService {
         }
         boolean isPasswordCorrect = passwordEncoder.matches(request.actualPassword(), user.getPassword());
         if (isPasswordCorrect) {
-            userMapper.updateFromDTO(request, user);
+            userMapper.updateFromDTO(userMapper.toUpdateDto(request), user);
             if (request.password() != null) {
                 user.setPassword(passwordEncoder.encode(request.password()));
             }

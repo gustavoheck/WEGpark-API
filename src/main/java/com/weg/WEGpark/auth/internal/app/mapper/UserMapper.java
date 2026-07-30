@@ -1,6 +1,7 @@
 package com.weg.WEGpark.auth.internal.app.mapper;
 
 import com.weg.WEGpark.auth.UpdateUserAuthEvent;
+import com.weg.WEGpark.auth.internal.app.dto.UpdateUserDTO;
 import com.weg.WEGpark.auth.internal.domain.model.User;
 import com.weg.WEGpark.auth.shared.dto.update.UpdateUserRequestDTO;
 import com.weg.WEGpark.auth.shared.dto.update.UpdateUserResponseDTO;
@@ -23,8 +24,10 @@ public interface UserMapper {
 
     UpdateUserResponseDTO toUpdateResponse (User user);
 
+    UpdateUserDTO toUpdateDto (UpdateUserRequestDTO request);
+
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
-    void updateFromDTO(UpdateUserRequestDTO request, @MappingTarget User user);
+    void updateFromDTO(UpdateUserDTO dto, @MappingTarget User user);
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     void updateFromEvent(UpdateUserAuthEvent event, @MappingTarget User user);
