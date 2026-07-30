@@ -1,6 +1,7 @@
 package com.weg.WEGpark.auth.internal.app.service;
 
 import com.weg.WEGpark.auth.internal.app.exception.InvalidTokenException;
+import com.weg.WEGpark.auth.internal.dto.reset.NewTokenResponseDTO;
 import com.weg.WEGpark.auth.internal.dto.reset.NumberTokenVerificateTryRequestDTO;
 import com.weg.WEGpark.auth.shared.enums.TokenType;
 import com.weg.WEGpark.auth.internal.domain.model.AuthToken;
@@ -51,13 +52,13 @@ public class AuthTokenService {
     }
 
     @Transactional
-    public AuthToken validateNumberToken (NumberTokenVerificateTryRequestDTO request) {
+    public NewTokenResponseDTO validateNumberToken (NumberTokenVerificateTryRequestDTO request) {
         NumberToken numberToken = findNumberToken(UUID.fromString(request.numberTokenId()));
-
             if (!numberToken.getUsed() && numberToken.getExpirationTime().isAfter(LocalDateTime.now()) && numberToken.getTries() < 5) {
                 if (numberToken.getDigits().equals(request.numberCode())) {
                     numberToken.setUsed(true);
-                    return createAuthToken(numberToken.getTargetUser(), TokenType.PASSWORD_RESET);
+                    AuthToken authToken = createAuthToken(numberToken.getTargetUser(), TokenType.PASSWORD_RESET);
+                    return new NewTokenResponseDTO(authToken.getToken());
                 } else {
                     throw new InvalidTokenException("Request digits don't match with token digits");
                 }
