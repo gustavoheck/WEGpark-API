@@ -45,4 +45,11 @@ public class Notification {
         this.notificationType = notificationType;
         this.notificationTime = LocalDateTime.now();
     }
+
+    public Notification(Long idNotificatedUser, NotificationType notificationType, String message) {
+        this.idNotificatedUser = idNotificatedUser;
+        this.notificationType = notificationType;
+        this.message = message;
+        this.notificationTime = LocalDateTime.now();
+    }
 }

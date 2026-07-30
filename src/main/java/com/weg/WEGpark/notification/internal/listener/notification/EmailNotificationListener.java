@@ -2,6 +2,7 @@ package com.weg.WEGpark.notification.internal.listener.notification;
 
 import com.weg.WEGpark.auth.SendAccountValidationEmailEvent;
 import com.weg.WEGpark.auth.SendEmailCheckEvent;
+import com.weg.WEGpark.notification.internal.app.notification.exception.InvalidNotificationException;
 import com.weg.WEGpark.notification.internal.app.notification.service.EmailService;
 import com.weg.WEGpark.notification.internal.dto.EmailVariables;
 import com.weg.WEGpark.park.SendOccurrenceNotificationEvent;
@@ -51,14 +52,19 @@ public class EmailNotificationListener {
     @EventListener
     public void sendOccurrenceNotification (SendOccurrenceNotificationEvent event) {
 
-        emailService.sendNotification(
-                event.userName(),
-                event.email(),
-                "Nova ocorrência registrada no seu nome.",
-                "Identificamos uma ocorrência vinculada à sua conta no WEGpark.<br>Clique no botão abaixo para conferir os detalhes e resolver o quanto antes.",
-                true,
-                "%s/ocorrencias/%s".formatted(emailVariables.websiteUrl(), event.occurrenceUuid()),
-                "Ver Ocorrência"
-        );
+        if (event.notificatedUsersId().size() == event.userNames().size()) {
+            for (int i = 0; i < event.notificatedUsersId().size(); i++) {
+                emailService.sendNotification(
+                        event.userNames().get(i),
+                        event.email().get(i),
+                        "Nova ocorrência registrada no seu nome.",
+                        "Identificamos uma ocorrência vinculada à sua conta no WEGpark.<br>Clique no botão abaixo para conferir os detalhes e resolver o quanto antes.",
+                        true,
+                        "%s/ocorrencias/%s".formatted(emailVariables.websiteUrl(), event.occurrenceUuid()),
+                        "Ver Ocorrência"
+                );
+            }
+        }
+        throw new InvalidNotificationException("The notification event have different sizes for user and names");
     }
 }

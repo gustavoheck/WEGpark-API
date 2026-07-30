@@ -1,6 +1,7 @@
 package com.weg.WEGpark.notification.internal.app.notification.service;
 
 import com.weg.WEGpark.notification.FindAssociationNotificationResponse;
+import com.weg.WEGpark.notification.internal.app.notification.exception.InvalidNotificationException;
 import com.weg.WEGpark.notification.internal.app.notification.mapper.NotificationEventMapper;
 import com.weg.WEGpark.notification.internal.domain.entities.Notification;
 import com.weg.WEGpark.notification.internal.domain.entities.VehicleAssociationNotification;
@@ -30,7 +31,18 @@ public class NotificationService {
     }
 
     public void CreateNewOccurrenceNotification (SendOccurrenceNotificationEvent event) {
-        Notification notification = new Notification(event.idNotificatedUser(), NotificationType.OCCURRENCE);
+        if (event.notificatedUsersId().size() == event.userNames().size()) {
+            for (int i = 0; i < event.notificatedUsersId().size(); i++) {
+                Notification notification = new Notification(
+                        event.notificatedUsersId().get(i),
+                        NotificationType.OCCURRENCE,
+                        event.defaultNotificationMessage()
+                );
+                notificationRepository.save(notification);
+            }
+        } else {
+            throw new InvalidNotificationException("The notification event have different sizes for user and names");
+        }
     }
 
     public void findAssociationNotification (FindAssociationNotificationEvent event) {

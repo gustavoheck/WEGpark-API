@@ -11,7 +11,7 @@ public record SendOccurrenceNotificationEvent(
 
         UUID occurrenceUuid,
 
-        List<String> usernames,
+        List<String> userNames,
 
         List<String> email
 ) {
