@@ -5,6 +5,6 @@ import com.weg.WEGpark.auth.shared.enums.RolesType;
 import java.util.List;
 
 public record SelectAccountResponseDTO(
-        List<RolesType> userRoles
+        RolesType role
 ) {
 }

@@ -3,12 +3,12 @@ package com.weg.WEGpark.auth.internal.app.service;
 import com.weg.WEGpark.auth.UpdateUserAuthEvent;
 import com.weg.WEGpark.auth.internal.app.exception.InvalidTokenException;
 import com.weg.WEGpark.auth.internal.app.mapper.UserMapper;
-import com.weg.WEGpark.auth.internal.domain.enums.TokenType;
+import com.weg.WEGpark.auth.shared.enums.RolesType;
+import com.weg.WEGpark.auth.shared.enums.TokenType;
 import com.weg.WEGpark.auth.internal.domain.model.AuthToken;
 import com.weg.WEGpark.auth.internal.domain.model.User;
 import com.weg.WEGpark.auth.shared.dto.update.UpdateUserRequestDTO;
 import com.weg.WEGpark.auth.shared.dto.update.UpdateUserResponseDTO;
-import com.weg.WEGpark.auth.internal.infra.repository.AuthTokenRepository;
 import com.weg.WEGpark.auth.internal.infra.repository.UserRepository;
 import com.weg.WEGpark.rh.DesactivateAndActivateUserEvent;
 import com.weg.WEGpark.shared.exception.NotFoundException;
@@ -21,31 +21,34 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class UpdateService {
+public class AuthUpdateService {
 
     private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
-    private final AuthTokenRepository authTokenRepository;
+    private final AuthTokenService authTokenService;
 
     private final UserMapper userMapper;
 
     @Transactional
-    public UpdateUserResponseDTO updateUserAuthDataRequest (UpdateUserRequestDTO request, UUID uuid, boolean isPasswordMiss) {
+    public UpdateUserResponseDTO updateUserAuthDataRequest (UpdateUserRequestDTO request) {
         User user;
-        if (isPasswordMiss) {
-            user = checkToken(uuid, TokenType.PASSWORD_RESET);
+        boolean isPasswordCorrect;
+        if (request.tokenIfPasswordReset() != null) {
+            AuthToken token = checkToken(UUID.fromString(request.tokenIfPasswordReset()), TokenType.PASSWORD_RESET);
+            user = token.getTargetUser();
+            token.setUsed(true);
+            isPasswordCorrect = true;
         } else {
-            user = userRepository.findByUuid(uuid)
-                    .orElseThrow(() -> new NotFoundException("Any user was found by %s uuid".formatted(uuid)));
+            user = userRepository.findByEmailAndRole_Role(request.email(), RolesType.valueOf(request.role()))
+                    .orElseThrow(() -> new NotFoundException("Any %s user was found by %s email".formatted(request.role(), request.email())));
+            isPasswordCorrect = passwordEncoder.matches(request.actualPassword(), user.getPassword());
         }
-        boolean isPasswordCorrect = passwordEncoder.matches(request.actualPassword(), user.getPassword());
         if (isPasswordCorrect) {
-            userMapper.updateFromDTO(request, user);
+            userMapper.updateFromDTO(userMapper.toUpdateDto(request), user);
             if (request.password() != null) {
                 user.setPassword(passwordEncoder.encode(request.password()));
             }
@@ -83,13 +86,12 @@ public class UpdateService {
     }
 
     @Transactional
-    private User checkToken (UUID uuid, TokenType operation) {
-        AuthToken token = authTokenRepository.findById(uuid)
-                .orElseThrow(() -> new NotFoundException("This uuid dont correspond to any token"));
+    private AuthToken checkToken (UUID uuid, TokenType operation) {
+        AuthToken token = authTokenService.findToken(uuid);
         if (LocalDateTime.now().isAfter(token.getExpirationTime())) throw new InvalidTokenException("This token is already expired");
         if (token.getUsed()) throw new InvalidTokenException("This token is already used");
-        if (!(token.getTokenType().equals(operation.toString()))) throw new InvalidTokenException("You can not use a token of %s to %s"
+        if (!(token.getTokenType().toString().equals(operation.toString()))) throw new InvalidTokenException("You can not use a token of %s to %s"
                 .formatted(token.getTokenType(), operation));
-        return token.getTargetUser();
+        return token;
     }
 }

@@ -12,8 +12,6 @@ public interface VehicleMapper {
 
     Vehicle toEntity (CreateVehicleRequestDTO request);
 
-    CreateVehicleResponseDTO toCreateResponse (Vehicle vehicle);
-
     @Mapping(source = "vehicleUsers", target = "vehicleUsers")
     @Mapping(source = "vehicle", target = ".")
     GetVehicleResponseDTO toGetResponse (Vehicle vehicle, List<GetVehicleUserResponseDTO> vehicleUsers);
