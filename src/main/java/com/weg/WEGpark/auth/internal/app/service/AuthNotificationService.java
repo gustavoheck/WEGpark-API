@@ -1,11 +1,15 @@
 package com.weg.WEGpark.auth.internal.app.service;
 
 import com.weg.WEGpark.auth.SendAccountValidationEmailEvent;
+import com.weg.WEGpark.auth.SendEmailCheckEvent;
 import com.weg.WEGpark.auth.internal.app.exception.InvalidEmailValidationException;
 import com.weg.WEGpark.auth.internal.app.exception.InvalidTokenException;
-import com.weg.WEGpark.auth.internal.domain.enums.TokenType;
+import com.weg.WEGpark.auth.shared.enums.TokenType;
 import com.weg.WEGpark.auth.internal.domain.model.AuthToken;
+import com.weg.WEGpark.auth.internal.domain.model.NumberToken;
 import com.weg.WEGpark.auth.internal.domain.model.User;
+import com.weg.WEGpark.auth.internal.dto.defaults.EmailRequestDTO;
+import com.weg.WEGpark.auth.internal.dto.reset.ResetPasswordEmailCheckResponseDTO;
 import com.weg.WEGpark.auth.internal.infra.repository.UserRepository;
 import com.weg.WEGpark.auth.shared.enums.RolesType;
 import com.weg.WEGpark.shared.exception.NotFoundException;
@@ -24,11 +28,22 @@ public class AuthNotificationService {
 
     private final ApplicationEventPublisher applicationEventPublisher;
     private final AuthTokenService authTokenService;
+    private final UserRepository userRepository;
 
     @Transactional
     public void sendAccountEmailValidation (User user) {
-        AuthToken authToken = authTokenService.createToken(user, TokenType.EMAIL_VALIDATION);
-        applicationEventPublisher.publishEvent(new SendAccountValidationEmailEvent(authToken.getToken(), user.getEmail()));
+        AuthToken authToken = authTokenService.createAuthToken(user, TokenType.EMAIL_VALIDATION);
+        applicationEventPublisher.publishEvent(new SendAccountValidationEmailEvent(authToken.getToken(), user.getEmail(), TokenType.EMAIL_VALIDATION));
+    }
+
+    @Transactional
+    public ResetPasswordEmailCheckResponseDTO resetPasswordEmailCheck (EmailRequestDTO request) {
+        User user = userRepository.findByEmailAndRole_Role(request.email(), RolesType.valueOf(request.role()))
+                .orElseThrow(() -> new NotFoundException("Any user was found by %s email and %s role".formatted(request.email(), request.role())));
+
+        NumberToken numberToken = authTokenService.createNumberToken(user);
+        applicationEventPublisher.publishEvent(new SendEmailCheckEvent(numberToken.getDigits()));
+        return new ResetPasswordEmailCheckResponseDTO(numberToken.getIdentificationToken());
     }
 
     @Transactional
@@ -41,7 +56,7 @@ public class AuthNotificationService {
                 authToken.getTargetUser().setActive(true);
                 authToken.setUsed(true);
             } else {
-                throw new InvalidTokenException("This validation token is already used or expired");
+                throw new InvalidTokenException("This token is already used or expired");
             }
         } else {
             throw new InvalidEmailValidationException("Your account email is already validated");

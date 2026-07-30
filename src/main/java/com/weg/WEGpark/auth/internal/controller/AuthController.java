@@ -2,6 +2,7 @@ package com.weg.WEGpark.auth.internal.controller;
 
 import com.weg.WEGpark.auth.internal.app.service.LoginService;
 import com.weg.WEGpark.auth.internal.app.service.RegisterService;
+import com.weg.WEGpark.auth.internal.dto.defaults.EmailRequestDTO;
 import com.weg.WEGpark.auth.internal.dto.login.LoginRequestDTO;
 import com.weg.WEGpark.auth.internal.dto.login.LoginResponseDTO;
 import com.weg.WEGpark.auth.internal.dto.login.SelectAccountResponseDTO;
@@ -29,9 +30,9 @@ public class AuthController {
 
     @GetMapping
     public ResponseEntity<List<SelectAccountResponseDTO>> getUserRoles (
-            @RequestParam(name = "email") String email
-    ) {
-        List<SelectAccountResponseDTO> response = loginService.preLogin(email);
+            @Valid @RequestBody EmailRequestDTO request
+            ) {
+        List<SelectAccountResponseDTO> response = loginService.preLogin(request.email());
 
         return ResponseEntity
                 .status(HttpStatus.OK)
