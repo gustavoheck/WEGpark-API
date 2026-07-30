@@ -48,7 +48,7 @@ public class AuthVerifyController {
 
     @PostMapping("/reset-password/check-email/answer")
     public ResponseEntity<NewTokenResponseDTO> checkAccountEmailAnswer (
-            NumberTokenVerificateTryRequestDTO request
+            @RequestBody @Valid NumberTokenVerificateTryRequestDTO request
     ) {
         NewTokenResponseDTO response = authTokenService.validateNumberToken(request);
 
