@@ -36,8 +36,8 @@ public class EmailNotificationListener {
 
         emailService.sendNotification(
                 event.email(),
-                "Veja seu codigo de verificacao abaixo!",
-                event.number(),
+                "Codigo de verificação",
+                "Veja seu codigo de verificacao abaixo!\n" + event.number(),
                 false,
                 null,
                 null
