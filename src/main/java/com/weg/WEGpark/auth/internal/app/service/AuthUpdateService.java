@@ -37,7 +37,9 @@ public class AuthUpdateService {
     public UpdateUserResponseDTO updateUserAuthDataRequest (UpdateUserRequestDTO request) {
         User user;
         if (request.tokenIfPasswordReset() != null) {
-            user = checkToken(UUID.fromString(request.tokenIfPasswordReset()), TokenType.PASSWORD_RESET);
+            AuthToken token = checkToken(UUID.fromString(request.tokenIfPasswordReset()), TokenType.PASSWORD_RESET);
+            user = token.getTargetUser();
+            token.setUsed(true);
         } else {
             user = userRepository.findByEmailAndRole_Role(request.email(), RolesType.valueOf(request.role()))
                     .orElseThrow(() -> new NotFoundException("Any %s user was found by %s email".formatted(request.role(), request.email())));
@@ -82,12 +84,12 @@ public class AuthUpdateService {
     }
 
     @Transactional
-    private User checkToken (UUID uuid, TokenType operation) {
+    private AuthToken checkToken (UUID uuid, TokenType operation) {
         AuthToken token = authTokenService.findToken(uuid);
         if (LocalDateTime.now().isAfter(token.getExpirationTime())) throw new InvalidTokenException("This token is already expired");
         if (token.getUsed()) throw new InvalidTokenException("This token is already used");
         if (!(token.getTokenType().toString().equals(operation.toString()))) throw new InvalidTokenException("You can not use a token of %s to %s"
                 .formatted(token.getTokenType(), operation));
-        return token.getTargetUser();
+        return token;
     }
 }
