@@ -51,7 +51,7 @@ public class LoginService {
             if (users.isEmpty()) throw new InvalidLoginException();
             userLogin = users.getFirst();
         }
-        if (userLogin.getEmailValidated() == true) {
+        if (userLogin.getEmailValidated() != true) {
             UsernamePasswordAuthenticationToken userAndPass =
                     new UsernamePasswordAuthenticationToken(userLogin.getId(), request.password());
             try {
