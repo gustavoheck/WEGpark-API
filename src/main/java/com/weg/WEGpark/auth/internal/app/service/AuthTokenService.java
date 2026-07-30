@@ -27,7 +27,7 @@ public class AuthTokenService {
     private final AuthTokenRepository authTokenRepository;
     private final NumberTokenRepository numberTokenRepository;
 
-    private final SecureRandom secureRandom;
+    private final SecureRandom secureRandom = new SecureRandom();
 
     @Transactional
     public AuthToken createAuthToken (User user, TokenType tokenType) {
