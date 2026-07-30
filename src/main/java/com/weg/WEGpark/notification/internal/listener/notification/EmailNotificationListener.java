@@ -21,6 +21,7 @@ public class EmailNotificationListener {
     public void sendValidationEmail (SendAccountValidationEmailEvent event) {
 
         emailService.sendNotification(
+                null,
                 event.email(),
                 "Valide sua conta no WEGPark!",
                 "Você precisa validar sua conta para usar o sistema do WEGPark!",
@@ -35,9 +36,10 @@ public class EmailNotificationListener {
     public void sendEmailCheck (SendEmailCheckEvent event) {
 
         emailService.sendNotification(
+                null,
                 event.email(),
                 "Codigo de verificação",
-                "Veja seu codigo de verificacao abaixo!\n" + event.number(),
+                "Veja seu código de verificação abaixo!<br><p style=\"font-size:40px\">" + event.number() + "</p>",
                 false,
                 null,
                 null
