@@ -33,7 +33,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/register/collaborator").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/register/visitor").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/auth").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/auth").permitAll()
                         .requestMatchers("/auth/validate-email/*").permitAll()
                         .requestMatchers("/auth/reset-password").permitAll()
                         .requestMatchers("/auth/reset-password/**").permitAll()
