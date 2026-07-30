@@ -1,13 +1,15 @@
 package com.weg.WEGpark.auth.shared.dto.update;
 
-import java.util.UUID;
-
 public record UpdateUserRequestDTO(
 
         String email,
 
+        String role,
+
         String password,
 
-        String actualPassword
+        String actualPassword,
+
+        String tokenIfPasswordReset
 ) {
 }

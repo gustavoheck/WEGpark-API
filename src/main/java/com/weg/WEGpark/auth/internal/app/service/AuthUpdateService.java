@@ -3,6 +3,7 @@ package com.weg.WEGpark.auth.internal.app.service;
 import com.weg.WEGpark.auth.UpdateUserAuthEvent;
 import com.weg.WEGpark.auth.internal.app.exception.InvalidTokenException;
 import com.weg.WEGpark.auth.internal.app.mapper.UserMapper;
+import com.weg.WEGpark.auth.shared.enums.RolesType;
 import com.weg.WEGpark.auth.shared.enums.TokenType;
 import com.weg.WEGpark.auth.internal.domain.model.AuthToken;
 import com.weg.WEGpark.auth.internal.domain.model.User;
@@ -33,13 +34,13 @@ public class AuthUpdateService {
     private final UserMapper userMapper;
 
     @Transactional
-    public UpdateUserResponseDTO updateUserAuthDataRequest (UpdateUserRequestDTO request, UUID uuid, boolean isPasswordMiss) {
+    public UpdateUserResponseDTO updateUserAuthDataRequest (UpdateUserRequestDTO request) {
         User user;
-        if (isPasswordMiss) {
-            user = checkToken(uuid, TokenType.PASSWORD_RESET);
+        if (request.tokenIfPasswordReset() != null) {
+            user = checkToken(UUID.fromString(request.tokenIfPasswordReset()), TokenType.PASSWORD_RESET);
         } else {
-            user = userRepository.findByUuid(uuid)
-                    .orElseThrow(() -> new NotFoundException("Any user was found by %s uuid".formatted(uuid)));
+            user = userRepository.findByEmailAndRole_Role(request.email(), RolesType.valueOf(request.role()))
+                    .orElseThrow(() -> new NotFoundException("Any %s user was found by %s email".formatted(request.role(), request.email())));
         }
         boolean isPasswordCorrect = passwordEncoder.matches(request.actualPassword(), user.getPassword());
         if (isPasswordCorrect) {
@@ -85,7 +86,7 @@ public class AuthUpdateService {
         AuthToken token = authTokenService.findToken(uuid);
         if (LocalDateTime.now().isAfter(token.getExpirationTime())) throw new InvalidTokenException("This token is already expired");
         if (token.getUsed()) throw new InvalidTokenException("This token is already used");
-        if (!(token.getTokenType().equals(operation.toString()))) throw new InvalidTokenException("You can not use a token of %s to %s"
+        if (!(token.getTokenType().toString().equals(operation.toString()))) throw new InvalidTokenException("You can not use a token of %s to %s"
                 .formatted(token.getTokenType(), operation));
         return token.getTargetUser();
     }

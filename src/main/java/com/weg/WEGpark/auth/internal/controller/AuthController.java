@@ -1,5 +1,6 @@
 package com.weg.WEGpark.auth.internal.controller;
 
+import com.weg.WEGpark.auth.internal.app.service.AuthUpdateService;
 import com.weg.WEGpark.auth.internal.app.service.LoginService;
 import com.weg.WEGpark.auth.internal.app.service.RegisterService;
 import com.weg.WEGpark.auth.internal.dto.defaults.EmailRequestDTO;
@@ -9,6 +10,8 @@ import com.weg.WEGpark.auth.internal.dto.login.SelectAccountResponseDTO;
 import com.weg.WEGpark.auth.shared.dto.register.RegisterAccountResponseDTO;
 import com.weg.WEGpark.auth.shared.dto.register.RegisterCollaboratorRequestDTO;
 import com.weg.WEGpark.auth.shared.dto.register.RegisterVisitorRequestDTO;
+import com.weg.WEGpark.auth.shared.dto.update.UpdateUserRequestDTO;
+import com.weg.WEGpark.auth.shared.dto.update.UpdateUserResponseDTO;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -27,6 +30,7 @@ public class AuthController {
 
     private final LoginService loginService;
     private final RegisterService registerService;
+    private final AuthUpdateService authUpdateService;
 
     @GetMapping
     public ResponseEntity<List<SelectAccountResponseDTO>> getUserRoles (
@@ -42,6 +46,15 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<LoginResponseDTO> login (@Valid @RequestBody LoginRequestDTO request) {
         LoginResponseDTO response = loginService.login(request);
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(response);
+    }
+
+    @PatchMapping("/reset-password")
+    public ResponseEntity<UpdateUserResponseDTO> login (
+            @Valid @RequestBody UpdateUserRequestDTO request) {
+        UpdateUserResponseDTO response = authUpdateService.updateUserAuthDataRequest(request);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(response);
