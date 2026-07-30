@@ -42,7 +42,7 @@ public class AuthNotificationService {
                 .orElseThrow(() -> new NotFoundException("Any user was found by %s email and %s role".formatted(request.email(), request.role())));
 
         NumberToken numberToken = authTokenService.createNumberToken(user);
-        applicationEventPublisher.publishEvent(new SendEmailCheckEvent(numberToken.getDigits(), user.getEmail()));
+        applicationEventPublisher.publishEvent(new SendEmailCheckEvent(user.getEmail(), numberToken.getDigits()));
         return new NewTokenResponseDTO(numberToken.getIdentificationToken());
     }
 
