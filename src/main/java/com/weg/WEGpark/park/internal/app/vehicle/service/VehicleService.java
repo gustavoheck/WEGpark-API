@@ -53,7 +53,7 @@ public class VehicleService {
     private final VehicleUserMapper vehicleUserMapper;
 
     @Transactional
-    public CreateVehicleResponseDTO registerVehicle(CreateVehicleRequestDTO request, JWTUserData userData) {
+    public GetVehicleResponseDTO registerVehicle(CreateVehicleRequestDTO request, JWTUserData userData) {
         Optional<Vehicle> findedVehicle = vehicleRepository.findByPlate(request.plate());
         if (findedVehicle.isEmpty()) {
             ParkUser loggedUser = parkUserRepository.findByUuid(userData.uuid())
@@ -82,7 +82,13 @@ public class VehicleService {
 
                 vehicleUserRepository.save(vehicleUser);
 
-                return vehicleMapper.toCreateResponse(vehicle);
+                List<GetVehicleUserResponseDTO> userResponseList = vehicle
+                        .getParkUsers()
+                        .stream()
+                        .map(vehicleUserMapper::toResponse)
+                        .toList();
+
+                return vehicleMapper.toGetResponse(vehicle, userResponseList);
             }
         }
         throw new VehicleAlreadyRegisteredException

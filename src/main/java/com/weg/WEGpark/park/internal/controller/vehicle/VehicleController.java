@@ -32,11 +32,11 @@ public class VehicleController {
     private final VehicleUserService vehicleUserService;
 
     @PostMapping
-    public ResponseEntity<CreateVehicleResponseDTO> registerVehicle(
+    public ResponseEntity<GetVehicleResponseDTO> registerVehicle(
             @Valid @RequestBody CreateVehicleRequestDTO request,
             @AuthenticationPrincipal JWTUserData userData
     ) {
-        CreateVehicleResponseDTO response = vehicleService.registerVehicle(request, userData);
+        GetVehicleResponseDTO response = vehicleService.registerVehicle(request, userData);
 
         URI uri = ServletUriComponentsBuilder
                 .fromCurrentRequest()
