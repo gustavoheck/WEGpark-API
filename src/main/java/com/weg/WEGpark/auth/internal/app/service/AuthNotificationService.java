@@ -9,7 +9,7 @@ import com.weg.WEGpark.auth.internal.domain.model.AuthToken;
 import com.weg.WEGpark.auth.internal.domain.model.NumberToken;
 import com.weg.WEGpark.auth.internal.domain.model.User;
 import com.weg.WEGpark.auth.internal.dto.defaults.EmailRequestDTO;
-import com.weg.WEGpark.auth.internal.dto.reset.ResetPasswordEmailCheckResponseDTO;
+import com.weg.WEGpark.auth.internal.dto.reset.NewTokenResponseDTO;
 import com.weg.WEGpark.auth.internal.infra.repository.UserRepository;
 import com.weg.WEGpark.auth.shared.enums.RolesType;
 import com.weg.WEGpark.shared.exception.NotFoundException;
@@ -37,13 +37,13 @@ public class AuthNotificationService {
     }
 
     @Transactional
-    public ResetPasswordEmailCheckResponseDTO resetPasswordEmailCheck (EmailRequestDTO request) {
+    public NewTokenResponseDTO resetPasswordEmailCheck (EmailRequestDTO request) {
         User user = userRepository.findByEmailAndRole_Role(request.email(), RolesType.valueOf(request.role()))
                 .orElseThrow(() -> new NotFoundException("Any user was found by %s email and %s role".formatted(request.email(), request.role())));
 
         NumberToken numberToken = authTokenService.createNumberToken(user);
         applicationEventPublisher.publishEvent(new SendEmailCheckEvent(numberToken.getDigits(), user.getEmail()));
-        return new ResetPasswordEmailCheckResponseDTO(numberToken.getIdentificationToken());
+        return new NewTokenResponseDTO(numberToken.getIdentificationToken());
     }
 
     @Transactional

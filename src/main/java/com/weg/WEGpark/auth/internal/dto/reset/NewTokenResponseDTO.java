@@ -2,8 +2,8 @@ package com.weg.WEGpark.auth.internal.dto.reset;
 
 import java.util.UUID;
 
-public record ResetPasswordEmailCheckResponseDTO(
+public record NewTokenResponseDTO(
 
-        UUID newToken
+        UUID token
 ) {
 }

@@ -1,11 +1,11 @@
 package com.weg.WEGpark.auth.internal.app.service;
 
 import com.weg.WEGpark.auth.internal.app.exception.InvalidTokenException;
+import com.weg.WEGpark.auth.internal.dto.reset.NumberTokenVerificateTryRequestDTO;
 import com.weg.WEGpark.auth.shared.enums.TokenType;
 import com.weg.WEGpark.auth.internal.domain.model.AuthToken;
 import com.weg.WEGpark.auth.internal.domain.model.NumberToken;
 import com.weg.WEGpark.auth.internal.domain.model.User;
-import com.weg.WEGpark.auth.internal.dto.reset.ResetPasswordEmailCheckRequestDTO;
 import com.weg.WEGpark.auth.internal.infra.repository.AuthTokenRepository;
 import com.weg.WEGpark.auth.internal.infra.repository.NumberTokenRepository;
 import com.weg.WEGpark.auth.internal.infra.repository.UserRepository;
@@ -51,8 +51,8 @@ public class AuthTokenService {
     }
 
     @Transactional
-    public AuthToken validateNumberToken (ResetPasswordEmailCheckRequestDTO request) {
-        NumberToken numberToken = findNumberToken(UUID.fromString(request.token()));
+    public AuthToken validateNumberToken (NumberTokenVerificateTryRequestDTO request) {
+        NumberToken numberToken = findNumberToken(UUID.fromString(request.numberTokenId()));
 
             if (!numberToken.getUsed() && numberToken.getExpirationTime().isAfter(LocalDateTime.now()) && numberToken.getTries() < 5) {
                 if (numberToken.getDigits().equals(request.numberCode())) {
