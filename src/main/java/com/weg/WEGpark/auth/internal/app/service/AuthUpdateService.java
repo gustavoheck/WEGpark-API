@@ -36,15 +36,17 @@ public class AuthUpdateService {
     @Transactional
     public UpdateUserResponseDTO updateUserAuthDataRequest (UpdateUserRequestDTO request) {
         User user;
+        boolean isPasswordCorrect;
         if (request.tokenIfPasswordReset() != null) {
             AuthToken token = checkToken(UUID.fromString(request.tokenIfPasswordReset()), TokenType.PASSWORD_RESET);
             user = token.getTargetUser();
             token.setUsed(true);
+            isPasswordCorrect = true;
         } else {
             user = userRepository.findByEmailAndRole_Role(request.email(), RolesType.valueOf(request.role()))
                     .orElseThrow(() -> new NotFoundException("Any %s user was found by %s email".formatted(request.role(), request.email())));
+            isPasswordCorrect = passwordEncoder.matches(request.actualPassword(), user.getPassword());
         }
-        boolean isPasswordCorrect = passwordEncoder.matches(request.actualPassword(), user.getPassword());
         if (isPasswordCorrect) {
             userMapper.updateFromDTO(userMapper.toUpdateDto(request), user);
             if (request.password() != null) {
