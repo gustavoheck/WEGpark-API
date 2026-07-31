@@ -57,12 +57,6 @@ public class PasswordValidator implements ConstraintValidator<ValidPassword, Str
         return isValid;
     }
 
-    private void customMessage(ConstraintValidatorContext context, String message) {
-        context.disableDefaultConstraintViolation();
-        context.buildConstraintViolationWithTemplate(message)
-                .addConstraintViolation();
-    }
-
     private void addViolation(ConstraintValidatorContext context, String message) {
         context.buildConstraintViolationWithTemplate(message)
                 .addConstraintViolation();
