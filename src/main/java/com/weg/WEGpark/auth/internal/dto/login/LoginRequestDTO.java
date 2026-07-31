@@ -1,6 +1,5 @@
 package com.weg.WEGpark.auth.internal.dto.login;
 
-import com.weg.WEGpark.auth.internal.dto.validation.ValidPassword;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 

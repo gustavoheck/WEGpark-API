@@ -1,6 +1,6 @@
 package com.weg.WEGpark.park.internal.dto.occurrence.trafficaccident;
 
-import com.weg.WEGpark.park.internal.dto.occurrence.defaults.DefaultOccurrenceResponseDto;
+import com.weg.WEGpark.park.internal.dto.occurrence.defaults.DefaultOccurrenceResponseDTO;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -9,7 +9,7 @@ public record CreateTrafficAccidentResponseDTO(
 
         UUID uuid,
 
-        DefaultOccurrenceResponseDto defaults,
+        DefaultOccurrenceResponseDTO defaults,
 
         LocalDateTime occurrenceDate,
 

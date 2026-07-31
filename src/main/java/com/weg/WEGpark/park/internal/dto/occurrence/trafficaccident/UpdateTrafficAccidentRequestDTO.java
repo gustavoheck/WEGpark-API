@@ -1,14 +1,14 @@
 package com.weg.WEGpark.park.internal.dto.occurrence.trafficaccident;
 
-import com.weg.WEGpark.park.internal.dto.occurrence.defaults.CreateOccurrenceRequestDto;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
+import com.weg.WEGpark.park.internal.dto.occurrence.defaults.CreateOccurrenceRequestDTO;
+import jakarta.validation.Valid;
 
 import java.time.LocalDateTime;
 
 public record UpdateTrafficAccidentRequestDTO(
 
-        CreateOccurrenceRequestDto defaults,
+        @Valid
+        CreateOccurrenceRequestDTO defaults,
 
         LocalDateTime occurrenceDate,
 

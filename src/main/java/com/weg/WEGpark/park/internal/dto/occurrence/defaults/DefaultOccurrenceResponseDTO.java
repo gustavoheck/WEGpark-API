@@ -5,7 +5,7 @@ import com.weg.WEGpark.park.internal.dto.vehicle.defaults.GetVehicleResponseDTO;
 
 import java.time.LocalDateTime;
 
-public record DefaultOccurrenceResponseDto(
+public record DefaultOccurrenceResponseDTO(
 
         LocalDateTime dateHour,
 

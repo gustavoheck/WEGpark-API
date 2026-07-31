@@ -1,21 +1,24 @@
 package com.weg.WEGpark.auth.internal.dto.validation;
+
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 
 public class PasswordValidator implements ConstraintValidator<ValidPassword, String> {
 
+    private static final String SPECIAL_CHARACTERS = "!@#$%^&*(),.?\"{}|<>";
+
     @Override
     public boolean isValid(String password, ConstraintValidatorContext context) {
-        if (password == null) {
-            return true;
+        if (password == null || password.isBlank()) {
+            context.disableDefaultConstraintViolation();
+            addViolation(context, "The password can not be blank or null");
+            return false;
         }
 
         boolean hasUppercase = false;
         boolean hasLowercase = false;
         boolean hasNumber = false;
         boolean hasSpecialChar = false;
-
-        String specialCharacters = "!@#$%^&*(),.?\"{}|<>";
 
         for (char ch : password.toCharArray()) {
             if (Character.isUpperCase(ch)) {
@@ -24,7 +27,7 @@ public class PasswordValidator implements ConstraintValidator<ValidPassword, Str
                 hasLowercase = true;
             } else if (Character.isDigit(ch)) {
                 hasNumber = true;
-            } else if (specialCharacters.contains(String.valueOf(ch))) {
+            } else if (SPECIAL_CHARACTERS.indexOf(ch) >= 0) {
                 hasSpecialChar = true;
             }
         }

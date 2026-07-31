@@ -1,13 +1,16 @@
 package com.weg.WEGpark.park.internal.dto.occurrence.trafficaccident;
 
-import com.weg.WEGpark.park.internal.dto.occurrence.defaults.CreateOccurrenceRequestDto;
+import com.weg.WEGpark.park.internal.dto.occurrence.defaults.CreateOccurrenceRequestDTO;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 import java.time.LocalDateTime;
 
 public record CreateTrafficAccidentRequestDTO (
-        CreateOccurrenceRequestDto defaults,
+
+        @Valid
+        CreateOccurrenceRequestDTO defaults,
 
         @NotNull(message = "The occurrence date can not be null")
         LocalDateTime occurrenceDate,
