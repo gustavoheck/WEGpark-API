@@ -47,14 +47,13 @@ public class TrafficAccidentService {
         LocalDateTime date = LocalDateTime.now();
         occurrence.setDateHour(date);
 
-        info.vehicleUsers()
-                .forEach(vu -> occurrence.getVehicleUsers().add(vu));
+        info.vehicleUsers().forEach(vu -> occurrence.getVehicleUsers().add(vu));
 
         occurrenceRepository.saveAndFlush(occurrence);
 
-        info.vehicleUsers()
-                .forEach(vehicleUser ->
-                        occurrenceService.checkAndSendFiveOccurrenceWarn(vehicleUser.getParkUser().getId(), occurrence.getVehicleUsers()));
+        info.vehicleUsers().forEach(vehicleUser ->
+                occurrenceService.checkAndSendFiveOccurrenceWarn(vehicleUser.getParkUser().getId(), info.vehicleUsers())
+        );
 
         Vehicle vehicle = info.vehicleUsers().getFirst().getVehicle();
         applicationEventPublisher.publishEvent(occurrenceNotificationMapper.toNotification(

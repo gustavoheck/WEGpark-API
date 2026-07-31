@@ -14,9 +14,11 @@ import org.mapstruct.*;
 @Mapper(componentModel = "spring")
 public interface TrafficAccidentMapper {
 
-        @Mapping(source = "request.defaults", target = ".")
-        @Mapping(source = "request", target = ".")
-        @Mapping(source = "guard", target = "guard")
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "uuid", ignore = true)
+    @Mapping(source = "request.defaults", target = ".")
+    @Mapping(source = "request", target = ".")
+    @Mapping(source = "guard", target = "guard")
         TrafficAccident toEntity(CreateTrafficAccidentRequestDTO request, Guard guard);
 
         @Mapping(source = ".", target = "defaults")

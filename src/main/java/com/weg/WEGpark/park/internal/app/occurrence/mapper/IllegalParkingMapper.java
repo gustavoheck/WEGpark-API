@@ -14,6 +14,8 @@ import org.mapstruct.*;
 @Mapper(componentModel = "spring")
 public interface IllegalParkingMapper {
 
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "uuid", ignore = true)
     @Mapping(source = "request.defaults", target = ".")
     @Mapping(source = "request", target = ".")
     @Mapping(source = "guard", target = "guard")

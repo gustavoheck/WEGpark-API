@@ -84,11 +84,11 @@ public class OccurrenceService {
         throw new MoreThenOneFilterException("You can't use more than one filter");
     }
 
-    private void checkAndThrowFiveOccurrenceWarning (ParkUser parkUser) {
+    private void checkAndThrowFiveOccurrenceWarning (ParkUser parkUser, List<VehicleUser> vehicleUsers) {
         Integer qtdOccurrences = occurrenceRepository.countHowManyOccurrencesLastDays(parkUser.getId(), LocalDateTime.now().minusDays(30));
         if (qtdOccurrences >= 5) {
-            applicationEventPublisher.publishEvent(occurrenceNotificationMapper.toFiveOccurrenceWarnNotification(
-                    parkUser,
+            applicationEventPublisher.publishEvent(occurrenceNotificationMapper.toFiveOccurrenceNotification(
+                    vehicleUsers,
                     "Foram registradas %s ocorrencias no seu nome nos últimos 30 dias. Tome mais cuidado!".formatted(qtdOccurrences)
             ));
             List<Guard> allGuards = guardRepository.findAll();
