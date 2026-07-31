@@ -14,6 +14,7 @@ import org.mapstruct.*;
 public interface WarningMapper {
 
     @Mapping(source = "request.defaults", target = ".")
+    @Mapping(source = "request", target = ".")
     @Mapping(source = "registerInfo", target = ".")
     Warning toEntity(CreateWarningRequestDTO request, RegisterDefaultInfo registerInfo);
 

@@ -14,6 +14,7 @@ import org.mapstruct.*;
 public interface TrafficAccidentMapper {
 
         @Mapping(source = "request.defaults", target = ".")
+        @Mapping(source = "request", target = ".")
         @Mapping(source = "registerInfo", target = ".")
         TrafficAccident toEntity(CreateTrafficAccidentRequestDTO request, RegisterDefaultInfo registerInfo);
 

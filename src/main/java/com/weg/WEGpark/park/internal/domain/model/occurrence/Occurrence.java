@@ -48,6 +48,7 @@ public class Occurrence {
     private OccurrenceType occurrenceType;
 
     @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "id_guard", nullable = false)
     private Guard guard;
 
     @ManyToMany(fetch = FetchType.LAZY, mappedBy = "occurrences")

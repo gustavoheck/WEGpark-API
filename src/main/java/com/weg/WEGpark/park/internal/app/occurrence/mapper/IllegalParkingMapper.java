@@ -14,6 +14,7 @@ import org.mapstruct.*;
 public interface IllegalParkingMapper {
 
     @Mapping(source = "request.defaults", target = ".")
+    @Mapping(source = "request", target = ".")
     @Mapping(source = "registerInfo", target = ".")
     IllegalParking toEntity(CreateIllegalParkingRequestDTO request, RegisterDefaultInfo registerInfo);
 

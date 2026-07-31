@@ -51,7 +51,7 @@ public class IllegalParkingService {
         LocalDateTime date = LocalDateTime.now();
         occurrence.setDateHour(date);
 
-        occurrenceRepository.save(occurrence);
+        occurrenceRepository.saveAndFlush(occurrence);
 
         Vehicle vehicle = occurrence.getVehicleUsers().getFirst().getVehicle();
         applicationEventPublisher.publishEvent(occurrenceNotificationMapper.toNotification(
