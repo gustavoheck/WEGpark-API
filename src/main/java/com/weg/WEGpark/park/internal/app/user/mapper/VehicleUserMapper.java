@@ -9,5 +9,6 @@ import org.mapstruct.Mapping;
 public interface VehicleUserMapper {
 
     @Mapping(source = "vehicleUser.parkUser.uuid", target = "userUuid")
+    @Mapping(source = "vehicleOwner", target = "isOwner")
     GetVehicleUserResponseDTO toResponse (VehicleUser vehicleUser);
 }

@@ -79,7 +79,9 @@ public class VehicleService {
             VehicleUser vehicleUser = new VehicleUser(loggedUser, vehicle);
             vehicleUser.setVehicleOwner(true);
 
-            vehicleUserRepository.save(vehicleUser);
+            vehicleUserRepository.saveAndFlush(vehicleUser);
+
+            vehicle.getParkUsers().add(vehicleUser);
 
             List<GetVehicleUserResponseDTO> userResponseList = vehicle
                     .getParkUsers()

@@ -11,6 +11,7 @@ import lombok.Setter;
 import org.hibernate.annotations.Generated;
 import org.hibernate.generator.EventType;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -43,7 +44,7 @@ public class Vehicle {
     private String color;
 
     @OneToMany(mappedBy = "vehicle", fetch = FetchType.LAZY)
-    private List<VehicleUser> parkUsers;
+    private List<VehicleUser> parkUsers = new ArrayList<>();
 
     public Vehicle(String plate, String model, String brand, String color) {
         this.plate = plate;
