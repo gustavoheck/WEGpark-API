@@ -1,12 +1,15 @@
 package com.weg.WEGpark.park.internal.dto.occurrence.illegalparking;
 
 import com.weg.WEGpark.park.internal.domain.enums.occurrence.ParkingSpaceType;
-import com.weg.WEGpark.park.internal.dto.occurrence.defaults.CreateOccurrenceRequestDto;
+import com.weg.WEGpark.park.internal.dto.occurrence.defaults.CreateOccurrenceRequestDTO;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 public record CreateIllegalParkingRequestDTO(
-        CreateOccurrenceRequestDto defaults,
+
+        @Valid
+        CreateOccurrenceRequestDTO defaults,
 
         @NotNull(message = "The parking space type can not be null")
         ParkingSpaceType parkingSpaceType,

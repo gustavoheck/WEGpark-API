@@ -42,16 +42,23 @@ public class TrafficAccidentService {
 
         RegisterDefaultInfo info = occurrenceService.findRegisterBasics(request.defaults().plate(), jwtUserData);
 
-        TrafficAccident occurrence = trafficAccidentMapper.toEntity(request, info);
-        occurrence.setOccurrenceType(OccurrenceType.TRAFFIC_ACCIDENT);
+        TrafficAccident occurrence = trafficAccidentMapper.toEntity(request, info.guard());
 
         LocalDateTime date = LocalDateTime.now();
         occurrence.setDateHour(date);
 
-        occurrenceRepository.save(occurrence);
+        info.vehicleUsers()
+                .forEach(vu -> occurrence.getVehicleUsers().add(vu));
 
-        Vehicle vehicle = occurrence.getVehicleUsers().getFirst().getVehicle();
+        occurrenceRepository.saveAndFlush(occurrence);
+
+        info.vehicleUsers()
+                .forEach(vehicleUser ->
+                        occurrenceService.checkAndSendFiveOccurrenceWarn(vehicleUser.getParkUser().getId(), occurrence.getVehicleUsers()));
+
+        Vehicle vehicle = info.vehicleUsers().getFirst().getVehicle();
         applicationEventPublisher.publishEvent(occurrenceNotificationMapper.toNotification(
+                info.vehicleUsers(),
                 occurrence,
                 """
                         Uma nova ocorrencia foi registrada para o seu veículo %s da placa %s,

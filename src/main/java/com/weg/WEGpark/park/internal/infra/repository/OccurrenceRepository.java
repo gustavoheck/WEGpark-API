@@ -20,11 +20,11 @@ public interface OccurrenceRepository extends JpaRepository<Occurrence, Long>, J
     Optional<Occurrence> findByUuid (UUID uuid);
 
     @Query(value = """
-            SELECT COUNT(DISTINCT o)
-                FROM Occurrence o
-            JOIN o.vehicleUsers vu
-            WHERE vu.parkUser.id = :id
-            AND o.dateHour > :date
-            """)
-    Integer countHowManyOccurrencesLastDays (@Param(value = "id") Long id, @Param(value = "date") LocalDateTime date);
+        SELECT COUNT(DISTINCT o)
+        FROM Occurrence o
+        JOIN o.vehicleUsers vu
+        WHERE vu.parkUser.id = :id
+          AND o.dateHour > :date
+        """)
+    Integer countHowManyOccurrencesLastDays(@Param(value = "id") Long id, @Param(value = "date") LocalDateTime date);
 }

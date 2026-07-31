@@ -22,11 +22,11 @@ public class OperationService {
     private final RhRepository rhRepository;
     private final OperationRepository operationRepository;
 
-    public void saveOperation (JWTUserData jwtUserData, UUID uuid, OperationType opType) {
+    public void saveOperation (JWTUserData jwtUserData, Long id, OperationType opType) {
         if (!jwtUserData.roles().getFirst().equals(RolesType.ROLE_ADMIN.toString())) {
             Rh rh = rhRepository.findByUuid(jwtUserData.uuid())
                     .orElseThrow(() -> new NotFoundException("Any rh was found by the logged uuid"));
-            Operation operation = new Operation(opType, uuid);
+            Operation operation = new Operation(opType, id);
             operation.setRh(rh);
             operationRepository.save(operation);
         }

@@ -5,6 +5,7 @@ import com.weg.WEGpark.park.internal.domain.model.vehicle.Vehicle;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -37,13 +38,7 @@ public class VehicleUser {
     @Column(nullable = false)
     private Boolean active;
 
-    @ManyToMany
-    @JoinTable (
-            schema = "park",
-            name = "vehicle_user_occurrence",
-            joinColumns = @JoinColumn(name = "id_parkuser_vehicle"),
-            inverseJoinColumns = @JoinColumn(name = "id_occurrence")
-    )
+    @ManyToMany(fetch = FetchType.LAZY, mappedBy = "vehicleUsers")
     private List<Occurrence> occurrences;
 
     public VehicleUser(ParkUser parkUser, Vehicle vehicle) {

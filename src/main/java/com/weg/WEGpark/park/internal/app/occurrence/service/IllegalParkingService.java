@@ -45,16 +45,23 @@ public class IllegalParkingService {
 
         RegisterDefaultInfo info = occurrenceService.findRegisterBasics(request.defaults().plate(), jwtUserData);
 
-        IllegalParking occurrence = illegalParkingMapper.toEntity(request, info);
-        occurrence.setOccurrenceType(OccurrenceType.ILLEGAL_PARKING);
+        IllegalParking occurrence = illegalParkingMapper.toEntity(request, info.guard());
 
         LocalDateTime date = LocalDateTime.now();
         occurrence.setDateHour(date);
 
-        occurrenceRepository.save(occurrence);
+        info.vehicleUsers()
+                        .forEach(vu -> occurrence.getVehicleUsers().add(vu));
 
-        Vehicle vehicle = occurrence.getVehicleUsers().getFirst().getVehicle();
+        occurrenceRepository.saveAndFlush(occurrence);
+
+        info.vehicleUsers()
+                .forEach(vehicleUser ->
+                        occurrenceService.checkAndSendFiveOccurrenceWarn(vehicleUser.getParkUser().getId(), occurrence.getVehicleUsers()));
+
+        Vehicle vehicle = info.vehicleUsers().getFirst().getVehicle();
         applicationEventPublisher.publishEvent(occurrenceNotificationMapper.toNotification(
+                info.vehicleUsers(),
                 occurrence,
                 """
                         Uma nova ocorrencia foi registrada para o seu veículo %s da placa %s, seu veículo foi
@@ -62,6 +69,7 @@ public class IllegalParkingService {
                         confira mais acessando a ocorrência!
                 """.formatted("%s %s".formatted(vehicle.getBrand(), vehicle.getModel()), vehicle.getPlate())
         ));
+
         return illegalParkingMapper.toCreateResponse(occurrence);
     }
 

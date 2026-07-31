@@ -54,47 +54,42 @@ public class VehicleService {
 
     @Transactional
     public GetVehicleResponseDTO registerVehicle(CreateVehicleRequestDTO request, JWTUserData userData) {
-        Optional<Vehicle> findedVehicle = vehicleRepository.findByPlate(request.plate());
-        if (findedVehicle.isEmpty()) {
+        Optional<VehicleUser> alreadyAssociatedVehicleUser =
+                vehicleUserRepository.findByVehiclePlateAndParkUserUuid(request.plate(), userData.uuid());
+        Boolean alreadyExistentOwner =
+                vehicleUserRepository.existsByVehiclePlateAndVehicleOwnerAndActive(request.plate(), true, true);
+        if (alreadyAssociatedVehicleUser.isPresent() && alreadyExistentOwner == false) {
+            VehicleUser loggedVehicleUser = alreadyAssociatedVehicleUser.get();
+            loggedVehicleUser.setActive(true);
+            loggedVehicleUser.setVehicleOwner(true);
+            vehicleUserRepository.save(loggedVehicleUser);
+
+        } else if (vehicleRepository.existsByPlate(request.plate()) == false) {
             ParkUser loggedUser = parkUserRepository.findByUuid(userData.uuid())
                     .orElseThrow(() -> new NotFoundException("Any park user was found by the logged uuid"));
 
-            //Esse codigo tem um erro:
-            // Primeiro esse repository deveria buscar por id de usuario e placa do veiculo
-            // Segundo esse if para ver se o usuario ja possui um vinculo com o veiculo e so reativar ele precisa ser feito primeiro,
-            //antes da buscar por placa, assim o erro é resolvido
+            Vehicle vehicle = vehicleMapper.toEntity(request);
 
-            Optional<VehicleUser> possibleUser = vehicleUserRepository.findByParkUserId(loggedUser.getId());
-            if (possibleUser.isPresent()) {
-                possibleUser.get().setActive(true);
-                possibleUser.get().setVehicleOwner(true);
-            } else {
+            String plate = vehicle.getPlate();
+            plate = plate.toUpperCase().replace("-", "").trim();
+            vehicle.setPlate(plate);
 
-                Vehicle vehicle = vehicleMapper.toEntity(request);
+            vehicleRepository.saveAndFlush(vehicle);
 
-                String plate = vehicle.getPlate();
-                plate = plate.toUpperCase().replace("-", "").trim();
-                vehicle.setPlate(plate);
+            VehicleUser vehicleUser = new VehicleUser(loggedUser, vehicle);
+            vehicleUser.setVehicleOwner(true);
 
-                if (vehicleRepository.existsByPlate(vehicle.getPlate()))
-                    throw new VehicleAlreadyRegisteredException
-                            ("A vehicle with the %s plate is already registered".formatted(vehicle.getPlate()));
+            vehicleUserRepository.saveAndFlush(vehicleUser);
 
-                vehicleRepository.saveAndFlush(vehicle);
+            vehicle.getParkUsers().add(vehicleUser);
 
-                VehicleUser vehicleUser = new VehicleUser(loggedUser, vehicle);
-                vehicleUser.setVehicleOwner(true);
+            List<GetVehicleUserResponseDTO> userResponseList = vehicle
+                    .getParkUsers()
+                    .stream()
+                    .map(vehicleUserMapper::toResponse)
+                    .toList();
 
-                vehicleUserRepository.save(vehicleUser);
-
-                List<GetVehicleUserResponseDTO> userResponseList = vehicle
-                        .getParkUsers()
-                        .stream()
-                        .map(vehicleUserMapper::toResponse)
-                        .toList();
-
-                return vehicleMapper.toGetResponse(vehicle, userResponseList);
-            }
+            return vehicleMapper.toGetResponse(vehicle, userResponseList);
         }
         throw new VehicleAlreadyRegisteredException
                 ("This vehicle is already registered, try to vinculate with the owner, or dismiss");
