@@ -59,6 +59,11 @@ public class VehicleService {
             ParkUser loggedUser = parkUserRepository.findByUuid(userData.uuid())
                     .orElseThrow(() -> new NotFoundException("Any park user was found by the logged uuid"));
 
+            //Esse codigo tem um erro:
+            // Primeiro esse repository deveria buscar por id de usuario e placa do veiculo
+            // Segundo esse if para ver se o usuario ja possui um vinculo com o veiculo e so reativar ele precisa ser feito primeiro,
+            //antes da buscar por placa, assim o erro é resolvido
+
             Optional<VehicleUser> possibleUser = vehicleUserRepository.findByParkUserId(loggedUser.getId());
             if (possibleUser.isPresent()) {
                 possibleUser.get().setActive(true);
