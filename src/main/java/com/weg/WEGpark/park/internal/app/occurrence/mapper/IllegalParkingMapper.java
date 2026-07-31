@@ -2,6 +2,7 @@ package com.weg.WEGpark.park.internal.app.occurrence.mapper;
 
 import com.weg.WEGpark.park.internal.app.occurrence.dto.RegisterDefaultInfo;
 import com.weg.WEGpark.park.internal.domain.model.occurrence.IllegalParking;
+import com.weg.WEGpark.park.internal.domain.model.users.Guard;
 import com.weg.WEGpark.park.internal.domain.model.vehicle.Vehicle;
 import com.weg.WEGpark.park.internal.dto.occurrence.illegalparking.CreateIllegalParkingRequestDTO;
 import com.weg.WEGpark.park.internal.dto.occurrence.illegalparking.CreateIllegalParkingResponseDTO;
@@ -15,8 +16,8 @@ public interface IllegalParkingMapper {
 
     @Mapping(source = "request.defaults", target = ".")
     @Mapping(source = "request", target = ".")
-    @Mapping(source = "registerInfo", target = ".")
-    IllegalParking toEntity(CreateIllegalParkingRequestDTO request, RegisterDefaultInfo registerInfo);
+    @Mapping(source = "guard", target = "guard")
+    IllegalParking toEntity(CreateIllegalParkingRequestDTO request, Guard guard);
 
     @Mapping(source = ".", target = "defaults")
     CreateIllegalParkingResponseDTO toCreateResponse(IllegalParking illegalParking);

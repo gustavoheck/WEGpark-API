@@ -52,7 +52,6 @@ public class EmailNotificationListener {
     @Async("asyncTaskExecutor")
     @EventListener
     public void sendOccurrenceNotification (SendOccurrenceNotificationEvent event) {
-
         if (event.notificatedUsersId().size() == event.userNames().size()) {
             for (int i = 0; i < event.notificatedUsersId().size(); i++) {
                 emailService.sendNotification(
@@ -65,8 +64,9 @@ public class EmailNotificationListener {
                         "Ver Ocorrência"
                 );
             }
+        } else {
+            throw new InvalidNotificationException("The notification event have different sizes for user and names");
         }
-        throw new InvalidNotificationException("The notification event have different sizes for user and names");
     }
 
     @Async("asyncTaskExecutor")
@@ -84,7 +84,8 @@ public class EmailNotificationListener {
                         null
                 );
             }
+        } else {
+            throw new InvalidNotificationException("The notification event have different sizes for user and names");
         }
-        throw new InvalidNotificationException("The notification event have different sizes for user and names");
     }
 }

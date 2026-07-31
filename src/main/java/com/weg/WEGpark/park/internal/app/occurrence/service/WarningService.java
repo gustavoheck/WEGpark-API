@@ -35,34 +35,35 @@ public class WarningService {
     private final OccurrenceNotificationMapper occurrenceNotificationMapper;
 
     @Transactional
-    public CreateWarningResponseDTO registerWarningOccurrence (
+    public CreateWarningResponseDTO registerWarningOccurrence(
             CreateWarningRequestDTO request,
             JWTUserData jwtUserData
     ) {
-
         RegisterDefaultInfo info = occurrenceService.findRegisterBasics(request.defaults().plate(), jwtUserData);
 
-        Warning occurrence = warningMapper.toEntity(request, info);
-        occurrence.setOccurrenceType(OccurrenceType.WARNING);
+        Warning occurrence = warningMapper.toEntity(request, info.guard());
 
-        LocalDateTime date = LocalDateTime.now();
-        occurrence.setDateHour(date);
+        occurrence.setDateHour(LocalDateTime.now());
 
-        occurrenceRepository.saveAndFlush(occurrence);
+        info.vehicleUsers().forEach(vu -> occurrence.getVehicleUsers().add(vu));
 
-        Vehicle vehicle = occurrence.getVehicleUsers().getFirst().getVehicle();
+        Warning savedOccurrence = occurrenceRepository.saveAndFlush(occurrence);
+
+        info.vehicleUsers().forEach(vehicleUser ->
+                occurrenceService.checkAndSendFiveOccurrenceWarn(vehicleUser.getParkUser().getId(), info.vehicleUsers())
+        );
+
+        Vehicle vehicle = info.vehicleUsers().getFirst().getVehicle();
         applicationEventPublisher.publishEvent(occurrenceNotificationMapper.toNotification(
-                occurrence,
+                info.vehicleUsers(),
+                savedOccurrence,
                 """
                         Uma nova ocorrencia foi registrada para o seu veículo %s da placa %s,
                         este veículo acabou recebendo um aviso, confira mais acessando a ocorrência!
                 """.formatted("%s %s".formatted(vehicle.getBrand(), vehicle.getModel()), vehicle.getPlate())
         ));
-        occurrence.getVehicleUsers()
-                .forEach(vehicleUser ->
-                        occurrenceService.checkAndSendFiveOccurrenceWarn(vehicleUser.getParkUser().getId(), occurrence));
 
-        return warningMapper.toCreateResponse(occurrence);
+        return warningMapper.toCreateResponse(savedOccurrence);
     }
 
     @Transactional

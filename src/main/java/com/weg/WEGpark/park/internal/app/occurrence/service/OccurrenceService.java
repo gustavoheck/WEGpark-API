@@ -7,6 +7,7 @@ import com.weg.WEGpark.park.internal.app.occurrence.mapper.OccurrenceNotificatio
 import com.weg.WEGpark.park.internal.app.occurrence.mapper.TrafficAccidentMapper;
 import com.weg.WEGpark.park.internal.app.occurrence.mapper.WarningMapper;
 import com.weg.WEGpark.park.internal.domain.model.users.ParkUser;
+import com.weg.WEGpark.park.internal.domain.model.users.VehicleUser;
 import com.weg.WEGpark.shared.util.FilterUtil;
 import com.weg.WEGpark.shared.exception.MoreThenOneFilterException;
 import com.weg.WEGpark.park.internal.domain.model.occurrence.IllegalParking;
@@ -93,26 +94,15 @@ public class OccurrenceService {
         );
     }
 
-    public void checkAndSendFiveOccurrenceWarn (Long parkUserId, Occurrence occurrence) {
+    public void checkAndSendFiveOccurrenceWarn (Long parkUserId, List<VehicleUser> occurrenceVehicleUsers) {
         Integer qtdLastOccurrences =
                 occurrenceRepository.countHowManyOccurrencesLastDays(parkUserId, LocalDateTime.now().minusDays(30));
-
+        System.out.println(qtdLastOccurrences);
         if (qtdLastOccurrences >= 5) {
-            List<Guard> guardList = guardRepository.findAll();
-
-            List<Long> allGuardId = guardList
-                    .stream()
-                    .map(ParkUser::getId)
-                    .toList();
-
-            List<String> allGuardEmail = guardList
-                    .stream()
-                    .map(ParkUser::getEmail)
-                    .toList();
 
             applicationEventPublisher.publishEvent
                     (occurrenceNotificationMapper.toFiveOccurrenceNotification(
-                            occurrence,
+                            occurrenceVehicleUsers,
                             """
                                     Identificamos %s registros de ocorrências/avisos no seu nome nos últimos 30 dias.
                                     Solicitamos que acesse a plataforma WEGpark para consultar o seu histórico e

@@ -3,6 +3,7 @@ package com.weg.WEGpark.park.internal.app.occurrence.mapper;
 import com.weg.WEGpark.park.SendManyOccurrencesWarnEvent;
 import com.weg.WEGpark.park.SendOccurrenceNotificationEvent;
 import com.weg.WEGpark.park.internal.domain.model.occurrence.Occurrence;
+import com.weg.WEGpark.park.internal.domain.model.users.VehicleUser;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -10,19 +11,19 @@ import java.util.List;
 @Component
 public class OccurrenceNotificationMapper {
 
-    public SendOccurrenceNotificationEvent toNotification (Occurrence occurrence, String message) {
+    public SendOccurrenceNotificationEvent toNotification (List<VehicleUser> occurrenceVehicleUsers, Occurrence occurrence, String message) {
         return new SendOccurrenceNotificationEvent(
-                occurrence.getVehicleUsers()
+                occurrenceVehicleUsers
                         .stream()
                         .map(vehicleUser -> vehicleUser.getParkUser().getId())
                         .toList(),
                 message,
                 occurrence.getUuid(),
-                occurrence.getVehicleUsers()
+                occurrenceVehicleUsers
                         .stream()
                         .map(vehicleUser -> vehicleUser.getParkUser().getName())
                         .toList(),
-                occurrence.getVehicleUsers()
+                occurrenceVehicleUsers
                         .stream()
                         .map(vehicleUser -> vehicleUser.getParkUser().getEmail())
                         .toList()
@@ -30,17 +31,17 @@ public class OccurrenceNotificationMapper {
     }
 
     public SendManyOccurrencesWarnEvent toFiveOccurrenceNotification
-            (Occurrence occurrence, String message) {
+            (List<VehicleUser> occurrenceVehicleUsers, String message) {
         return new SendManyOccurrencesWarnEvent(
-                occurrence.getVehicleUsers()
+                occurrenceVehicleUsers
                         .stream()
                         .map(vehicleUser -> vehicleUser.getParkUser().getId())
                         .toList(),
-                occurrence.getVehicleUsers()
+                occurrenceVehicleUsers
                         .stream()
                         .map(vehicleUser -> vehicleUser.getParkUser().getName())
                         .toList(),
-                occurrence.getVehicleUsers()
+                occurrenceVehicleUsers
                         .stream()
                         .map(vehicleUser -> vehicleUser.getParkUser().getEmail())
                         .toList(),
