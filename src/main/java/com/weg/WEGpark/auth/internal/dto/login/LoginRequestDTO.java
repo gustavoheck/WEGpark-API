@@ -10,7 +10,6 @@ public record LoginRequestDTO(
         @NotBlank(message = "The email can not be null or blank")
         String email,
 
-        @ValidPassword
         @NotBlank(message = "The email can not be null or blank")
         String password,
 
