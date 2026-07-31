@@ -5,6 +5,7 @@ import com.weg.WEGpark.auth.SendEmailCheckEvent;
 import com.weg.WEGpark.notification.internal.app.notification.exception.InvalidNotificationException;
 import com.weg.WEGpark.notification.internal.app.notification.service.EmailService;
 import com.weg.WEGpark.notification.internal.dto.EmailVariables;
+import com.weg.WEGpark.park.SendManyOccurrencesWarnEvent;
 import com.weg.WEGpark.park.SendOccurrenceNotificationEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.event.EventListener;
@@ -62,6 +63,25 @@ public class EmailNotificationListener {
                         true,
                         "%s/ocorrencias/%s".formatted(emailVariables.websiteUrl(), event.occurrenceUuid()),
                         "Ver Ocorrência"
+                );
+            }
+        }
+        throw new InvalidNotificationException("The notification event have different sizes for user and names");
+    }
+
+    @Async("asyncTaskExecutor")
+    @EventListener
+    public void sendFiveOccurrenceWarnNotification (SendManyOccurrencesWarnEvent event) {
+        if (event.notificatedUsersId().size() == event.notificatedUsersEmail().size()) {
+            for (int i = 0; i < event.notificatedUsersId().size(); i++) {
+                emailService.sendNotification(
+                        event.notificatedUsersName().get(i),
+                        event.notificatedUsersEmail().get(i),
+                        "Nova ocorrência registrada no seu nome.",
+                        "Identificamos uma ocorrência vinculada à sua conta no WEGpark.<br>Clique no botão abaixo para conferir os detalhes e resolver o quanto antes.",
+                        false,
+                        null,
+                        null
                 );
             }
         }

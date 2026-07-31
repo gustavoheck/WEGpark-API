@@ -3,8 +3,10 @@ package com.weg.WEGpark.park.internal.app.occurrence.service;
 import com.weg.WEGpark.auth.internal.infra.security.config.JWTUserData;
 import com.weg.WEGpark.park.internal.app.occurrence.dto.RegisterDefaultInfo;
 import com.weg.WEGpark.park.internal.app.occurrence.mapper.IllegalParkingMapper;
+import com.weg.WEGpark.park.internal.app.occurrence.mapper.OccurrenceNotificationMapper;
 import com.weg.WEGpark.park.internal.app.occurrence.mapper.TrafficAccidentMapper;
 import com.weg.WEGpark.park.internal.app.occurrence.mapper.WarningMapper;
+import com.weg.WEGpark.park.internal.domain.model.users.ParkUser;
 import com.weg.WEGpark.shared.util.FilterUtil;
 import com.weg.WEGpark.shared.exception.MoreThenOneFilterException;
 import com.weg.WEGpark.park.internal.domain.model.occurrence.IllegalParking;
@@ -18,11 +20,15 @@ import com.weg.WEGpark.park.internal.infra.repository.*;
 import com.weg.WEGpark.park.internal.infra.specification.OccurrenceSpecification;
 import com.weg.WEGpark.shared.exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -36,6 +42,9 @@ public class OccurrenceService {
     private final GuardRepository guardRepository;
     private final TrafficAccidentMapper trafficAccidentMapper;
     private final WarningMapper warningMapper;
+
+    private final OccurrenceNotificationMapper occurrenceNotificationMapper;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     public Page<Record> findAllOccurrences(FilterOccurrenceRequestDTO filter, Pageable pageable) {
 
@@ -82,5 +91,34 @@ public class OccurrenceService {
             vehicle.getParkUsers(),
             guard
         );
+    }
+
+    public void checkAndSendFiveOccurrenceWarn (Long parkUserId, Occurrence occurrence) {
+        Integer qtdLastOccurrences =
+                occurrenceRepository.countHowManyOccurrencesLastDays(parkUserId, LocalDateTime.now().minusDays(30));
+
+        if (qtdLastOccurrences >= 5) {
+            List<Guard> guardList = guardRepository.findAll();
+
+            List<Long> allGuardId = guardList
+                    .stream()
+                    .map(ParkUser::getId)
+                    .toList();
+
+            List<String> allGuardEmail = guardList
+                    .stream()
+                    .map(ParkUser::getEmail)
+                    .toList();
+
+            applicationEventPublisher.publishEvent
+                    (occurrenceNotificationMapper.toFiveOccurrenceNotification(
+                            occurrence,
+                            """
+                                    Identificamos %s registros de ocorrências/avisos no seu nome nos últimos 30 dias.
+                                    Solicitamos que acesse a plataforma WEGpark para consultar o seu histórico e
+                                    evitar novas infrações que possam gerar penalidades à você ou restrições a sua conta.
+                            """.formatted(qtdLastOccurrences)
+                    ));
+        }
     }
 }

@@ -1,6 +1,7 @@
 package com.weg.WEGpark.notification.internal.listener.notification;
 
 import com.weg.WEGpark.notification.internal.app.notification.service.NotificationService;
+import com.weg.WEGpark.park.SendManyOccurrencesWarnEvent;
 import com.weg.WEGpark.park.SendOccurrenceNotificationEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.event.EventListener;
@@ -14,6 +15,11 @@ public class ApplicationNotificationListener {
 
     @EventListener
     public void sendOcurrenceNotification (SendOccurrenceNotificationEvent event) {
-        notificationService.CreateNewOccurrenceNotification(event);
+        notificationService.createNewOccurrenceNotification(event);
+    }
+
+    @EventListener
+    public void sendFiveOccurrenceNotification (SendManyOccurrencesWarnEvent event) {
+        notificationService.createNewFiveOccurrenceNotification(event);
     }
 }

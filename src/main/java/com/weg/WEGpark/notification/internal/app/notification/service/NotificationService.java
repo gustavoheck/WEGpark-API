@@ -9,6 +9,7 @@ import com.weg.WEGpark.notification.internal.domain.enums.NotificationType;
 import com.weg.WEGpark.notification.internal.infra.repository.NotificationRepository;
 import com.weg.WEGpark.park.AssociateToVehicleNotificationEvent;
 import com.weg.WEGpark.park.FindAssociationNotificationEvent;
+import com.weg.WEGpark.park.SendManyOccurrencesWarnEvent;
 import com.weg.WEGpark.park.SendOccurrenceNotificationEvent;
 import com.weg.WEGpark.shared.exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -23,19 +24,34 @@ public class NotificationService {
     private final NotificationEventMapper notificationEventMapper;
     private final NotificationRepository notificationRepository;
 
-    public void CreateAssociationNotification (AssociateToVehicleNotificationEvent event) {
+    public void createAssociationNotification (AssociateToVehicleNotificationEvent event) {
         VehicleAssociationNotification notification = notificationEventMapper.toNotification(event);
         notification.setMessage("Do you want to permit the user %s associate with your vehicle %s %s"
                 .formatted(event.userToAssociateName(), event.vehicleBrand(), event.vehicleModel()));
         notificationRepository.save(notification);
     }
 
-    public void CreateNewOccurrenceNotification (SendOccurrenceNotificationEvent event) {
+    public void createNewOccurrenceNotification (SendOccurrenceNotificationEvent event) {
         if (event.notificatedUsersId().size() == event.userNames().size()) {
             for (int i = 0; i < event.notificatedUsersId().size(); i++) {
                 Notification notification = new Notification(
                         event.notificatedUsersId().get(i),
                         NotificationType.OCCURRENCE,
+                        event.defaultNotificationMessage()
+                );
+                notificationRepository.save(notification);
+            }
+        } else {
+            throw new InvalidNotificationException("The notification event have different sizes for user and names");
+        }
+    }
+
+    public void createNewFiveOccurrenceNotification (SendManyOccurrencesWarnEvent event) {
+        if (event.notificatedUsersName().size() == event.notificatedUsersId().size()) {
+            for (int i = 0; i < event.notificatedUsersId().size(); i++) {
+                Notification notification = new Notification(
+                        event.notificatedUsersId().get(i),
+                        NotificationType.FIVE_OCCURRENCE,
                         event.defaultNotificationMessage()
                 );
                 notificationRepository.save(notification);

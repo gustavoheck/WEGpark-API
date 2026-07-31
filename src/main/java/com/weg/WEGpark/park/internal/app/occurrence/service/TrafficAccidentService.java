@@ -59,6 +59,9 @@ public class TrafficAccidentService {
                         confira mais acessando a ocorrência!
                 """.formatted("%s %s".formatted(vehicle.getBrand(), vehicle.getModel()), vehicle.getPlate())
         ));
+        occurrence.getVehicleUsers()
+                .forEach(vehicleUser ->
+                        occurrenceService.checkAndSendFiveOccurrenceWarn(vehicleUser.getParkUser().getId(), occurrence));
 
         return trafficAccidentMapper.toCreateResponse(occurrence);
     }

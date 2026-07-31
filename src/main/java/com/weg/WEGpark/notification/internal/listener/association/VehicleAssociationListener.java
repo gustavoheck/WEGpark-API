@@ -15,7 +15,7 @@ public class VehicleAssociationListener {
 
     @EventListener
     public void saveAssociationNotification (AssociateToVehicleNotificationEvent event) {
-        notificationService.CreateAssociationNotification(event);
+        notificationService.createAssociationNotification(event);
     }
 
     @EventListener
