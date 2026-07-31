@@ -9,6 +9,7 @@ import lombok.Setter;
 import org.hibernate.annotations.Generated;
 import org.hibernate.generator.EventType;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -28,18 +29,23 @@ public class Operation {
     @Column(unique = true, nullable = false, updatable = false, insertable = false)
     private UUID uuid;
 
+    @Column(nullable = false, name = "date_hour")
+    private LocalDateTime dateHour;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, name = "operation")
     private OperationType operationType;
 
-    @Column(nullable = false)
-    private UUID uuid_operated_user;
+    @Column(nullable = false, name = "id_operated_user")
+    private Long idOperatedUser;
 
     @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "id_rh", nullable = false)
     private Rh rh;
 
-    public Operation(OperationType operationType, UUID uuid_operated_user) {
+    public Operation(OperationType operationType, Long idOperatedUser) {
         this.operationType = operationType;
-        this.uuid_operated_user = uuid_operated_user;
+        this.idOperatedUser = idOperatedUser;
+        this.dateHour = LocalDateTime.now();
     }
 }

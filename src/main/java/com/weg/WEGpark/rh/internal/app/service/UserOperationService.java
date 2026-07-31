@@ -61,16 +61,17 @@ public class UserOperationService {
 
         UpdateUserResponseDTO response = eventResponse.join();
 
-        operationService.saveOperation(jwtUserData, response.uuid(), OperationType.UPDATE);
+        operationService.saveOperation(jwtUserData, response.id(), OperationType.UPDATE);
 
         return response;
     }
 
 
-
     @Transactional
     public void desactivateAndActivateUser (UUID uuid, JWTUserData jwtUserData) {
-        applicationEventPublisher.publishEvent(new DesactivateAndActivateUserEvent(uuid));
-        operationService.saveOperation(jwtUserData, uuid, OperationType.DESACTIVATE);
+        CompletableFuture<Long> userIdResponse = new CompletableFuture<>();
+        Long userId = userIdResponse.join();
+        applicationEventPublisher.publishEvent(new DesactivateAndActivateUserEvent(userIdResponse, uuid));
+        operationService.saveOperation(jwtUserData, userId, OperationType.DESACTIVATE);
     }
 }

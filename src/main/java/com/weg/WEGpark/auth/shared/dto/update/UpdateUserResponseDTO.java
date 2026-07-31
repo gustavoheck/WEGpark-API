@@ -4,6 +4,8 @@ import java.util.UUID;
 
 public record UpdateUserResponseDTO(
 
+        Long id,
+
         UUID uuid,
 
         String email

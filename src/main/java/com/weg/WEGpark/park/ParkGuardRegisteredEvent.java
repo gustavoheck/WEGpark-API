@@ -3,6 +3,8 @@ package com.weg.WEGpark.park;
 import java.util.UUID;
 
 public record ParkGuardRegisteredEvent(
+        Long id,
+
         UUID uuid,
 
         String email,

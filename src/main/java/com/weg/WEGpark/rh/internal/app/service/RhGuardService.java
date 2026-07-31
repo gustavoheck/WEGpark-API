@@ -31,10 +31,9 @@ public class RhGuardService {
         CompletableFuture<ParkGuardRegisteredEvent> guardRegisteredEvent = new CompletableFuture<>();
         applicationEventPublisher.publishEvent(rhGuardMapper.toGuardRegisterEvent(request, guardRegisteredEvent));
 
-
         ParkGuardRegisteredEvent response = guardRegisteredEvent.join();
 
-        operationService.saveOperation(jwtUserData, response.uuid(), OperationType.CREATE);
+        operationService.saveOperation(jwtUserData, response.id(), OperationType.CREATE);
         return rhGuardMapper.toGuardRegisterResponse(response);
     }
 
@@ -45,7 +44,7 @@ public class RhGuardService {
 
         GuardUpdatedEvent response = eventResponse.join();
 
-        operationService.saveOperation(jwtUserData, response.uuid(), OperationType.UPDATE);
+        operationService.saveOperation(jwtUserData, response.id(), OperationType.UPDATE);
         return rhGuardMapper.toGuardUpdateResponse(response);
     }
 }
