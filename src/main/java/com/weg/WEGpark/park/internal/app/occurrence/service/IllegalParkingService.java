@@ -54,9 +54,7 @@ public class IllegalParkingService {
 
         occurrenceRepository.saveAndFlush(occurrence);
 
-        info.vehicleUsers().forEach(vehicleUser ->
-                occurrenceService.checkAndSendFiveOccurrenceWarn(vehicleUser.getParkUser().getId(), info.vehicleUsers())
-        );
+        occurrenceService.fiveOccurrenceWarn(info.vehicleUsers());
 
         Vehicle vehicle = info.vehicleUsers().getFirst().getVehicle();
         applicationEventPublisher.publishEvent(occurrenceNotificationMapper.toNotification(

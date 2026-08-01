@@ -77,11 +77,13 @@ public class EmailNotificationListener {
                 emailService.sendNotification(
                         event.notificatedUsersName().get(i),
                         event.notificatedUsersEmail().get(i),
-                        "Nova ocorrência registrada no seu nome.",
-                        "Identificamos uma ocorrência vinculada à sua conta no WEGpark.<br>Clique no botão abaixo para conferir os detalhes e resolver o quanto antes.",
+                        "Muitas ocorrências recentes.",
+                        "Identificamos muitos registros de ocorrências/avisos no seu nome nos últimos 30 dias.<br>" +
+                                "Solicitamos que acesse a plataforma WEGpark para consultar o seu histórico e evitar novas<br>" +
+                                "infrações que possam gerar penalidades à você ou restrições a sua conta.",
                         false,
-                        null,
-                        null
+                        "%s/ocorrencias".formatted(emailVariables.websiteUrl()),
+                        "Ver Ocorrências"
                 );
             }
         } else {

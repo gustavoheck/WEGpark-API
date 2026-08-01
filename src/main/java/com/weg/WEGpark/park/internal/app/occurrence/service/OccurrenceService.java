@@ -31,6 +31,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -96,22 +97,33 @@ public class OccurrenceService {
         );
     }
 
-    public void checkAndSendFiveOccurrenceWarn (Long parkUserId, List<VehicleUser> occurrenceVehicleUsers) {
+    public void fiveOccurrenceWarn (List<VehicleUser> occurrenceVehicleUsers) {
+        List<VehicleUser> usersToNotificate = new ArrayList<>();
+        occurrenceVehicleUsers.forEach(vehicleUser -> {
+            if (checkFiveOccurrenceWarn(vehicleUser.getParkUser().getId())) {
+                usersToNotificate.add(vehicleUser);
+            }
+        });
+
+        applicationEventPublisher.publishEvent (
+                occurrenceNotificationMapper.toFiveOccurrenceNotification(
+                        usersToNotificate,
+                        """
+                                Identificamos 5 ou mais registros de ocorrências/avisos no seu nome nos últimos 30 dias.
+                                Solicitamos que consulte o seu histórico e
+                                evite novas infrações que possam gerar penalidades à você.
+                        """
+                )
+        );
+    }
+
+    private Boolean checkFiveOccurrenceWarn (Long parkUserId) {
         Integer qtdLastOccurrences =
                 occurrenceRepository.countHowManyOccurrencesLastDays(parkUserId, LocalDateTime.now().minusDays(30));
         System.out.println(qtdLastOccurrences);
         if (qtdLastOccurrences >= 5) {
-
-            applicationEventPublisher.publishEvent (
-                    occurrenceNotificationMapper.toFiveOccurrenceNotification(
-                            occurrenceVehicleUsers,
-                            """
-                                    Identificamos %s registros de ocorrências/avisos no seu nome nos últimos 30 dias.
-                                    Solicitamos que acesse a plataforma WEGpark para consultar o seu histórico e
-                                    evitar novas infrações que possam gerar penalidades à você ou restrições a sua conta.
-                            """.formatted(qtdLastOccurrences)
-                    )
-            );
+            return true;
         }
+        return false;
     }
 }

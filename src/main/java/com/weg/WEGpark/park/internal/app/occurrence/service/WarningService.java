@@ -4,6 +4,7 @@ import com.weg.WEGpark.auth.internal.infra.security.config.JWTUserData;
 import com.weg.WEGpark.park.internal.app.occurrence.dto.RegisterDefaultInfo;
 import com.weg.WEGpark.park.internal.app.occurrence.mapper.OccurrenceNotificationMapper;
 import com.weg.WEGpark.park.internal.app.occurrence.mapper.WarningMapper;
+import com.weg.WEGpark.park.internal.domain.model.users.VehicleUser;
 import com.weg.WEGpark.park.internal.domain.model.vehicle.Vehicle;
 import com.weg.WEGpark.shared.exception.NotFoundException;
 import com.weg.WEGpark.park.internal.domain.enums.occurrence.OccurrenceType;
@@ -19,6 +20,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -49,9 +52,7 @@ public class WarningService {
 
         Warning savedOccurrence = occurrenceRepository.saveAndFlush(occurrence);
 
-        info.vehicleUsers().forEach(vehicleUser ->
-                occurrenceService.checkAndSendFiveOccurrenceWarn(vehicleUser.getParkUser().getId(), info.vehicleUsers())
-        );
+        occurrenceService.fiveOccurrenceWarn(info.vehicleUsers());
 
         Vehicle vehicle = info.vehicleUsers().getFirst().getVehicle();
         applicationEventPublisher.publishEvent(occurrenceNotificationMapper.toNotification(
