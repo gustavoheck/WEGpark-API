@@ -84,44 +84,6 @@ public class OccurrenceService {
         throw new MoreThenOneFilterException("You can't use more than one filter");
     }
 
-    private void checkAndThrowFiveOccurrenceWarning (ParkUser parkUser, List<VehicleUser> vehicleUsers) {
-        Integer qtdOccurrences = occurrenceRepository.countHowManyOccurrencesLastDays(parkUser.getId(), LocalDateTime.now().minusDays(30));
-        if (qtdOccurrences >= 5) {
-            applicationEventPublisher.publishEvent(occurrenceNotificationMapper.toFiveOccurrenceNotification(
-                    vehicleUsers,
-                    "Foram registradas %s ocorrencias no seu nome nos últimos 30 dias. Tome mais cuidado!".formatted(qtdOccurrences)
-            ));
-            List<Guard> allGuards = guardRepository.findAll();
-            List<String> allGuardsEmail = allGuards
-                    .stream()
-                    .map(ParkUser::getEmail)
-                    .toList();
-
-            List<Long> allGuardsId = allGuards
-                    .stream()
-                    .map(guard -> guard.getId())
-                    .toList();
-
-            StringBuilder sb = new StringBuilder();
-
-            sb.append("O usuario %s está cometendo muitas ocorrencias nos últimos 30 dias, nesse momento ele chegou a %s," +
-                    "tomem cuidado com os veiculos: ");
-
-            List<Vehicle> userVehicles = vehicleUserRepository.findByParkUserId(parkUser.getId())
-                            .stream()
-                            .map(VehicleUser::getVehicle)
-                            .toList();
-
-            userVehicles.forEach(vehicle -> sb.append(vehicle.getPlate()).append(" "));
-
-            applicationEventPublisher.publishEvent(new SendOccurrenceWarnToGuardEvent(
-                    allGuardsId,
-                    allGuardsEmail,
-                    sb.toString()
-            ));
-        }
-    }
-
     public RegisterDefaultInfo findRegisterBasics (String plate, JWTUserData jwtUserData) {
         Vehicle vehicle = vehicleRepository.findByPlate(plate)
                 .orElseThrow(() -> new NotFoundException("Any vehicle was found by %s plate".formatted(plate)));
@@ -140,15 +102,16 @@ public class OccurrenceService {
         System.out.println(qtdLastOccurrences);
         if (qtdLastOccurrences >= 5) {
 
-            applicationEventPublisher.publishEvent
-                    (occurrenceNotificationMapper.toFiveOccurrenceNotification(
+            applicationEventPublisher.publishEvent (
+                    occurrenceNotificationMapper.toFiveOccurrenceNotification(
                             occurrenceVehicleUsers,
                             """
                                     Identificamos %s registros de ocorrências/avisos no seu nome nos últimos 30 dias.
                                     Solicitamos que acesse a plataforma WEGpark para consultar o seu histórico e
                                     evitar novas infrações que possam gerar penalidades à você ou restrições a sua conta.
                             """.formatted(qtdLastOccurrences)
-                    ));
+                    )
+            );
         }
     }
 }

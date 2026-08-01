@@ -108,18 +108,13 @@ public class VehicleService {
             userToAssociate = parkUserRepository.findById(eventResponse.get().idUserToAssociate())
                     .orElseThrow(() -> new NotFoundException("Any park user was found by the logged uuid"));
 
-            Optional<VehicleUser> possibleUser = vehicleUserRepository.findByParkUserId(userToAssociate.getId());
-            if (possibleUser.isPresent()) {
-                possibleUser.get().setActive(true);
-                possibleUser.get().setVehicleOwner(true);
-            } else {
-                vehicleToAssociate = vehicleRepository.findById(eventResponse.get().idVehicleToAssociate())
-                        .orElseThrow(() -> new NotFoundException("Any vehicle with this id was found"));
+            vehicleToAssociate = vehicleRepository.findById(eventResponse.get().idVehicleToAssociate())
+                    .orElseThrow(() -> new NotFoundException("Any vehicle with this id was found"));
 
-                VehicleUser vehicleUser = new VehicleUser(userToAssociate, vehicleToAssociate);
-                vehicleUser.setVehicleOwner(false);
-                vehicleUserRepository.save(vehicleUser);
-            }
+            VehicleUser vehicleUser = new VehicleUser(userToAssociate, vehicleToAssociate);
+            vehicleUser.setVehicleOwner(false);
+            vehicleUserRepository.save(vehicleUser);
+
         } catch (Exception e) {
             throw new NotificationNotFoundException("Error trying to find association notification");
         }
