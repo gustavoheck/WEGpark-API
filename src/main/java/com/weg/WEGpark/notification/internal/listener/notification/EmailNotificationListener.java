@@ -78,8 +78,8 @@ public class EmailNotificationListener {
                         event.notificatedUsersName().get(i),
                         event.notificatedUsersEmail().get(i),
                         "Muitas ocorrências recentes.",
-                        "Identificamos muitos registros de ocorrências/avisos no seu nome nos últimos 30 dias.<br>" +
-                                "Solicitamos que acesse a plataforma WEGpark para consultar o seu histórico e evitar novas<br>" +
+                        "Identificamos muitos registros de ocorrências/avisos no seu nome nos últimos 30 dias. " +
+                                "Solicitamos que acesse a plataforma WEGpark para consultar o seu histórico e evitar novas " +
                                 "infrações que possam gerar penalidades à você ou restrições a sua conta.",
                         false,
                         "%s/ocorrencias".formatted(emailVariables.websiteUrl()),

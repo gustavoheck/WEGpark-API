@@ -24,6 +24,7 @@ public class NotificationService {
     private final NotificationEventMapper notificationEventMapper;
     private final NotificationRepository notificationRepository;
 
+    @Transactional
     public void createAssociationNotification (AssociateToVehicleNotificationEvent event) {
         VehicleAssociationNotification notification = notificationEventMapper.toNotification(event);
         notification.setMessage("Do you want to permit the user %s associate with your vehicle %s %s"
@@ -31,6 +32,7 @@ public class NotificationService {
         notificationRepository.save(notification);
     }
 
+    @Transactional
     public void createNewOccurrenceNotification (SendOccurrenceNotificationEvent event) {
         if (event.notificatedUsersId().size() == event.userNames().size()) {
             for (int i = 0; i < event.notificatedUsersId().size(); i++) {
@@ -46,6 +48,7 @@ public class NotificationService {
         }
     }
 
+    @Transactional
     public void createNewFiveOccurrenceNotification (SendManyOccurrencesWarnEvent event) {
         if (event.notificatedUsersName().size() == event.notificatedUsersId().size()) {
             for (int i = 0; i < event.notificatedUsersId().size(); i++) {
