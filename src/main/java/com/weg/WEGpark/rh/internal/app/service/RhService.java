@@ -3,6 +3,8 @@ package com.weg.WEGpark.rh.internal.app.service;
 import com.weg.WEGpark.auth.DefaultRegisteredEvent;
 import com.weg.WEGpark.auth.shared.exception.AlreadyHaveAccountException;
 import com.weg.WEGpark.auth.internal.infra.security.config.JWTUserData;
+import com.weg.WEGpark.auth.shared.enums.RolesType;
+import com.weg.WEGpark.rh.GetRhUserNameEvent;
 import com.weg.WEGpark.rh.internal.app.mapper.RhMapper;
 import com.weg.WEGpark.rh.internal.domain.enums.OperationType;
 import com.weg.WEGpark.rh.internal.domain.model.Rh;
@@ -18,6 +20,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -63,8 +66,30 @@ public class RhService {
 
         rhRepository.save(rh);
 
-        operationService.saveOperation(jwtUserData, rh.getId(), OperationType.CREATE);
+        operationService.saveOperation(jwtUserData, rh.getId(), OperationType.UPDATE);
         return rhMapper.toUpdateResponse(rh);
+    }
+
+    @Transactional
+    public UpdateRhResponseDTO updateMyProfile(UpdateRhRequestDTO request, JWTUserData jwtUserData) {
+        validateRhRole(jwtUserData);
+        return updateRh(request, jwtUserData.uuid(), jwtUserData);
+    }
+
+    public GetRhResponseDTO findMyProfile(JWTUserData jwtUserData) {
+        validateRhRole(jwtUserData);
+
+        Rh rh = rhRepository.findByUuid(jwtUserData.uuid())
+                .orElseThrow(() -> new NotFoundException("Any rh account was found by %s uuid".formatted(jwtUserData.uuid())));
+
+        return rhMapper.toGetResponse(rh);
+    }
+
+    public void getUserName(GetRhUserNameEvent event) {
+        Rh rh = rhRepository.findByUuid(event.userUuid())
+                .orElseThrow(() -> new NotFoundException("Any rh account was found by %s uuid".formatted(event.userUuid())));
+
+        event.eventResponse().complete(rh.getName());
     }
 
     public Page<GetRhResponseDTO> listRhUsers (FindUserFilter findUserFilter, Pageable pageable) {
@@ -92,5 +117,11 @@ public class RhService {
         CompletableFuture<Boolean> isUserActive = new CompletableFuture<>();
         applicationEventPublisher.publishEvent(new IsParkUserActiveEvent(isUserActive, targetUuid));
         return isUserActive.join();
+    }
+
+    private void validateRhRole(JWTUserData jwtUserData) {
+        if (!jwtUserData.roles().contains(RolesType.ROLE_RH.name())) {
+            throw new AccessDeniedException("Only Rh users can access Rh profile data");
+        }
     }
 }

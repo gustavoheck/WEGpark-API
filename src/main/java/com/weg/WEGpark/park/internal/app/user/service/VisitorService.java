@@ -1,6 +1,8 @@
 package com.weg.WEGpark.park.internal.app.user.service;
 
 import com.weg.WEGpark.auth.VisitorRegisteredEvent;
+import com.weg.WEGpark.auth.internal.infra.security.config.JWTUserData;
+import com.weg.WEGpark.auth.shared.enums.RolesType;
 import com.weg.WEGpark.auth.shared.dto.register.RegisterAccountResponseDTO;
 import com.weg.WEGpark.park.internal.app.user.mapper.VisitorMapper;
 import com.weg.WEGpark.park.internal.domain.enums.user.ParkUserType;
@@ -12,6 +14,7 @@ import com.weg.WEGpark.park.shared.dto.update.UpdateVisitorResponseDTO;
 import com.weg.WEGpark.rh.UpdateVisitorEvent;
 import com.weg.WEGpark.shared.exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,9 +39,14 @@ public class VisitorService {
         event.futureResponse().complete(new RegisterAccountResponseDTO(visitor.getUuid(), event.email()));
     }
 
-    public UpdateVisitorResponseDTO updateVisitorRequest (UpdateVisitorRequestDTO request, UUID parkUserUuid) {
-        Visitor visitor = visitorRepository.findByUuid(parkUserUuid)
-                .orElseThrow(() -> new NotFoundException("Any visitor was found by %s uuid".formatted(parkUserUuid)));
+    @Transactional
+    public UpdateVisitorResponseDTO updateVisitorRequest (UpdateVisitorRequestDTO request, JWTUserData jwtUserData) {
+        if (jwtUserData.roles().contains(RolesType.ROLE_RH.name())) {
+            throw new AccessDeniedException("Rh users can not update park user registration data");
+        }
+
+        Visitor visitor = visitorRepository.findByUuid(jwtUserData.uuid())
+                .orElseThrow(() -> new NotFoundException("Any visitor was found by %s uuid".formatted(jwtUserData.uuid())));
 
         visitorMapper.updateFromDTO(request, visitor);
 

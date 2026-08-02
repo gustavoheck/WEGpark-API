@@ -29,6 +29,7 @@ public class LoginService {
     private final AuthenticationManager authenticationManager;
     private final TokenConfig tokenConfig;
     private final AuthNotificationService authNotificationService;
+    private final AuthUserService authUserService;
 
     public List<SelectAccountResponseDTO> preLogin (String email) {
         List<User> users = userRepository.findByEmail(email);
@@ -59,7 +60,7 @@ public class LoginService {
 
                 User userToken = (User) authentication.getPrincipal();
 
-                String token = tokenConfig.generateToken(userToken);
+                String token = tokenConfig.generateToken(userToken, authUserService.getUserName(userToken));
 
                 return new LoginResponseDTO(true, "User authenticated", token);
             } catch (UsernameNotFoundException | BadCredentialsException e) {

@@ -1,6 +1,7 @@
 package com.weg.WEGpark.park.internal.listener.get;
 
 import com.weg.WEGpark.park.internal.app.user.service.ParkUserService;
+import com.weg.WEGpark.park.GetParkUserNameEvent;
 import com.weg.WEGpark.rh.GetParkUsersEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.event.EventListener;
@@ -15,5 +16,10 @@ public class ParkGetListener {
     @EventListener
     public void getUsers (GetParkUsersEvent event) {
         parkUserService.findParkUsers(event, event.pageable());
+    }
+
+    @EventListener
+    public void getUserName(GetParkUserNameEvent event) {
+        parkUserService.getUserName(event);
     }
 }

@@ -1,6 +1,9 @@
 package com.weg.WEGpark.park.internal.app.user.service;
 
 import com.weg.WEGpark.rh.GetParkUsersEvent;
+import com.weg.WEGpark.park.GetParkUserNameEvent;
+import com.weg.WEGpark.auth.internal.infra.security.config.JWTUserData;
+import com.weg.WEGpark.auth.shared.enums.RolesType;
 import com.weg.WEGpark.shared.IsParkUserActiveEvent;
 import com.weg.WEGpark.shared.util.FilterUtil;
 import com.weg.WEGpark.park.internal.app.user.mapper.CollaboratorMapper;
@@ -20,6 +23,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -49,6 +53,30 @@ public class ParkUserService {
         Boolean existsByEmail = parkUserRepository.existsByEmail(email);
 
         return existsByEmail;
+    }
+
+    public Record findMyProfile(JWTUserData jwtUserData) {
+        if (jwtUserData.roles().contains(RolesType.ROLE_RH.name())) {
+            throw new AccessDeniedException("Rh users do not have a park user profile");
+        }
+
+        ParkUser parkUser = parkUserRepository.findByUuid(jwtUserData.uuid())
+                .orElseThrow(() -> new NotFoundException("Any park user was found by %s uuid".formatted(jwtUserData.uuid())));
+        Boolean active = getUserActive(parkUser.getUuid());
+
+        return switch (parkUser) {
+            case Guard guard -> guardMapper.toGetResponse(guard, active);
+            case Collaborator collaborator -> collaboratorMapper.toResponse(collaborator, active);
+            case Visitor visitor -> visitorMapper.toResponse(visitor, active);
+            default -> throw new NotFoundException("Can not found a user of this type");
+        };
+    }
+
+    public void getUserName(GetParkUserNameEvent event) {
+        ParkUser parkUser = parkUserRepository.findByUuid(event.userUuid())
+                .orElseThrow(() -> new NotFoundException("Any park user was found by %s uuid".formatted(event.userUuid())));
+
+        event.eventResponse().complete(parkUser.getName());
     }
 
 

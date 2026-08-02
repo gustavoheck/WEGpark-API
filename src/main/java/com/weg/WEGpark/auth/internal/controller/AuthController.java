@@ -52,7 +52,7 @@ public class AuthController {
     }
 
     @PatchMapping("/reset-password")
-    public ResponseEntity<UpdateUserResponseDTO> login (
+    public ResponseEntity<UpdateUserResponseDTO> resetPassword (
             @Valid @RequestBody UpdateUserRequestDTO request) {
         UpdateUserResponseDTO response = authUpdateService.updateUserAuthDataRequest(request);
 
