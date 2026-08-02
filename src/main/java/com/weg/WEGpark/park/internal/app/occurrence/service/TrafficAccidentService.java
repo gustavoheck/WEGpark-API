@@ -52,7 +52,7 @@ public class TrafficAccidentService {
 
         info.vehicleUsers().forEach(vu -> occurrence.getVehicleUsers().add(vu));
 
-        occurrenceRepository.saveAndFlush(occurrence);
+        TrafficAccident savedOccurrence = occurrenceRepository.saveAndFlush(occurrence);
 
         occurrenceService.fiveOccurrenceWarn(info.vehicleUsers());
 
@@ -67,7 +67,8 @@ public class TrafficAccidentService {
                 """.formatted("%s %s".formatted(vehicle.getBrand(), vehicle.getModel()), vehicle.getPlate())
         ));
 
-        return trafficAccidentMapper.toCreateResponse(occurrence);
+        return trafficAccidentMapper.toCreateResponse
+                (occurrence, occurrenceService.getOccurrenceResponse(savedOccurrence, vehicle));
     }
 
     @Transactional

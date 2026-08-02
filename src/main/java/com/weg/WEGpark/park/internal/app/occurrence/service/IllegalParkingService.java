@@ -52,7 +52,7 @@ public class IllegalParkingService {
 
         info.vehicleUsers().forEach(vu -> occurrence.getVehicleUsers().add(vu));
 
-        occurrenceRepository.saveAndFlush(occurrence);
+        IllegalParking savedOccurrence = occurrenceRepository.saveAndFlush(occurrence);
 
         occurrenceService.fiveOccurrenceWarn(info.vehicleUsers());
 
@@ -67,7 +67,8 @@ public class IllegalParkingService {
                 """.formatted("%s %s".formatted(vehicle.getBrand(), vehicle.getModel()), vehicle.getPlate())
         ));
 
-        return illegalParkingMapper.toCreateResponse(occurrence);
+        return illegalParkingMapper.toCreateResponse
+                (occurrence, occurrenceService.getOccurrenceResponse(savedOccurrence, vehicle));
     }
 
     @Transactional

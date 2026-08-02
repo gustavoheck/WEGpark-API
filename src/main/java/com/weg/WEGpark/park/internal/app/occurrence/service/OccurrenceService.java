@@ -4,12 +4,15 @@ import com.weg.WEGpark.auth.internal.infra.security.config.JWTUserData;
 import com.weg.WEGpark.park.SendOccurrenceWarnEvent;
 import com.weg.WEGpark.park.SendOccurrenceWarnToGuardEvent;
 import com.weg.WEGpark.park.internal.app.occurrence.dto.RegisterDefaultInfo;
-import com.weg.WEGpark.park.internal.app.occurrence.mapper.IllegalParkingMapper;
-import com.weg.WEGpark.park.internal.app.occurrence.mapper.OccurrenceNotificationMapper;
-import com.weg.WEGpark.park.internal.app.occurrence.mapper.TrafficAccidentMapper;
-import com.weg.WEGpark.park.internal.app.occurrence.mapper.WarningMapper;
+import com.weg.WEGpark.park.internal.app.occurrence.mapper.*;
+import com.weg.WEGpark.park.internal.app.user.mapper.GuardMapper;
+import com.weg.WEGpark.park.internal.app.user.mapper.VehicleUserMapper;
+import com.weg.WEGpark.park.internal.app.vehicle.mapper.VehicleMapper;
 import com.weg.WEGpark.park.internal.domain.model.users.ParkUser;
 import com.weg.WEGpark.park.internal.domain.model.users.VehicleUser;
+import com.weg.WEGpark.park.internal.dto.occurrence.defaults.DefaultOccurrenceResponseDTO;
+import com.weg.WEGpark.park.internal.dto.user.guard.GetGuardResponseDTO;
+import com.weg.WEGpark.park.internal.dto.vehicle.defaults.GetVehicleResponseDTO;
 import com.weg.WEGpark.shared.util.FilterUtil;
 import com.weg.WEGpark.shared.exception.MoreThenOneFilterException;
 import com.weg.WEGpark.park.internal.domain.model.occurrence.IllegalParking;
@@ -40,13 +43,16 @@ import java.util.List;
 public class OccurrenceService {
 
     private final OccurrenceRepository occurrenceRepository;
-
-    private final IllegalParkingMapper illegalParkingMapper;
     private final VehicleRepository vehicleRepository;
     private final GuardRepository guardRepository;
+
+    private final IllegalParkingMapper illegalParkingMapper;
     private final TrafficAccidentMapper trafficAccidentMapper;
-    private final VehicleUserRepository vehicleUserRepository;
+    private final VehicleUserMapper vehicleUserMapper;
+    private final OccurrenceMapper occurrenceMapper;
     private final WarningMapper warningMapper;
+    private final GuardMapper guardMapper;
+    private final VehicleMapper vehicleMapper;
 
     private final OccurrenceNotificationMapper occurrenceNotificationMapper;
     private final ApplicationEventPublisher applicationEventPublisher;
@@ -115,6 +121,19 @@ public class OccurrenceService {
                         """
                 )
         );
+    }
+
+    public DefaultOccurrenceResponseDTO getOccurrenceResponse (Occurrence occurrence, Vehicle vehicle) {
+        GetGuardResponseDTO guardResponse = guardMapper.toGetResponse(occurrence.getGuard(), true);
+        GetVehicleResponseDTO vehicleResponse = vehicleMapper.toGetResponse(vehicle,
+                vehicle
+                        .getParkUsers()
+                        .stream()
+                        .map(vehicleUserMapper::toResponse)
+                        .toList()
+        );
+
+        return occurrenceMapper.toDefaultOccurrenceDTO(occurrence, vehicleResponse, guardResponse);
     }
 
     private Boolean checkFiveOccurrenceWarn (Long parkUserId) {

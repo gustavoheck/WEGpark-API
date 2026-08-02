@@ -4,6 +4,7 @@ import com.weg.WEGpark.park.internal.app.occurrence.dto.RegisterDefaultInfo;
 import com.weg.WEGpark.park.internal.domain.model.occurrence.IllegalParking;
 import com.weg.WEGpark.park.internal.domain.model.users.Guard;
 import com.weg.WEGpark.park.internal.domain.model.vehicle.Vehicle;
+import com.weg.WEGpark.park.internal.dto.occurrence.defaults.DefaultOccurrenceResponseDTO;
 import com.weg.WEGpark.park.internal.dto.occurrence.illegalparking.CreateIllegalParkingRequestDTO;
 import com.weg.WEGpark.park.internal.dto.occurrence.illegalparking.CreateIllegalParkingResponseDTO;
 import com.weg.WEGpark.park.internal.dto.occurrence.illegalparking.GetIllegalParkingResponseDTO;
@@ -21,8 +22,9 @@ public interface IllegalParkingMapper {
     @Mapping(source = "guard", target = "guard")
     IllegalParking toEntity(CreateIllegalParkingRequestDTO request, Guard guard);
 
-    @Mapping(source = ".", target = "defaults")
-    CreateIllegalParkingResponseDTO toCreateResponse(IllegalParking illegalParking);
+    @Mapping(source = "illegalParking", target = ".")
+    @Mapping(source = "occurrenceDefaults", target = "defaults")
+    CreateIllegalParkingResponseDTO toCreateResponse(IllegalParking illegalParking, DefaultOccurrenceResponseDTO occurrenceDefaults);
 
     @Mapping(source = ".", target = "defaults")
     GetIllegalParkingResponseDTO toGetResponse(IllegalParking illegalParking);
