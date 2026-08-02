@@ -34,7 +34,8 @@ public interface VisitorMapper {
     }
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
-    @Mapping(source = "request", target = ".")
+    @Mapping(source = "request.defaults.telephone", target = "telephone")
+    @Mapping(source = "request.defaults.name", target = "name")
     void updateFromDTO(UpdateVisitorRequestDTO request, @MappingTarget Visitor visitor);
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)

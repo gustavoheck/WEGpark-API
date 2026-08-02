@@ -34,7 +34,8 @@ public interface CollaboratorMapper {
     }
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
-    @Mapping(source = "request", target = ".")
+    @Mapping(source = "request.defaults.telephone", target = "telephone")
+    @Mapping(source = "request.defaults.name", target = "name")
     void updateFromDTO(UpdateCollaboratorRequestDTO request, @MappingTarget Collaborator collaborator);
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)

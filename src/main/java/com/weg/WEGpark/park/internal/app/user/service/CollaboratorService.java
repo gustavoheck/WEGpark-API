@@ -1,6 +1,8 @@
 package com.weg.WEGpark.park.internal.app.user.service;
 
 import com.weg.WEGpark.auth.CollaboratorRegisteredEvent;
+import com.weg.WEGpark.auth.internal.infra.security.config.JWTUserData;
+import com.weg.WEGpark.auth.shared.enums.RolesType;
 import com.weg.WEGpark.auth.shared.dto.register.RegisterAccountResponseDTO;
 import com.weg.WEGpark.park.internal.app.user.mapper.CollaboratorMapper;
 import com.weg.WEGpark.park.internal.domain.enums.user.ParkUserType;
@@ -13,6 +15,7 @@ import com.weg.WEGpark.park.shared.dto.update.UpdateCollaboratorResponseDTO;
 import com.weg.WEGpark.rh.UpdateCollaboratorEvent;
 import com.weg.WEGpark.shared.exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -43,9 +46,18 @@ public class CollaboratorService {
         event.futureResponse().complete(new RegisterAccountResponseDTO(collaborator.getUuid(), collaborator.getEmail()));
     }
 
-    public UpdateCollaboratorResponseDTO updateCollaboratorRequest (UpdateCollaboratorRequestDTO request, UUID parkUserUuid) {
-        Collaborator collaborator = collaboratorRepository.findByUuid(parkUserUuid)
-                .orElseThrow(() -> new NotFoundException("Any collaborator was found by %s uuid".formatted(parkUserUuid)));
+    @Transactional
+    public UpdateCollaboratorResponseDTO updateCollaboratorRequest (UpdateCollaboratorRequestDTO request, JWTUserData jwtUserData) {
+        if (jwtUserData.roles().contains(RolesType.ROLE_RH.name())) {
+            throw new AccessDeniedException("Rh users can not update park user registration data");
+        }
+
+        Collaborator collaborator = collaboratorRepository.findByUuid(jwtUserData.uuid())
+                .orElseThrow(() -> new NotFoundException("Any collaborator was found by %s uuid".formatted(jwtUserData.uuid())));
+
+        if (collaborator.getUserType() != ParkUserType.COLLABORATOR) {
+            throw new AccessDeniedException("Only collaborators can update collaborator registration data");
+        }
 
         collaboratorMapper.updateFromDTO(request, collaborator);
 

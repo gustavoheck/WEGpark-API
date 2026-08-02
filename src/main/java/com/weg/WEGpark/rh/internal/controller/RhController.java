@@ -8,6 +8,7 @@ import com.weg.WEGpark.rh.internal.dto.rh.RegisterRhRequestDTO;
 import com.weg.WEGpark.rh.internal.dto.rh.RegisterRhResponseDTO;
 import com.weg.WEGpark.rh.internal.dto.rh.UpdateRhRequestDTO;
 import com.weg.WEGpark.rh.internal.dto.rh.UpdateRhResponseDTO;
+import com.weg.WEGpark.rh.internal.dto.rh.GetRhResponseDTO;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -57,5 +58,20 @@ public class RhController {
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(response);
+    }
+
+    @PatchMapping("/me")
+    public ResponseEntity<UpdateRhResponseDTO> updateMyProfile(
+            @RequestBody @Valid UpdateRhRequestDTO request,
+            @AuthenticationPrincipal JWTUserData jwtUserData
+    ) {
+        return ResponseEntity.ok(rhService.updateMyProfile(request, jwtUserData));
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<GetRhResponseDTO> findMyProfile(
+            @AuthenticationPrincipal JWTUserData jwtUserData
+    ) {
+        return ResponseEntity.ok(rhService.findMyProfile(jwtUserData));
     }
 }
