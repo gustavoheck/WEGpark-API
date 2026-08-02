@@ -37,10 +37,11 @@ public class TokenConfig {
         );
     }
 
-    public String generateToken(User user) {
+    public String generateToken(User user, String name) {
         return JWT.create()
                 .withClaim("uuid", user.getUuid().toString())
                 .withClaim("roles", user.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList())
+                .withClaim("name", name)
                 .withSubject(user.getEmail())
                 .withExpiresAt(Instant.now().plus(user.getRole().getRole().getTokenExpirationTime(), ChronoUnit.HOURS))
                 .sign(algorithm);
@@ -63,6 +64,7 @@ public class TokenConfig {
                     .uuid(userUuid)
                     .email(decode.getSubject())
                     .roles(decode.getClaim("roles").asList(String.class))
+                    .name(decode.getClaim("name").asString())
                     .build()
             );
 

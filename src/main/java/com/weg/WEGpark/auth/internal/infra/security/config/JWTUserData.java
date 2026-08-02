@@ -9,6 +9,7 @@ import java.util.UUID;
 public record JWTUserData(
         UUID uuid,
         String email,
-        List<String> roles
+        List<String> roles,
+        String name
 ) {
 }
