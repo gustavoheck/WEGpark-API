@@ -69,7 +69,7 @@ public class TokenConfig {
             );
 
         } catch (Throwable e) {
-            throw new InvalidTokenException();
+            throw new InvalidTokenException("Invalid Token!");
         }
     }
 

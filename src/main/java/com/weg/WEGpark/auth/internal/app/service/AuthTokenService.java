@@ -1,6 +1,5 @@
 package com.weg.WEGpark.auth.internal.app.service;
 
-import com.weg.WEGpark.auth.internal.app.exception.InvalidTokenException;
 import com.weg.WEGpark.auth.internal.dto.reset.NewTokenResponseDTO;
 import com.weg.WEGpark.auth.internal.dto.reset.NumberTokenVerificateTryRequestDTO;
 import com.weg.WEGpark.auth.shared.enums.TokenType;
@@ -14,6 +13,7 @@ import com.weg.WEGpark.shared.exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.weg.WEGpark.auth.internal.infra.security.exception.InvalidTokenException;
 
 import java.security.SecureRandom;
 import java.time.LocalDateTime;

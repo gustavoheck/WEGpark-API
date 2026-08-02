@@ -1,7 +1,6 @@
 package com.weg.WEGpark.auth.internal.app.service;
 
 import com.weg.WEGpark.auth.UpdateUserAuthEvent;
-import com.weg.WEGpark.auth.internal.app.exception.InvalidTokenException;
 import com.weg.WEGpark.auth.internal.app.mapper.UserMapper;
 import com.weg.WEGpark.auth.shared.enums.RolesType;
 import com.weg.WEGpark.auth.shared.enums.TokenType;
@@ -17,6 +16,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.weg.WEGpark.auth.internal.infra.security.exception.InvalidTokenException;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
