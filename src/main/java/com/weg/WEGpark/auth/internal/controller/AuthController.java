@@ -32,7 +32,7 @@ public class AuthController {
     private final RegisterService registerService;
     private final AuthUpdateService authUpdateService;
 
-    @GetMapping
+    @PostMapping
     public ResponseEntity<List<SelectAccountResponseDTO>> getUserRoles (
             @Valid @RequestBody EmailRequestDTO request
             ) {

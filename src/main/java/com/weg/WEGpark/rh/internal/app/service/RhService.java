@@ -47,7 +47,7 @@ public class RhService {
             rh.setUuid(response.uuid());
             rh.setEmail(response.email());
             rhRepository.save(rh);
-            operationService.saveOperation(jwtUserData, response.uuid(), OperationType.CREATE);
+            operationService.saveOperation(jwtUserData, response.id(), OperationType.CREATE);
             return rhMapper.toRegisterResponse(rh);
         } else {
             throw new AlreadyHaveAccountException("An rh account with this email is already registered");
@@ -63,7 +63,7 @@ public class RhService {
 
         rhRepository.save(rh);
 
-        operationService.saveOperation(jwtUserData, rh.getUuid(), OperationType.CREATE);
+        operationService.saveOperation(jwtUserData, rh.getId(), OperationType.CREATE);
         return rhMapper.toUpdateResponse(rh);
     }
 

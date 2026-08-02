@@ -77,12 +77,18 @@ public class AuthUpdateService {
 
     @Transactional
     public void activateAndDesactivateUser (DesactivateAndActivateUserEvent event) {
-        User user = userRepository.findByUuid(event.uuid())
-                .orElseThrow(() -> new NotFoundException("Any user was found by %s uuid".formatted(event.uuid())));
+        Optional<User> optUser = userRepository.findByUuid(event.uuid());
 
-        user.setActive(!user.getActive());
+        if (optUser.isPresent()) {
+            User user = optUser.get();
 
-        userRepository.save(user);
+            event.userIdResponse().complete(user.getId());
+            user.setActive(!user.getActive());
+
+            userRepository.save(user);
+        } else {
+            throw new NotFoundException("Any user was found by %s uuid".formatted(event.uuid()));
+        }
     }
 
     @Transactional

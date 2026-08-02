@@ -148,8 +148,13 @@ public class RegisterService {
     private User registerAccount (User user, Role role) {
         user.setRole(role);
         user.setPassword(securityConfig.passwordEncoder().encode(user.getPassword()));
-        user.setActive(false);
-        user.setEmailValidated(false);
+        if (role.getRole() != RolesType.ROLE_ADMIN) {
+            user.setActive(false);
+            user.setEmailValidated(false);
+        } else {
+            user.setActive(true);
+            user.setEmailValidated(true);
+        }
         userRepository.saveAndFlush(user);
         authNotificationService.sendAccountEmailValidation(user);
         return user;

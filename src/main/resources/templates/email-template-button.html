@@ -77,14 +77,14 @@
                             <tr>
                                 <td align="left"
                                     style="padding-bottom: 16px; font-size: 20px; font-weight: bold; color: #191B1F; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
-                                    Olá, <span th:text="${userName}">Usuário</span>!
+                                    Olá <span th:text="${userName}">Usuário</span>!
                                 </td>
                             </tr>
 
                             <tr>
                                 <td valign="top"
                                     style="padding-bottom: 24px; font-size: 15px; line-height: 24px; color: #191B1F; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
-                                    <p th:text="${noticeMessage}" style="margin: 0;">
+                                    <p th:utext="${noticeMessage}" style="margin: 0;">
                                         Você recebeu uma notificação relacionada ao seu carro ou ao estacionamento da
                                         empresa, clique no botão e vá para a notificação no sistema.
                                     </p>

@@ -2,8 +2,11 @@ package com.weg.WEGpark.notification.internal.listener.notification;
 
 import com.weg.WEGpark.auth.SendAccountValidationEmailEvent;
 import com.weg.WEGpark.auth.SendEmailCheckEvent;
+import com.weg.WEGpark.notification.internal.app.notification.exception.InvalidNotificationException;
 import com.weg.WEGpark.notification.internal.app.notification.service.EmailService;
 import com.weg.WEGpark.notification.internal.dto.EmailVariables;
+import com.weg.WEGpark.park.SendManyOccurrencesWarnEvent;
+import com.weg.WEGpark.park.SendOccurrenceNotificationEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
@@ -21,6 +24,7 @@ public class EmailNotificationListener {
     public void sendValidationEmail (SendAccountValidationEmailEvent event) {
 
         emailService.sendNotification(
+                null,
                 event.email(),
                 "Valide sua conta no WEGPark!",
                 "Você precisa validar sua conta para usar o sistema do WEGPark!",
@@ -35,12 +39,55 @@ public class EmailNotificationListener {
     public void sendEmailCheck (SendEmailCheckEvent event) {
 
         emailService.sendNotification(
+                null,
                 event.email(),
                 "Codigo de verificação",
-                "Veja seu codigo de verificacao abaixo!\n" + event.number(),
+                "Veja seu código de verificação abaixo!<br><p style=\"font-size:40px\">" + event.number() + "</p>",
                 false,
                 null,
                 null
         );
+    }
+
+    @Async("asyncTaskExecutor")
+    @EventListener
+    public void sendOccurrenceNotification (SendOccurrenceNotificationEvent event) {
+        if (event.notificatedUsersId().size() == event.userNames().size()) {
+            for (int i = 0; i < event.notificatedUsersId().size(); i++) {
+                emailService.sendNotification(
+                        event.userNames().get(i),
+                        event.email().get(i),
+                        "Nova ocorrência registrada no seu nome.",
+                        "Identificamos uma ocorrência vinculada à sua conta no WEGpark.<br>Clique no botão abaixo para conferir os detalhes e resolver o quanto antes.",
+                        true,
+                        "%s/ocorrencias/%s".formatted(emailVariables.websiteUrl(), event.occurrenceUuid()),
+                        "Ver Ocorrência"
+                );
+            }
+        } else {
+            throw new InvalidNotificationException("The notification event have different sizes for user and names");
+        }
+    }
+
+    @Async("asyncTaskExecutor")
+    @EventListener
+    public void sendFiveOccurrenceWarnNotification (SendManyOccurrencesWarnEvent event) {
+        if (event.notificatedUsersId().size() == event.notificatedUsersEmail().size()) {
+            for (int i = 0; i < event.notificatedUsersId().size(); i++) {
+                emailService.sendNotification(
+                        event.notificatedUsersName().get(i),
+                        event.notificatedUsersEmail().get(i),
+                        "Muitas ocorrências recentes.",
+                        "Identificamos muitos registros de ocorrências/avisos no seu nome nos últimos 30 dias. " +
+                                "Solicitamos que acesse a plataforma WEGpark para consultar o seu histórico e evitar novas " +
+                                "infrações que possam gerar penalidades à você ou restrições a sua conta.",
+                        false,
+                        "%s/ocorrencias".formatted(emailVariables.websiteUrl()),
+                        "Ver Ocorrências"
+                );
+            }
+        } else {
+            throw new InvalidNotificationException("The notification event have different sizes for user and names");
+        }
     }
 }

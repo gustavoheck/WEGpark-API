@@ -1,13 +1,18 @@
 package com.weg.WEGpark.auth.internal.dto.validation;
+
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 
 public class PasswordValidator implements ConstraintValidator<ValidPassword, String> {
 
+    private static final String SPECIAL_CHARACTERS = "!@#$%^&*(),.?\"{}|<>";
+
     @Override
     public boolean isValid(String password, ConstraintValidatorContext context) {
-        if (password == null) {
-            return true;
+        if (password == null || password.isBlank()) {
+            context.disableDefaultConstraintViolation();
+            addViolation(context, "The password can not be blank or null");
+            return false;
         }
 
         boolean hasUppercase = false;
@@ -15,34 +20,48 @@ public class PasswordValidator implements ConstraintValidator<ValidPassword, Str
         boolean hasNumber = false;
         boolean hasSpecialChar = false;
 
-        String specialCharacters = "!@#$%^&*(),.?\"{}|<>";
-
         for (char ch : password.toCharArray()) {
             if (Character.isUpperCase(ch)) {
                 hasUppercase = true;
-                customMessage(context, "The password must contain at least one uppercase letter");
-            }
-            else if (Character.isLowerCase(ch)) {
+            } else if (Character.isLowerCase(ch)) {
                 hasLowercase = true;
-                customMessage(context, "The password must contain at least one lowercase letter");
-            }
-            else if (Character.isDigit(ch)) {
+            } else if (Character.isDigit(ch)) {
                 hasNumber = true;
-                customMessage(context, "The password must contain at least one number");
-            }
-            else if (specialCharacters.contains(String.valueOf(ch))) {
+            } else if (SPECIAL_CHARACTERS.indexOf(ch) >= 0) {
                 hasSpecialChar = true;
-                customMessage(context, "The password must contain at least one special character letter");
             }
         }
 
-        return hasUppercase && hasLowercase && hasNumber && hasSpecialChar && password.length() >= 8;
+        boolean isValid = true;
+
+        context.disableDefaultConstraintViolation();
+
+        if (password.length() < 8) {
+            addViolation(context, "The password must be at least 8 characters long");
+            isValid = false;
+        }
+        if (!hasUppercase) {
+            addViolation(context, "The password must contain at least one uppercase letter");
+            isValid = false;
+        }
+        if (!hasLowercase) {
+            addViolation(context, "The password must contain at least one lowercase letter");
+            isValid = false;
+        }
+        if (!hasNumber) {
+            addViolation(context, "The password must contain at least one number");
+            isValid = false;
+        }
+        if (!hasSpecialChar) {
+            addViolation(context, "The password must contain at least one special character");
+            isValid = false;
+        }
+
+        return isValid;
     }
 
-    private void customMessage(ConstraintValidatorContext context, String message) {
-        context.disableDefaultConstraintViolation();
+    private void addViolation(ConstraintValidatorContext context, String message) {
         context.buildConstraintViolationWithTemplate(message)
                 .addConstraintViolation();
     }
-
 }
