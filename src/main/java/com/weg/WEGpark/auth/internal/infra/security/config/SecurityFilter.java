@@ -1,5 +1,6 @@
 package com.weg.WEGpark.auth.internal.infra.security.config;
 
+import com.weg.WEGpark.auth.internal.infra.security.exception.InvalidTokenException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -7,8 +8,10 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -21,6 +24,7 @@ import java.util.Optional;
 public class SecurityFilter extends OncePerRequestFilter {
 
     private final TokenConfig tokenConfig;
+    private final AuthenticationEntryPoint authenticationEntryPoint;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -28,7 +32,15 @@ public class SecurityFilter extends OncePerRequestFilter {
         if (Strings.isNotEmpty(authorizedHeader) && authorizedHeader.startsWith("Bearer ")) {
             String token = authorizedHeader.substring("Bearer ".length()).trim();
 
-            Optional<JWTUserData> optUserData = tokenConfig.validateToken(token);
+            Optional<JWTUserData> optUserData;
+            try {
+                optUserData = tokenConfig.validateToken(token);
+            } catch (InvalidTokenException exception) {
+                SecurityContextHolder.clearContext();
+                authenticationEntryPoint.commence(request, response,
+                        new InsufficientAuthenticationException(exception.getMessage(), exception));
+                return;
+            }
 
             if (optUserData.isPresent()) {
                 JWTUserData userData = optUserData.get();
