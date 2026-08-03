@@ -31,6 +31,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -64,6 +65,10 @@ public class VehicleService {
             loggedVehicleUser.setVehicleOwner(true);
             vehicleUserRepository.save(loggedVehicleUser);
 
+            List<GetVehicleUserResponseDTO> loggedUserResponseList = new ArrayList<>();
+            loggedUserResponseList.add(vehicleUserMapper.toResponse(loggedVehicleUser));
+
+            return vehicleMapper.toGetResponse(loggedVehicleUser.getVehicle(), loggedUserResponseList);
         } else if (vehicleRepository.existsByPlate(request.plate()) == false) {
             ParkUser loggedUser = parkUserRepository.findByUuid(userData.uuid())
                     .orElseThrow(() -> new NotFoundException("Any park user was found by the logged uuid"));
@@ -93,6 +98,7 @@ public class VehicleService {
         }
         throw new VehicleAlreadyRegisteredException
                 ("This vehicle is already registered, try to vinculate with the owner, or dismiss");
+
     }
 
     @Transactional
@@ -169,7 +175,7 @@ public class VehicleService {
         throw new MoreThenOneFilterException("You can not use more than one filter");
     }
 
-    public List<GetVehicleResponseDTO> findMyVehicles (JWTUserData userData) {
+    public List<GetVehicleResponseDTO> findMyVehicles(JWTUserData userData) {
         List<VehicleUser> myAssociateVehicles = vehicleUserRepository.findByUuidParkUser(userData.uuid());
 
         return myAssociateVehicles
