@@ -3,13 +3,23 @@ package com.weg.WEGpark.notification.internal.app.notification.service;
 import com.weg.WEGpark.notification.FindAssociationNotificationResponse;
 import com.weg.WEGpark.notification.internal.app.notification.exception.InvalidNotificationException;
 import com.weg.WEGpark.notification.internal.app.notification.mapper.NotificationEventMapper;
+import com.weg.WEGpark.notification.internal.domain.entities.Notification;
 import com.weg.WEGpark.notification.internal.domain.entities.VehicleAssociationNotification;
+import com.weg.WEGpark.notification.internal.domain.enums.NotificationType;
 import com.weg.WEGpark.notification.internal.infra.repository.NotificationRepository;
 import com.weg.WEGpark.park.*;
+import com.weg.WEGpark.rh.GetRhUserIdEvent;
+import com.weg.WEGpark.auth.internal.infra.security.config.JWTUserData;
+import com.weg.WEGpark.auth.shared.enums.RolesType;
 import com.weg.WEGpark.shared.exception.NotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.security.access.AccessDeniedException;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -21,13 +31,15 @@ import static org.mockito.Mockito.*;
 class NotificationServiceTest {
     private NotificationEventMapper mapper;
     private NotificationRepository repository;
+    private ApplicationEventPublisher publisher;
     private NotificationService service;
 
     @BeforeEach
     void setUp() {
         mapper = mock(NotificationEventMapper.class);
         repository = mock(NotificationRepository.class);
-        service = new NotificationService(mapper, repository);
+        publisher = mock(ApplicationEventPublisher.class);
+        service = new NotificationService(mapper, repository, publisher);
     }
 
     @Test
@@ -74,5 +86,67 @@ class NotificationServiceTest {
         assertEquals(new FindAssociationNotificationResponse(3L, 2L), future.join());
         when(repository.findByUuid(uuid)).thenReturn(Optional.empty());
         assertThrows(NotFoundException.class, () -> service.findAssociationNotification(new FindAssociationNotificationEvent(new CompletableFuture<>(), uuid)));
+    }
+
+    @Test
+    void returnsPagedNotificationsForParkUser() {
+        UUID userUuid = UUID.randomUUID();
+        JWTUserData userData = new JWTUserData(userUuid, "park@weg.net", List.of(RolesType.ROLE_PARK.name()), "Park");
+        var pageable = PageRequest.of(0, 5);
+        Notification notification = new Notification(10L, NotificationType.OCCURRENCE, "message");
+        notification.setUuid(UUID.randomUUID());
+        notification.setNotificationTime(LocalDateTime.now());
+
+        doAnswer(invocation -> {
+            GetParkUserIdEvent event = invocation.getArgument(0);
+            event.eventResponse().complete(10L);
+            return null;
+        }).when(publisher).publishEvent(any(GetParkUserIdEvent.class));
+        when(repository.findAllByIdNotificatedUser(10L, pageable))
+                .thenReturn(new PageImpl<>(List.of(notification), pageable, 1));
+
+        var response = service.findMyNotifications(userData, pageable);
+
+        assertEquals(1, response.getTotalElements());
+        assertEquals(notification.getUuid(), response.getContent().getFirst().uuid());
+        assertEquals(notification.getMessage(), response.getContent().getFirst().message());
+    }
+
+    @Test
+    void deletesOnlyRhUserNotification() {
+        UUID userUuid = UUID.randomUUID();
+        UUID notificationUuid = UUID.randomUUID();
+        JWTUserData userData = new JWTUserData(userUuid, "rh@weg.net", List.of(RolesType.ROLE_RH.name()), "RH");
+        Notification notification = new Notification(20L, NotificationType.FIVE_OCCURRENCE, "message");
+
+        doAnswer(invocation -> {
+            GetRhUserIdEvent event = invocation.getArgument(0);
+            event.eventResponse().complete(20L);
+            return null;
+        }).when(publisher).publishEvent(any(GetRhUserIdEvent.class));
+        when(repository.findByUuidAndIdNotificatedUser(notificationUuid, 20L))
+                .thenReturn(Optional.of(notification));
+
+        service.deleteNotification(notificationUuid, userData);
+
+        verify(repository).delete(notification);
+    }
+
+    @Test
+    void rejectsUnsupportedRoleAndNotificationFromAnotherUser() {
+        JWTUserData admin = new JWTUserData(UUID.randomUUID(), "admin@weg.net", List.of(RolesType.ROLE_ADMIN.name()), "Admin");
+        assertThrows(AccessDeniedException.class, () -> service.findMyNotifications(admin, PageRequest.of(0, 5)));
+
+        UUID notificationUuid = UUID.randomUUID();
+        JWTUserData guard = new JWTUserData(UUID.randomUUID(), "guard@weg.net", List.of(RolesType.ROLE_GUARD.name()), "Guard");
+        doAnswer(invocation -> {
+            GetParkUserIdEvent event = invocation.getArgument(0);
+            event.eventResponse().complete(30L);
+            return null;
+        }).when(publisher).publishEvent(any(GetParkUserIdEvent.class));
+        when(repository.findByUuidAndIdNotificatedUser(notificationUuid, 30L)).thenReturn(Optional.empty());
+
+        assertThrows(NotFoundException.class, () -> service.deleteNotification(notificationUuid, guard));
+        verify(repository, never()).delete(any(Notification.class));
     }
 }

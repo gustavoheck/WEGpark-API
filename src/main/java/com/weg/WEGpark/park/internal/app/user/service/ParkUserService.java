@@ -1,6 +1,7 @@
 package com.weg.WEGpark.park.internal.app.user.service;
 
 import com.weg.WEGpark.rh.GetParkUsersEvent;
+import com.weg.WEGpark.park.GetParkUserIdEvent;
 import com.weg.WEGpark.park.GetParkUserNameEvent;
 import com.weg.WEGpark.auth.internal.infra.security.config.JWTUserData;
 import com.weg.WEGpark.auth.shared.enums.RolesType;
@@ -79,6 +80,12 @@ public class ParkUserService {
         event.eventResponse().complete(parkUser.getName());
     }
 
+    public void getUserId(GetParkUserIdEvent event) {
+        ParkUser parkUser = parkUserRepository.findByUuid(event.userUuid())
+                .orElseThrow(() -> new NotFoundException("Any park user was found by %s uuid".formatted(event.userUuid())));
+
+        event.eventResponse().complete(parkUser.getId());
+    }
 
     public void findParkUsers(GetParkUsersEvent event, Pageable pageable) {
         if (FilterUtil.checkHaveFilter(event.findUserFilter())) {

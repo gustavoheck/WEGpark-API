@@ -3,6 +3,7 @@ package com.weg.WEGpark.rh.internal.app.service;
 import com.weg.WEGpark.auth.DefaultRegisteredEvent;
 import com.weg.WEGpark.auth.internal.infra.security.config.JWTUserData;
 import com.weg.WEGpark.auth.shared.enums.RolesType;
+import com.weg.WEGpark.rh.GetRhUserIdEvent;
 import com.weg.WEGpark.rh.GetRhUserNameEvent;
 import com.weg.WEGpark.rh.internal.app.mapper.RhMapper;
 import com.weg.WEGpark.rh.internal.domain.enums.OperationType;
@@ -81,6 +82,9 @@ class RhServiceTest {
         CompletableFuture<String> name = new CompletableFuture<>();
         service.getUserName(new GetRhUserNameEvent(name, rh.getUuid()));
         assertEquals(rh.getName(), name.join());
+        CompletableFuture<Long> id = new CompletableFuture<>();
+        service.getUserId(new GetRhUserIdEvent(id, rh.getUuid()));
+        assertEquals(rh.getId(), id.join());
     }
 
     @Test

@@ -2,6 +2,7 @@ package com.weg.WEGpark.park.internal.app.user.service;
 
 import com.weg.WEGpark.auth.internal.infra.security.config.JWTUserData;
 import com.weg.WEGpark.auth.shared.enums.RolesType;
+import com.weg.WEGpark.park.GetParkUserIdEvent;
 import com.weg.WEGpark.park.GetParkUserNameEvent;
 import com.weg.WEGpark.park.internal.app.user.mapper.CollaboratorMapper;
 import com.weg.WEGpark.park.internal.app.user.mapper.GuardMapper;
@@ -50,13 +51,16 @@ class ParkUserServiceTest {
     }
 
     @Test
-    void verifiesEmailAvailabilityAndReturnsParkUserName() {
+    void verifiesEmailAvailabilityAndReturnsParkUserData() {
         when(repository.existsByEmail("c@weg.net")).thenReturn(true);
         assertTrue(service.verifyParkUserToRegister("c@weg.net"));
         when(repository.findByUuid(collaborator.getUuid())).thenReturn(Optional.of(collaborator));
         CompletableFuture<String> future = new CompletableFuture<>();
         service.getUserName(new GetParkUserNameEvent(future, collaborator.getUuid()));
         assertEquals("Collaborator", future.join());
+        CompletableFuture<Long> idFuture = new CompletableFuture<>();
+        service.getUserId(new GetParkUserIdEvent(idFuture, collaborator.getUuid()));
+        assertEquals(collaborator.getId(), idFuture.join());
     }
 
     @Test

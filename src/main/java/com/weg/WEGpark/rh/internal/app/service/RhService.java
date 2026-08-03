@@ -4,6 +4,7 @@ import com.weg.WEGpark.auth.DefaultRegisteredEvent;
 import com.weg.WEGpark.auth.shared.exception.AlreadyHaveAccountException;
 import com.weg.WEGpark.auth.internal.infra.security.config.JWTUserData;
 import com.weg.WEGpark.auth.shared.enums.RolesType;
+import com.weg.WEGpark.rh.GetRhUserIdEvent;
 import com.weg.WEGpark.rh.GetRhUserNameEvent;
 import com.weg.WEGpark.rh.internal.app.mapper.RhMapper;
 import com.weg.WEGpark.rh.internal.domain.enums.OperationType;
@@ -90,6 +91,13 @@ public class RhService {
                 .orElseThrow(() -> new NotFoundException("Any rh account was found by %s uuid".formatted(event.userUuid())));
 
         event.eventResponse().complete(rh.getName());
+    }
+
+    public void getUserId(GetRhUserIdEvent event) {
+        Rh rh = rhRepository.findByUuid(event.userUuid())
+                .orElseThrow(() -> new NotFoundException("Any rh account was found by %s uuid".formatted(event.userUuid())));
+
+        event.eventResponse().complete(rh.getId());
     }
 
     public Page<GetRhResponseDTO> listRhUsers (FindUserFilter findUserFilter, Pageable pageable) {
