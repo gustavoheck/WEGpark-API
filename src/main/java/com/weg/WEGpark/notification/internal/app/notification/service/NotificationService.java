@@ -1,7 +1,7 @@
 package com.weg.WEGpark.notification.internal.app.notification.service;
 
+import com.weg.WEGpark.auth.GetAuthUserIdEvent;
 import com.weg.WEGpark.auth.internal.infra.security.config.JWTUserData;
-import com.weg.WEGpark.auth.shared.enums.RolesType;
 import com.weg.WEGpark.notification.FindAssociationNotificationResponse;
 import com.weg.WEGpark.notification.internal.app.notification.exception.InvalidNotificationException;
 import com.weg.WEGpark.notification.internal.app.notification.mapper.NotificationEventMapper;
@@ -12,16 +12,13 @@ import com.weg.WEGpark.notification.internal.dto.GetNotificationResponseDTO;
 import com.weg.WEGpark.notification.internal.infra.repository.NotificationRepository;
 import com.weg.WEGpark.park.AssociateToVehicleNotificationEvent;
 import com.weg.WEGpark.park.FindAssociationNotificationEvent;
-import com.weg.WEGpark.park.GetParkUserIdEvent;
 import com.weg.WEGpark.park.SendManyOccurrencesWarnEvent;
 import com.weg.WEGpark.park.SendOccurrenceNotificationEvent;
-import com.weg.WEGpark.rh.GetRhUserIdEvent;
 import com.weg.WEGpark.shared.exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -112,14 +109,7 @@ public class NotificationService {
     private Long findNotificatedUserId(JWTUserData jwtUserData) {
         CompletableFuture<Long> eventResponse = new CompletableFuture<>();
 
-        if (jwtUserData.roles().contains(RolesType.ROLE_RH.name())) {
-            applicationEventPublisher.publishEvent(new GetRhUserIdEvent(eventResponse, jwtUserData.uuid()));
-        } else if (jwtUserData.roles().contains(RolesType.ROLE_PARK.name())
-                || jwtUserData.roles().contains(RolesType.ROLE_GUARD.name())) {
-            applicationEventPublisher.publishEvent(new GetParkUserIdEvent(eventResponse, jwtUserData.uuid()));
-        } else {
-            throw new AccessDeniedException("Only Park, Guard or Rh users can access notifications");
-        }
+        applicationEventPublisher.publishEvent(new GetAuthUserIdEvent(eventResponse, jwtUserData.uuid()));
 
         return eventResponse.join();
     }

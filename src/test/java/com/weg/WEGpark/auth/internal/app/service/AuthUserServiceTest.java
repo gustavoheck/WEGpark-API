@@ -1,5 +1,6 @@
 package com.weg.WEGpark.auth.internal.app.service;
 
+import com.weg.WEGpark.auth.GetAuthUserIdEvent;
 import com.weg.WEGpark.auth.internal.domain.model.Role;
 import com.weg.WEGpark.auth.internal.domain.model.User;
 import com.weg.WEGpark.auth.internal.infra.repository.UserRepository;
@@ -48,6 +49,28 @@ class AuthUserServiceTest {
 
         assertEquals("RH User", service.getUserName(user(RolesType.ROLE_RH)));
         assertEquals("Park User", service.getUserName(user(RolesType.ROLE_PARK)));
+    }
+
+    @Test
+    void resolvesUserIdFromAuthByUuid() {
+        UUID userUuid = UUID.randomUUID();
+        User user = user(RolesType.ROLE_RH);
+        user.setId(42L);
+        when(userRepository.findByUuid(userUuid)).thenReturn(Optional.of(user));
+        var response = new java.util.concurrent.CompletableFuture<Long>();
+
+        service.getUserId(new GetAuthUserIdEvent(response, userUuid));
+
+        assertEquals(42L, response.join());
+
+        UUID missingUuid = UUID.randomUUID();
+        when(userRepository.findByUuid(missingUuid)).thenReturn(Optional.empty());
+        var missingResponse = new java.util.concurrent.CompletableFuture<Long>();
+
+        service.getUserId(new GetAuthUserIdEvent(missingResponse, missingUuid));
+
+        assertTrue(missingResponse.isCompletedExceptionally());
+        assertThrows(java.util.concurrent.CompletionException.class, missingResponse::join);
     }
 
     @Test

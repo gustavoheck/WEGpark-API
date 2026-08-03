@@ -1,5 +1,6 @@
 package com.weg.WEGpark.auth.internal.app.service;
 
+import com.weg.WEGpark.auth.GetAuthUserIdEvent;
 import com.weg.WEGpark.auth.internal.domain.model.User;
 import com.weg.WEGpark.auth.internal.infra.repository.UserRepository;
 import com.weg.WEGpark.auth.shared.enums.RolesType;
@@ -38,6 +39,16 @@ public class AuthUserService {
         }
 
         return eventResponse.join();
+    }
+
+    public void getUserId(GetAuthUserIdEvent event) {
+        userRepository.findByUuid(event.userUuid())
+                .ifPresentOrElse(
+                        user -> event.eventResponse().complete(user.getId()),
+                        () -> event.eventResponse().completeExceptionally(
+                                new NotFoundException("Any auth user was found by %s uuid".formatted(event.userUuid()))
+                        )
+                );
     }
 
     public void getActive (IsParkUserActiveEvent event) {
