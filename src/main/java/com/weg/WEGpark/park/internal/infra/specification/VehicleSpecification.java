@@ -1,6 +1,9 @@
 package com.weg.WEGpark.park.internal.infra.specification;
 
+import com.weg.WEGpark.park.internal.domain.model.users.ParkUser;
+import com.weg.WEGpark.park.internal.domain.model.users.VehicleUser;
 import com.weg.WEGpark.park.internal.domain.model.vehicle.Vehicle;
+import jakarta.persistence.criteria.Join;
 import org.springframework.data.jpa.domain.Specification;
 
 public class VehicleSpecification {
@@ -46,7 +49,10 @@ public class VehicleSpecification {
             if (parkUserName == null) {
                 return null;
             }
-            return cb.like(cb.lower(root.join("parkUser").get("name")), "%" + parkUserName + "%");
+            Join<Vehicle, VehicleUser> vehicleUser = root.join("parkUsers");
+            Join<VehicleUser, ParkUser> parkUser = vehicleUser.join("parkUser");
+
+            return cb.like(cb.lower(parkUser.get("name")), "%" + parkUserName.toLowerCase() + "%");
         };
     }
 }

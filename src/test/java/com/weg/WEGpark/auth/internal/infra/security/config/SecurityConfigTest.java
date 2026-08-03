@@ -1,5 +1,6 @@
 package com.weg.WEGpark.auth.internal.infra.security.config;
 
+import com.weg.WEGpark.auth.internal.infra.repository.UserRepository;
 import com.weg.WEGpark.auth.shared.enums.RolesType;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,6 +43,9 @@ class SecurityConfigTest {
 
     @MockitoBean
     private TokenConfig tokenConfig;
+
+    @MockitoBean
+    private UserRepository userRepository;
 
     @Test
     void permitsPublicAuthEndpointsWithoutAuthentication() throws Exception {
@@ -114,11 +118,11 @@ class SecurityConfigTest {
     }
 
     @Test
-    void permitsAdminToAccessEveryEndpoint() throws Exception {
+    void permitsAdminToAccessEveryEndpointExceptAdminBootstrap() throws Exception {
         var admin = user("admin").authorities(new SimpleGrantedAuthority(RolesType.ROLE_ADMIN.name()));
 
         mockMvc.perform(post("/auth/admin").with(admin))
-                .andExpect(status().isOk());
+                .andExpect(status().isForbidden());
         mockMvc.perform(get("/rh").with(admin))
                 .andExpect(status().isOk());
         mockMvc.perform(post("/vehicle").with(admin))

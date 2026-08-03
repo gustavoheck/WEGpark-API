@@ -49,8 +49,11 @@ public class VehicleController {
     }
 
     @PostMapping("/associate/{uuidNotification}")
-    public ResponseEntity<AssociateWithVehicleResponseDTO> associateVehicle (@PathVariable UUID uuidNotification) {
-        AssociateWithVehicleResponseDTO response = vehicleService.associateToRegisteredVehicle(uuidNotification);
+    public ResponseEntity<AssociateWithVehicleResponseDTO> associateVehicle (
+            @PathVariable UUID uuidNotification,
+            @AuthenticationPrincipal JWTUserData jwtUserData
+    ) {
+        AssociateWithVehicleResponseDTO response = vehicleService.associateToRegisteredVehicle(uuidNotification, jwtUserData);
 
         URI uri = ServletUriComponentsBuilder
                 .fromCurrentRequest()

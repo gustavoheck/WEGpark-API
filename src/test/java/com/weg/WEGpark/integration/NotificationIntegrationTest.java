@@ -78,4 +78,22 @@ class NotificationIntegrationTest extends AbstractPostgresIntegrationTest {
 
         assertFalse(notificationRepository.existsById(notification.getId()));
     }
+
+    @Test
+    void rejectsPreviouslyIssuedTokenAfterUserDeactivation() throws Exception {
+        Role parkRole = roleRepository.findByRole(RolesType.ROLE_PARK).orElseThrow();
+        User authUser = new User("deactivated-token@weg.net", "encoded");
+        authUser.setRole(parkRole);
+        authUser.setActive(true);
+        authUser.setEmailValidated(true);
+        authUser = userRepository.saveAndFlush(authUser);
+        String jwt = tokenConfig.generateToken(authUser, "Deactivated User");
+
+        authUser.setActive(false);
+        userRepository.saveAndFlush(authUser);
+
+        mockMvc.perform(get("/notification")
+                        .header("Authorization", "Bearer " + jwt))
+                .andExpect(status().isUnauthorized());
+    }
 }

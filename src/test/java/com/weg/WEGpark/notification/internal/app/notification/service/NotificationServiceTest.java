@@ -74,17 +74,36 @@ class NotificationServiceTest {
     }
 
     @Test
-    void returnsAssociationDataOrNotFound() {
+    void returnsAssociationDataAndRejectsWrongOwnerOrReuse() {
         UUID uuid = UUID.randomUUID();
+        UUID ownerUuid = UUID.randomUUID();
         VehicleAssociationNotification notification = new VehicleAssociationNotification(1L, 2L, 3L);
-        when(repository.findByUuid(uuid)).thenReturn(Optional.of(notification));
+        doAnswer(invocation -> {
+            GetAuthUserIdEvent event = invocation.getArgument(0);
+            event.eventResponse().complete(1L);
+            return null;
+        }).when(publisher).publishEvent(any(GetAuthUserIdEvent.class));
+        when(repository.findAssociationForUpdate(uuid, 1L)).thenReturn(Optional.of(notification));
         CompletableFuture<FindAssociationNotificationResponse> future = new CompletableFuture<>();
 
-        service.findAssociationNotification(new FindAssociationNotificationEvent(future, uuid));
+        service.findAssociationNotification(new FindAssociationNotificationEvent(future, uuid, ownerUuid));
 
         assertEquals(new FindAssociationNotificationResponse(3L, 2L), future.join());
-        when(repository.findByUuid(uuid)).thenReturn(Optional.empty());
-        assertThrows(NotFoundException.class, () -> service.findAssociationNotification(new FindAssociationNotificationEvent(new CompletableFuture<>(), uuid)));
+        assertTrue(notification.getUsed());
+        verify(repository).save(notification);
+
+        assertThrows(NotFoundException.class, () ->
+                service.findAssociationNotification(new FindAssociationNotificationEvent(
+                        new CompletableFuture<>(), uuid, ownerUuid
+                ))
+        );
+
+        when(repository.findAssociationForUpdate(uuid, 1L)).thenReturn(Optional.empty());
+        assertThrows(NotFoundException.class, () ->
+                service.findAssociationNotification(new FindAssociationNotificationEvent(
+                        new CompletableFuture<>(), uuid, ownerUuid
+                ))
+        );
     }
 
     @Test

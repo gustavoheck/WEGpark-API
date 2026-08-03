@@ -113,6 +113,7 @@ class VehicleServiceTest {
         vehicle.setId(4L);
         doAnswer(invocation -> {
             FindAssociationNotificationEvent event = invocation.getArgument(0);
+            assertEquals(token.uuid(), event.notificatedUserUuid());
             event.eventResponse().complete(new FindAssociationNotificationResponse(1L, 4L));
             return null;
         }).when(publisher).publishEvent(any(FindAssociationNotificationEvent.class));
@@ -121,7 +122,7 @@ class VehicleServiceTest {
         AssociateWithVehicleResponseDTO response = new AssociateWithVehicleResponseDTO(user.getUuid(), user.getEmail(), user.getName());
         when(parkUserMapper.toAssociationResponse(user)).thenReturn(response);
 
-        assertSame(response, service.associateToRegisteredVehicle(notification));
+        assertSame(response, service.associateToRegisteredVehicle(notification, token));
         verify(vehicleUserRepository).save(argThat(association -> !association.getVehicleOwner()));
     }
 

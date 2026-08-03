@@ -39,6 +39,7 @@ public class NotificationService {
         VehicleAssociationNotification notification = notificationEventMapper.toNotification(event);
         notification.setMessage("Do you want to permit the user %s associate with your vehicle %s %s"
                 .formatted(event.userToAssociateName(), event.vehicleBrand(), event.vehicleModel()));
+        notification.setUsed(false);
         notificationRepository.save(notification);
     }
 
@@ -74,9 +75,20 @@ public class NotificationService {
         }
     }
 
-    public void findAssociationNotification (FindAssociationNotificationEvent event) {
-        VehicleAssociationNotification notification = (VehicleAssociationNotification) notificationRepository.findByUuid(event.uuidNotification())
+    @Transactional
+    public void findAssociationNotification(FindAssociationNotificationEvent event) {
+        Long notificatedUserId = findNotificatedUserId(event.notificatedUserUuid());
+
+        VehicleAssociationNotification notification = notificationRepository
+                .findAssociationForUpdate(event.uuidNotification(), notificatedUserId)
                 .orElseThrow(() -> new NotFoundException("Any notification was found to do this association"));
+
+        if (Boolean.TRUE.equals(notification.getUsed())) {
+            throw new NotFoundException("This association notification is no longer available");
+        }
+
+        notification.setUsed(true);
+        notificationRepository.save(notification);
 
         event.eventResponse().complete(new FindAssociationNotificationResponse(
                 notification.getIdUserToAssociate(),
@@ -107,9 +119,13 @@ public class NotificationService {
     }
 
     private Long findNotificatedUserId(JWTUserData jwtUserData) {
+        return findNotificatedUserId(jwtUserData.uuid());
+    }
+
+    private Long findNotificatedUserId(UUID userUuid) {
         CompletableFuture<Long> eventResponse = new CompletableFuture<>();
 
-        applicationEventPublisher.publishEvent(new GetAuthUserIdEvent(eventResponse, jwtUserData.uuid()));
+        applicationEventPublisher.publishEvent(new GetAuthUserIdEvent(eventResponse, userUuid));
 
         return eventResponse.join();
     }

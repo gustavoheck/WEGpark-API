@@ -23,9 +23,13 @@ public class VehicleAssociationNotification extends Notification {
     @Column(name = "id_user_to_associate")
     private Long idUserToAssociate;
 
+    @Column(nullable = false)
+    private Boolean used = false;
+
     public VehicleAssociationNotification(Long idNotificatedUser, Long idVehicleToAssociate, Long idUserToAssociate) {
         super(idNotificatedUser, NotificationType.VEHICLE_ASSOCIATION);
         this.idVehicleToAssociate = idVehicleToAssociate;
         this.idUserToAssociate = idUserToAssociate;
+        this.used = false;
     }
 }

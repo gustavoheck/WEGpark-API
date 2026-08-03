@@ -104,10 +104,12 @@ public class VehicleService {
     }
 
     @Transactional
-    public AssociateWithVehicleResponseDTO associateToRegisteredVehicle(UUID uuidNotification) {
+    public AssociateWithVehicleResponseDTO associateToRegisteredVehicle(UUID uuidNotification, JWTUserData jwtUserData) {
 
         CompletableFuture<FindAssociationNotificationResponse> eventResponse = new CompletableFuture<>();
-        applicationEventPublisher.publishEvent(new FindAssociationNotificationEvent(eventResponse, uuidNotification));
+        applicationEventPublisher.publishEvent(new FindAssociationNotificationEvent(
+                eventResponse, uuidNotification, jwtUserData.uuid()
+        ));
 
         Vehicle vehicleToAssociate;
         ParkUser userToAssociate;

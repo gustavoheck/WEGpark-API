@@ -66,6 +66,25 @@ class WarningRegistrationIntegrationTest extends AbstractPostgresIntegrationTest
 
         assertEquals(1, occurrenceRepository.count());
         Occurrence occurrence = occurrenceRepository.findAll().getFirst();
+
+
+        mockMvc.perform(get("/occurrence")
+                        .header("Authorization", "Bearer " + jwt)
+                        .param("plate", "WAR1234"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalElements").value(1));
+
+        mockMvc.perform(get("/occurrence")
+                        .header("Authorization", "Bearer " + jwt)
+                        .param("responsableName", owner.getName()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalElements").value(1));
+
+        mockMvc.perform(get("/vehicle")
+                        .header("Authorization", "Bearer " + jwt)
+                        .param("userName", owner.getName()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalElements").value(1));
         assertEquals(guard.getId(), occurrence.getGuard().getId());
         assertEquals("Gate A", occurrence.getLocation());
 
