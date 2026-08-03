@@ -70,8 +70,8 @@ public class UserOperationService {
     @Transactional
     public void desactivateAndActivateUser (UUID uuid, JWTUserData jwtUserData) {
         CompletableFuture<Long> userIdResponse = new CompletableFuture<>();
-        Long userId = userIdResponse.join();
         applicationEventPublisher.publishEvent(new DesactivateAndActivateUserEvent(userIdResponse, uuid));
+        Long userId = userIdResponse.join();
         operationService.saveOperation(jwtUserData, userId, OperationType.DESACTIVATE);
     }
 }
