@@ -65,8 +65,10 @@ class SecurityConfigTest {
                 .andExpect(status().isOk());
         mockMvc.perform(get("/vehicle/me").with(parkUser))
                 .andExpect(status().isOk());
-        mockMvc.perform(get("/occurrence").with(parkUser))
+        mockMvc.perform(get("/occurrence/me").with(parkUser))
                 .andExpect(status().isOk());
+        mockMvc.perform(get("/occurrence").with(parkUser))
+                .andExpect(status().isForbidden());
         mockMvc.perform(get("/notification").with(parkUser))
                 .andExpect(status().isOk());
         mockMvc.perform(get("/vehicle").with(parkUser))
@@ -104,6 +106,8 @@ class SecurityConfigTest {
         mockMvc.perform(get("/notification").with(rh))
                 .andExpect(status().isOk());
         mockMvc.perform(get("/occurrence").with(rh))
+                .andExpect(status().isOk());
+        mockMvc.perform(get("/occurrence/me").with(rh))
                 .andExpect(status().isForbidden());
         mockMvc.perform(get("/vehicle").with(rh))
                 .andExpect(status().isForbidden());
@@ -170,6 +174,7 @@ class SecurityConfigTest {
                 "/vehicle",
                 "/vehicle/me",
                 "/occurrence",
+                "/occurrence/me",
                 "/notification",
                 "/park/profile",
                 "/rh",

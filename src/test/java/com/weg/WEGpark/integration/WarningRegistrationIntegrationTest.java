@@ -27,8 +27,10 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -46,7 +48,7 @@ class WarningRegistrationIntegrationTest extends AbstractPostgresIntegrationTest
     @Test
     void registersWarningForVehicleThroughAuthenticatedHttpFlow() throws Exception {
         Guard guard = saveGuard();
-        saveVehicleAndOwner();
+        Collaborator owner = saveVehicleAndOwner();
         User guardUser = userRepository.findById(guard.getId()).orElseThrow();
         String jwt = tokenConfig.generateToken(guardUser, guard.getName());
 
@@ -66,6 +68,24 @@ class WarningRegistrationIntegrationTest extends AbstractPostgresIntegrationTest
         Occurrence occurrence = occurrenceRepository.findAll().getFirst();
         assertEquals(guard.getId(), occurrence.getGuard().getId());
         assertEquals("Gate A", occurrence.getLocation());
+
+        User ownerUser = userRepository.findById(owner.getId()).orElseThrow();
+        String ownerJwt = tokenConfig.generateToken(ownerUser, owner.getName());
+        mockMvc.perform(get("/occurrence/me")
+                        .header("Authorization", "Bearer " + ownerJwt))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalElements").value(1))
+                .andExpect(jsonPath("$.content[0].uuid").value(occurrence.getUuid().toString()));
+
+        Collaborator outsider = saveParkUser(
+                "outsider-integration@weg.net", "11999999996", "Integration Outsider", "C-02"
+        );
+        User outsiderUser = userRepository.findById(outsider.getId()).orElseThrow();
+        String outsiderJwt = tokenConfig.generateToken(outsiderUser, outsider.getName());
+        mockMvc.perform(get("/occurrence/me")
+                        .header("Authorization", "Bearer " + outsiderJwt))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalElements").value(0));
     }
 
     private Guard saveGuard() {
@@ -80,7 +100,7 @@ class WarningRegistrationIntegrationTest extends AbstractPostgresIntegrationTest
         return parkUserRepository.saveAndFlush(guard);
     }
 
-    private void saveVehicleAndOwner() {
+    private Collaborator saveVehicleAndOwner() {
         Role parkRole = roleRepository.findByRole(RolesType.ROLE_PARK).orElseThrow();
         User ownerUser = new User("owner-integration@weg.net", "encoded");
         ownerUser.setRole(parkRole);
@@ -94,5 +114,20 @@ class WarningRegistrationIntegrationTest extends AbstractPostgresIntegrationTest
         VehicleUser association = new VehicleUser(owner, vehicle);
         association.setVehicleOwner(true);
         vehicleUserRepository.saveAndFlush(association);
+        return owner;
+    }
+
+    private Collaborator saveParkUser(String email, String phone, String name, String badgeNumber) {
+        Role parkRole = roleRepository.findByRole(RolesType.ROLE_PARK).orElseThrow();
+        User user = new User(email, "encoded");
+        user.setRole(parkRole);
+        user.setActive(true);
+        user.setEmailValidated(true);
+        user = userRepository.saveAndFlush(user);
+        Collaborator collaborator = new Collaborator(
+                user.getId(), user.getUuid(), user.getEmail(), phone, name, badgeNumber, "A"
+        );
+
+        return parkUserRepository.saveAndFlush(collaborator);
     }
 }

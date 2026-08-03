@@ -72,23 +72,14 @@ public class OccurrenceService {
 
             Page<Occurrence> occurrencePage = occurrenceRepository.findAll(spec, pageable);
 
-            Page<Record> occurrenceResponsePage  = occurrencePage.map(occurrence -> {
-                switch (occurrence) {
-                    case Warning warning -> {
-                        return warningMapper.toGetResponse(warning);
-                    }
-                    case IllegalParking illegalParking -> {
-                        return illegalParkingMapper.toGetResponse(illegalParking);
-                    }
-                    case TrafficAccident trafficAccident -> {
-                        return trafficAccidentMapper.toGetResponse(trafficAccident);
-                    }
-                    default -> throw new IllegalStateException("Unexpected value: " + occurrence);
-                }
-            });
-            return occurrenceResponsePage;
+            return occurrencePage.map(this::toResponse);
         }
         throw new MoreThenOneFilterException("You can't use more than one filter");
+    }
+
+    public Page<Record> findMyOccurrences(JWTUserData jwtUserData, Pageable pageable) {
+        return occurrenceRepository.findAllByParkUserUuid(jwtUserData.uuid(), pageable)
+                .map(this::toResponse);
     }
 
     public RegisterDefaultInfo findRegisterBasics (String plate, JWTUserData jwtUserData) {
@@ -144,5 +135,14 @@ public class OccurrenceService {
             return true;
         }
         return false;
+    }
+
+    private Record toResponse(Occurrence occurrence) {
+        return switch (occurrence) {
+            case Warning warning -> warningMapper.toGetResponse(warning);
+            case IllegalParking illegalParking -> illegalParkingMapper.toGetResponse(illegalParking);
+            case TrafficAccident trafficAccident -> trafficAccidentMapper.toGetResponse(trafficAccident);
+            default -> throw new IllegalStateException("Unexpected value: " + occurrence);
+        };
     }
 }
