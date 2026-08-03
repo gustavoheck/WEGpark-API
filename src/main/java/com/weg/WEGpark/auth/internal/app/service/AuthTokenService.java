@@ -60,6 +60,8 @@ public class AuthTokenService {
                     AuthToken authToken = createAuthToken(numberToken.getTargetUser(), TokenType.PASSWORD_RESET);
                     return new NewTokenResponseDTO(authToken.getToken());
                 } else {
+                    numberToken.setTries(numberToken.getTries() + 1);
+                    numberTokenRepository.save(numberToken);
                     throw new InvalidTokenException("Request digits don't match with token digits");
                 }
             } else {
