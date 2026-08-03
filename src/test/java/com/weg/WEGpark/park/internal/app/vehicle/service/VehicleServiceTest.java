@@ -21,6 +21,7 @@ import com.weg.WEGpark.park.internal.infra.repository.VehicleRepository;
 import com.weg.WEGpark.park.internal.infra.repository.VehicleUserRepository;
 import com.weg.WEGpark.shared.exception.NotFoundException;
 import org.junit.jupiter.api.BeforeEach;
+import org.springframework.security.access.AccessDeniedException;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.PageImpl;
@@ -156,18 +157,67 @@ class VehicleServiceTest {
         when(vehicleUserRepository.findByUuidParkUser(user.getUuid())).thenReturn(List.of(association));
         when(vehicleRepository.findByUuid(vehicle.getUuid())).thenReturn(Optional.of(vehicle));
         when(vehicleMapper.toUpdateResponse(vehicle)).thenReturn(new UpdateVehicleResponseDTO(vehicle.getUuid(), "ABC1234", "Model", "Brand", "Blue"));
+        when(vehicleUserRepository.findByVehicleUuidAndParkUserUuid(vehicle.getUuid(), user.getUuid())).thenReturn(Optional.of(association));
 
         assertEquals(1, service.findVehicle(new FilterVehicleRequestDTO("ABC1234", null, null, null, null), pageable).getTotalElements());
         assertEquals(List.of(response), service.findMyVehicles(token));
-        assertEquals("ABC1234", service.updateVehicle(vehicle.getUuid(), new UpdateVehicleRequestDTO(null, null, null, null)).plate());
+        assertEquals("ABC1234", service.updateVehicle(vehicle.getUuid(), new UpdateVehicleRequestDTO(null, null, null, null), token).plate());
         verify(vehicleMapper).updateFromDto(any(UpdateVehicleRequestDTO.class), same(vehicle));
         verify(vehicleRepository).save(vehicle);
     }
 
     @Test
+    void rejectsParkUserNotAssociatedWithVehicle() {
+        UUID vehicleUuid = UUID.randomUUID();
+        when(vehicleUserRepository.findByVehicleUuidAndParkUserUuid(vehicleUuid, user.getUuid()))
+                .thenReturn(Optional.empty());
+
+        assertThrows(AccessDeniedException.class, () ->
+                service.updateVehicle(
+                        vehicleUuid,
+                        new UpdateVehicleRequestDTO(null, null, null, null),
+                        token
+                )
+        );
+        verify(vehicleRepository, never()).findByUuid(vehicleUuid);
+    }
+
+    @Test
+    void allowsGuardToUpdateVehicleWithoutAssociation() {
+        Vehicle vehicle = new Vehicle("ABC1234", "Model", "Brand", "Blue");
+        vehicle.setUuid(UUID.randomUUID());
+        JWTUserData guardToken = new JWTUserData(
+                UUID.randomUUID(),
+                "guard@weg.net",
+                List.of("ROLE_GUARD"),
+                "Guard"
+        );
+        UpdateVehicleResponseDTO response = new UpdateVehicleResponseDTO(
+                vehicle.getUuid(), "ABC1234", "Updated", "Brand", "Blue"
+        );
+        when(vehicleRepository.findByUuid(vehicle.getUuid())).thenReturn(Optional.of(vehicle));
+        when(vehicleMapper.toUpdateResponse(vehicle)).thenReturn(response);
+
+        assertSame(response, service.updateVehicle(
+                vehicle.getUuid(),
+                new UpdateVehicleRequestDTO(null, "Updated", null, null),
+                guardToken
+        ));
+        verify(vehicleUserRepository, never()).findByVehicleUuidAndParkUserUuid(any(), any());
+    }
+
+    @Test
     void rejectsUnknownVehicleForUpdate() {
         UUID vehicleUuid = UUID.randomUUID();
+        JWTUserData guardToken = new JWTUserData(
+                UUID.randomUUID(),
+                "guard@weg.net",
+                List.of("ROLE_GUARD"),
+                "Guard"
+        );
         when(vehicleRepository.findByUuid(vehicleUuid)).thenReturn(Optional.empty());
-        assertThrows(NotFoundException.class, () -> service.updateVehicle(vehicleUuid, new UpdateVehicleRequestDTO(null, null, null, null)));
+        assertThrows(NotFoundException.class, () -> service.updateVehicle(
+                vehicleUuid, new UpdateVehicleRequestDTO(null, null, null, null), guardToken
+        ));
     }
 }

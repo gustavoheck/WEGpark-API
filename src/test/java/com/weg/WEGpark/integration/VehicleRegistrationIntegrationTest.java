@@ -7,6 +7,8 @@ import com.weg.WEGpark.auth.internal.infra.repository.UserRepository;
 import com.weg.WEGpark.auth.internal.infra.security.config.TokenConfig;
 import com.weg.WEGpark.auth.shared.enums.RolesType;
 import com.weg.WEGpark.park.internal.domain.model.users.Collaborator;
+import com.weg.WEGpark.park.internal.domain.model.users.Guard;
+import com.weg.WEGpark.park.internal.domain.model.vehicle.Vehicle;
 import com.weg.WEGpark.park.internal.infra.repository.ParkUserRepository;
 import com.weg.WEGpark.park.internal.infra.repository.VehicleRepository;
 import com.weg.WEGpark.park.internal.infra.repository.VehicleUserRepository;
@@ -18,7 +20,9 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -52,5 +56,51 @@ class VehicleRegistrationIntegrationTest extends AbstractPostgresIntegrationTest
 
         assertTrue(vehicleRepository.findByPlate("ABC1234").isPresent());
         assertTrue(vehicleUserRepository.findByParkUserId(collaborator.getId()).stream().anyMatch(vehicleUser -> vehicleUser.getVehicleOwner()));
+    }
+
+    @Test
+    void restrictsParkUpdateToAssociatedVehiclesAndAllowsGuardUpdate() throws Exception {
+        Vehicle vehicle = new Vehicle("SEC1234", "Original", "Honda", "Blue");
+        vehicleRepository.saveAndFlush(vehicle);
+
+        Role parkRole = roleRepository.findByRole(RolesType.ROLE_PARK).orElseThrow();
+        User parkUser = new User("vehicle-outsider@weg.net", "encoded");
+        parkUser.setRole(parkRole);
+        parkUser.setActive(true);
+        parkUser.setEmailValidated(true);
+        parkUser = userRepository.saveAndFlush(parkUser);
+        Collaborator collaborator = new Collaborator(parkUser.getId(), parkUser.getUuid(), parkUser.getEmail(),
+                "11999999997", "Vehicle Outsider", "654321", "B");
+        parkUserRepository.saveAndFlush(collaborator);
+        String parkJwt = tokenConfig.generateToken(parkUser, collaborator.getName());
+
+        mockMvc.perform(put("/vehicle/{uuid}", vehicle.getUuid())
+                        .header("Authorization", "Bearer " + parkJwt)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"model":"Park update"}
+                                """))
+                .andExpect(status().isForbidden());
+        assertEquals("Original", vehicleRepository.findByUuid(vehicle.getUuid()).orElseThrow().getModel());
+
+        Role guardRole = roleRepository.findByRole(RolesType.ROLE_GUARD).orElseThrow();
+        User guardUser = new User("vehicle-guard@weg.net", "encoded");
+        guardUser.setRole(guardRole);
+        guardUser.setActive(true);
+        guardUser.setEmailValidated(true);
+        guardUser = userRepository.saveAndFlush(guardUser);
+        Guard guard = new Guard(guardUser.getId(), guardUser.getUuid(), guardUser.getEmail(),
+                "11999999996", "Vehicle Guard", "G-02", "Gate B", "Security");
+        parkUserRepository.saveAndFlush(guard);
+        String guardJwt = tokenConfig.generateToken(guardUser, guard.getName());
+
+        mockMvc.perform(put("/vehicle/{uuid}", vehicle.getUuid())
+                        .header("Authorization", "Bearer " + guardJwt)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"model":"Guard update"}
+                                """))
+                .andExpect(status().isOk());
+        assertEquals("Guard update", vehicleRepository.findByUuid(vehicle.getUuid()).orElseThrow().getModel());
     }
 }

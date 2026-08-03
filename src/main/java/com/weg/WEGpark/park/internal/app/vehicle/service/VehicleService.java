@@ -1,6 +1,7 @@
 package com.weg.WEGpark.park.internal.app.vehicle.service;
 
 import com.weg.WEGpark.auth.internal.infra.security.config.JWTUserData;
+import com.weg.WEGpark.auth.shared.enums.RolesType;
 import com.weg.WEGpark.notification.FindAssociationNotificationResponse;
 import com.weg.WEGpark.park.FindAssociationNotificationEvent;
 import com.weg.WEGpark.park.internal.app.user.mapper.ParkUserMapper;
@@ -28,6 +29,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -193,8 +195,14 @@ public class VehicleService {
     }
 
     @Transactional
-    public UpdateVehicleResponseDTO updateVehicle(UUID uuid, UpdateVehicleRequestDTO request) {
+    public UpdateVehicleResponseDTO updateVehicle(UUID uuid, UpdateVehicleRequestDTO request, JWTUserData jwtUserData) {
 
+        if (!jwtUserData.roles().contains(RolesType.ROLE_GUARD.name())
+                && vehicleUserRepository.findByVehicleUuidAndParkUserUuid(uuid, jwtUserData.uuid()).isEmpty()) {
+            throw new AccessDeniedException(
+                    "Only guards or users associated with the vehicle can update it"
+            );
+        }
         Vehicle vehicle = vehicleRepository.findByUuid(uuid)
                 .orElseThrow(() -> new NotFoundException(("The vehicle was not found by %s uuid".formatted(uuid))));
 

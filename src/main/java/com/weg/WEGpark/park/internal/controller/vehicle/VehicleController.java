@@ -111,9 +111,10 @@ public class VehicleController {
             @Valid @RequestBody
             UpdateVehicleRequestDTO request,
             @PathVariable
-            UUID uuid
+            UUID uuid,
+            @AuthenticationPrincipal JWTUserData jwtUserData
     ) {
-        UpdateVehicleResponseDTO response = vehicleService.updateVehicle(uuid, request);
+        UpdateVehicleResponseDTO response = vehicleService.updateVehicle(uuid, request, jwtUserData);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(response);
