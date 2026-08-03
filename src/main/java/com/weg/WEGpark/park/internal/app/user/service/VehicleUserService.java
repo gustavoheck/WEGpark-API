@@ -17,6 +17,7 @@ public class VehicleUserService {
 
     private final VehicleUserRepository vehicleUserRepository;
 
+    @Transactional
     public void disassociateVehicle (UUID vehicleUuid, JWTUserData jwtUserData) {
         VehicleUser vehicleUser = vehicleUserRepository.findByVehicleUuidAndParkUserUuid(vehicleUuid, jwtUserData.uuid())
                 .orElseThrow(() -> new NotFoundException("Any vehicle user was found by this uuid"));
