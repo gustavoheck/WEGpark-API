@@ -1,6 +1,6 @@
 package com.weg.WEGpark.auth.internal.infra.security.config;
 
-import io.swagger.v3.oas.models.PathItem;
+import com.weg.WEGpark.auth.shared.enums.RolesType;
 import jakarta.servlet.DispatcherType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -34,20 +34,73 @@ public class SecurityConfig {
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(authenticationEntryPoint))
                 .authorizeHttpRequests(authorize -> authorize
                         .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
-                        .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/auth/register/collaborator").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/auth/register/visitor").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/auth").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/auth/validate-email/*").permitAll()
-                        .requestMatchers(HttpMethod.PATCH, "/auth/reset-password").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/auth/reset-password/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/auth/admin").permitAll()
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers(
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
                                 "/swagger-ui.html"
+                        ).hasAuthority(RolesType.ROLE_ADMIN.name())
+                        .requestMatchers(HttpMethod.POST,
+                                "/auth",
+                                "/auth/login",
+                                "/auth/register/collaborator",
+                                "/auth/register/visitor",
+                                "/auth/reset-password/**"
                         ).permitAll()
-                        .anyRequest().authenticated()
+                        .requestMatchers(HttpMethod.GET, "/auth/validate-email/*").permitAll()
+                        .requestMatchers(HttpMethod.PATCH, "/auth/reset-password").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/auth/admin")
+                                .hasAuthority(RolesType.ROLE_ADMIN.name())
+                        .requestMatchers("/rh/**")
+                                .hasAnyAuthority(RolesType.ROLE_RH.name(), RolesType.ROLE_ADMIN.name())
+                        .requestMatchers(HttpMethod.GET, "/notification")
+                                .hasAnyAuthority(
+                                        RolesType.ROLE_PARK.name(),
+                                        RolesType.ROLE_GUARD.name(),
+                                        RolesType.ROLE_RH.name(),
+                                        RolesType.ROLE_ADMIN.name()
+                                )
+                        .requestMatchers(HttpMethod.DELETE, "/notification/*")
+                                .hasAnyAuthority(
+                                        RolesType.ROLE_PARK.name(),
+                                        RolesType.ROLE_GUARD.name(),
+                                        RolesType.ROLE_RH.name(),
+                                        RolesType.ROLE_ADMIN.name()
+                                )
+                        .requestMatchers(HttpMethod.GET, "/park/profile")
+                                .hasAnyAuthority(RolesType.ROLE_PARK.name(), RolesType.ROLE_ADMIN.name())
+                        .requestMatchers(HttpMethod.PATCH,
+                                "/park/profile/collaborator",
+                                "/park/profile/visitor"
+                        ).hasAnyAuthority(RolesType.ROLE_PARK.name(), RolesType.ROLE_ADMIN.name())
+                        .requestMatchers(HttpMethod.POST, "/vehicle")
+                                .hasAnyAuthority(RolesType.ROLE_PARK.name(), RolesType.ROLE_ADMIN.name())
+                        .requestMatchers(HttpMethod.POST, "/vehicle/associate/**")
+                                .hasAnyAuthority(RolesType.ROLE_PARK.name(), RolesType.ROLE_ADMIN.name())
+                        .requestMatchers(HttpMethod.GET, "/vehicle/me")
+                                .hasAnyAuthority(RolesType.ROLE_PARK.name(), RolesType.ROLE_ADMIN.name())
+                        .requestMatchers(HttpMethod.GET, "/vehicle")
+                                .hasAnyAuthority(RolesType.ROLE_GUARD.name(), RolesType.ROLE_ADMIN.name())
+                        .requestMatchers(HttpMethod.PUT, "/vehicle/*")
+                                .hasAnyAuthority(
+                                        RolesType.ROLE_PARK.name(),
+                                        RolesType.ROLE_GUARD.name(),
+                                        RolesType.ROLE_ADMIN.name()
+                                )
+                        .requestMatchers(HttpMethod.GET, "/occurrence")
+                                .hasAnyAuthority(
+                                        RolesType.ROLE_PARK.name(),
+                                        RolesType.ROLE_GUARD.name(),
+                                        RolesType.ROLE_ADMIN.name()
+                                )
+                        .requestMatchers(HttpMethod.POST,
+                                "/occurrence/warning",
+                                "/occurrence/traffic-accident",
+                                "/occurrence/illegal-parking"
+                        ).hasAnyAuthority(RolesType.ROLE_GUARD.name(), RolesType.ROLE_ADMIN.name())
+                        .requestMatchers(HttpMethod.PUT, "/occurrence/**")
+                                .hasAnyAuthority(RolesType.ROLE_GUARD.name(), RolesType.ROLE_ADMIN.name())
+                        .anyRequest().hasAuthority(RolesType.ROLE_ADMIN.name())
                 )
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
