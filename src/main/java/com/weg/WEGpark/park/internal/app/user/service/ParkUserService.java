@@ -1,6 +1,7 @@
 package com.weg.WEGpark.park.internal.app.user.service;
 
 import com.weg.WEGpark.rh.GetParkUsersEvent;
+import com.weg.WEGpark.rh.FindParkUserEvent;
 import com.weg.WEGpark.park.GetParkUserIdEvent;
 import com.weg.WEGpark.park.GetParkUserNameEvent;
 import com.weg.WEGpark.auth.internal.infra.security.config.JWTUserData;
@@ -71,6 +72,21 @@ public class ParkUserService {
             case Visitor visitor -> visitorMapper.toResponse(visitor, active);
             default -> throw new NotFoundException("Can not found a user of this type");
         };
+    }
+
+    public void findParkUser(FindParkUserEvent event) {
+        ParkUser parkUser = parkUserRepository.findByUuid(event.userUuid())
+                .orElseThrow(() -> new NotFoundException("Any park user was found by %s uuid".formatted(event.userUuid())));
+        Boolean active = getUserActive(parkUser.getUuid());
+
+        Record response = switch (parkUser) {
+            case Guard guard -> guardMapper.toGetResponse(guard, active);
+            case Collaborator collaborator -> collaboratorMapper.toResponse(collaborator, active);
+            case Visitor visitor -> visitorMapper.toResponse(visitor, active);
+            default -> throw new NotFoundException("Can not found a user of this type");
+        };
+
+        event.eventResponse().complete(response);
     }
 
     public void getUserName(GetParkUserNameEvent event) {

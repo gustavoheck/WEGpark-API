@@ -4,12 +4,15 @@ import com.weg.WEGpark.auth.UpdateUserAuthEvent;
 import com.weg.WEGpark.auth.internal.infra.security.config.JWTUserData;
 import com.weg.WEGpark.auth.shared.dto.update.UpdateUserRequestDTO;
 import com.weg.WEGpark.auth.shared.dto.update.UpdateUserResponseDTO;
+import com.weg.WEGpark.auth.shared.enums.RolesType;
+import com.weg.WEGpark.rh.FindParkUserEvent;
 import com.weg.WEGpark.rh.GetParkUsersEvent;
 import com.weg.WEGpark.rh.internal.app.mapper.UserOperationMapper;
 import com.weg.WEGpark.rh.internal.domain.enums.OperationType;
 import com.weg.WEGpark.rh.internal.dto.rh.GetRhResponseDTO;
 import com.weg.WEGpark.rh.internal.infra.repository.RhRepository;
 import com.weg.WEGpark.rh.shared.filter.FindUserFilter;
+import com.weg.WEGpark.shared.exception.NotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -60,6 +63,29 @@ class UserOperationServiceTest {
     }
 
     @Test
+    void findsRhUserLocallyAndParkUserThroughEvent() {
+        UUID rhUuid = UUID.randomUUID();
+        GetRhResponseDTO rhResponse = mock(GetRhResponseDTO.class);
+        when(rhService.findUserByUuid(rhUuid)).thenReturn(rhResponse);
+
+        assertSame(rhResponse, service.findUser(rhUuid, RolesType.ROLE_RH));
+
+        UUID parkUuid = UUID.randomUUID();
+        Record parkResponse = new TestUserResponse(parkUuid);
+        doAnswer(invocation -> {
+            FindParkUserEvent event = invocation.getArgument(0);
+            assertEquals(parkUuid, event.userUuid());
+            event.eventResponse().complete(parkResponse);
+            return null;
+        }).when(publisher).publishEvent(any(FindParkUserEvent.class));
+
+        assertSame(parkResponse, service.findUser(parkUuid, RolesType.ROLE_PARK));
+        verify(publisher).publishEvent(any(FindParkUserEvent.class));
+        assertThrows(NotFoundException.class,
+                () -> service.findUser(UUID.randomUUID(), RolesType.ROLE_ADMIN));
+    }
+
+    @Test
     void updatesAuthDataThroughEventAndAuditsOperation() {
         UUID target = UUID.randomUUID();
         UpdateUserRequestDTO request = new UpdateUserRequestDTO("u@weg.net", "ROLE_PARK", null, null, null);
@@ -79,5 +105,8 @@ class UserOperationServiceTest {
     void exposesDeactivationDeadlockBeforeEventPublication() {
         assertTimeoutPreemptively(Duration.ofMillis(250),
                 () -> service.desactivateAndActivateUser(UUID.randomUUID(), token));
+    }
+
+    private record TestUserResponse(UUID uuid) {
     }
 }
