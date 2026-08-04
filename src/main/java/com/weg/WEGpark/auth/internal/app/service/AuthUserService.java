@@ -57,7 +57,8 @@ public class AuthUserService {
         if (optUser.isPresent()) {
             User user = optUser.get();
             event.eventResponse().complete(user.getActive());
+        } else {
+            event.eventResponse().completeExceptionally(new NotFoundException("Any user was found by %s uuid".formatted(event.targetUserUuid())));
         }
-        event.eventResponse().completeExceptionally(new NotFoundException("Any user was found by %s uuid".formatted(event.targetUserUuid())));
     }
 }

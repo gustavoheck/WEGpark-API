@@ -66,7 +66,8 @@ public class VisitorService {
             visitorRepository.save(visitor);
 
             event.eventResponse().complete(visitorMapper.toUpdateResponseFromEvent(event));
+        } else {
+            event.eventResponse().completeExceptionally(new NotFoundException("Any collaborator was found by %s uuid".formatted(event.parkUserUuid())));
         }
-        event.eventResponse().completeExceptionally(new NotFoundException("Any collaborator was found by %s uuid".formatted(event.parkUserUuid())));
     }
 }

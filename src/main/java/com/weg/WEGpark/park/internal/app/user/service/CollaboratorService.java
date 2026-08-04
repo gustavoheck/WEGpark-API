@@ -77,7 +77,8 @@ public class CollaboratorService {
             collaboratorRepository.save(collaborator);
 
             event.eventResponse().complete(collaboratorMapper.toUpdateResponseFromEvent(event));
+        } else {
+            event.eventResponse().completeExceptionally(new NotFoundException("Any collaborator was found by %s uuid".formatted(event.parkUserUuid())));
         }
-        event.eventResponse().completeExceptionally(new NotFoundException("Any collaborator was found by %s uuid".formatted(event.parkUserUuid())));
     }
 }
