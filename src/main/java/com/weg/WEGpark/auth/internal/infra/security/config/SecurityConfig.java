@@ -45,6 +45,7 @@ public class SecurityConfig {
                                 "/auth/login",
                                 "/auth/register/collaborator",
                                 "/auth/register/visitor",
+                                "/auth/validate-email/resend",
                                 "/auth/reset-password/**"
                         ).permitAll()
                         .requestMatchers(HttpMethod.GET, "/auth/validate-email/*").permitAll()

@@ -55,6 +55,8 @@ class SecurityConfigTest {
                 .andExpect(status().isOk());
         mockMvc.perform(post("/auth/reset-password/check-email"))
                 .andExpect(status().isOk());
+        mockMvc.perform(post("/auth/validate-email/resend"))
+                .andExpect(status().isOk());
         mockMvc.perform(patch("/auth/reset-password"))
                 .andExpect(status().isOk());
         mockMvc.perform(get("/auth/validate-email/token"))
@@ -162,6 +164,7 @@ class SecurityConfigTest {
                 "/auth/login",
                 "/auth/register/visitor",
                 "/auth/reset-password/check-email",
+                "/auth/validate-email/resend",
                 "/auth/admin",
                 "/vehicle",
                 "/occurrence/warning"

@@ -3,6 +3,7 @@ package com.weg.WEGpark.auth.internal.app.service;
 import com.weg.WEGpark.auth.SendAccountValidationEmailEvent;
 import com.weg.WEGpark.auth.SendEmailCheckEvent;
 import com.weg.WEGpark.auth.internal.app.exception.InvalidEmailValidationException;
+import com.weg.WEGpark.auth.internal.dto.defaults.EmailRequestDTO;
 import com.weg.WEGpark.auth.internal.dto.defaults.EmailRoleRequestDTO;
 import com.weg.WEGpark.auth.shared.enums.TokenType;
 import com.weg.WEGpark.auth.internal.domain.model.AuthToken;
@@ -19,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.weg.WEGpark.auth.internal.infra.security.exception.InvalidTokenException;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Transactional
@@ -34,6 +36,25 @@ public class AuthNotificationService {
     public void sendAccountEmailValidation (User user) {
         AuthToken authToken = authTokenService.createAuthToken(user, TokenType.EMAIL_VALIDATION);
         applicationEventPublisher.publishEvent(new SendAccountValidationEmailEvent(authToken.getToken(), user.getEmail(), TokenType.EMAIL_VALIDATION));
+    }
+
+    @Transactional
+    public void resendAccountEmailValidation (EmailRequestDTO request) {
+        List<User> users = userRepository.findByEmail(request.email());
+
+        if (users.isEmpty()) {
+            throw new NotFoundException("Any user was found by %s email".formatted(request.email()));
+        }
+
+        List<User> usersWithPendingEmailValidation = users.stream()
+                .filter(user -> !user.getEmailValidated())
+                .toList();
+
+        if (usersWithPendingEmailValidation.isEmpty()) {
+            throw new InvalidEmailValidationException("Your account email is already validated");
+        }
+
+        usersWithPendingEmailValidation.forEach(this::sendAccountEmailValidation);
     }
 
     @Transactional
