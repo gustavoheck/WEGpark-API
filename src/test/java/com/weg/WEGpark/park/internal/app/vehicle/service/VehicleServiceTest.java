@@ -9,8 +9,12 @@ import com.weg.WEGpark.park.internal.app.user.mapper.VehicleUserMapper;
 import com.weg.WEGpark.park.internal.app.vehicle.exception.VehicleAlreadyRegisteredException;
 import com.weg.WEGpark.park.internal.app.vehicle.mapper.VehicleEventMapper;
 import com.weg.WEGpark.park.internal.app.vehicle.mapper.VehicleMapper;
+import com.weg.WEGpark.park.internal.domain.enums.user.ParkUserType;
+import com.weg.WEGpark.park.internal.domain.model.users.Collaborator;
+import com.weg.WEGpark.park.internal.domain.model.users.Guard;
 import com.weg.WEGpark.park.internal.domain.model.users.ParkUser;
 import com.weg.WEGpark.park.internal.domain.model.users.VehicleUser;
+import com.weg.WEGpark.park.internal.domain.model.users.Visitor;
 import com.weg.WEGpark.park.internal.domain.model.vehicle.Vehicle;
 import com.weg.WEGpark.park.internal.dto.vehicle.association.AssociateWithVehicleResponseDTO;
 import com.weg.WEGpark.park.internal.dto.vehicle.association.AssociationNotificationRequestDTO;
@@ -79,6 +83,54 @@ class VehicleServiceTest {
         assertEquals("ABC1234", vehicle.getPlate());
         verify(vehicleRepository).saveAndFlush(vehicle);
         verify(vehicleUserRepository).saveAndFlush(any(VehicleUser.class));
+    }
+
+    @Test
+    void mapsVehicleUsersWithSubtypeDataAndAssociationStatus() {
+        VehicleUserMapper mapper = new VehicleUserMapper() { };
+        Vehicle vehicle = new Vehicle("ABC1234", "Model", "Brand", "Blue");
+
+        Collaborator collaborator = new Collaborator(
+                1L, UUID.randomUUID(), "collaborator@weg.net", "1111", "Collaborator", "B1", "Factory");
+        collaborator.setUserType(ParkUserType.COLLABORATOR);
+        VehicleUser collaboratorAssociation = new VehicleUser(collaborator, vehicle);
+        collaboratorAssociation.setVehicleOwner(true);
+
+        Visitor visitor = new Visitor(
+                2L, UUID.randomUUID(), "visitor@weg.net", "2222", "Visitor", "Company", "12345678900");
+        visitor.setUserType(ParkUserType.VISITOR);
+        VehicleUser visitorAssociation = new VehicleUser(visitor, vehicle);
+        visitorAssociation.setVehicleOwner(false);
+        visitorAssociation.setActive(false);
+
+        Guard guard = new Guard(
+                3L, UUID.randomUUID(), "guard@weg.net", "3333", "Guard", "B2", "Gate", "Boss");
+        guard.setUserType(ParkUserType.GUARD);
+        VehicleUser guardAssociation = new VehicleUser(guard, vehicle);
+        guardAssociation.setVehicleOwner(false);
+
+        GetVehicleUserResponseDTO collaboratorResponse = mapper.toResponse(collaboratorAssociation);
+        GetVehicleUserResponseDTO visitorResponse = mapper.toResponse(visitorAssociation);
+        GetVehicleUserResponseDTO guardResponse = mapper.toResponse(guardAssociation);
+
+        assertAll(
+                () -> assertEquals(collaborator.getUuid(), collaboratorResponse.userUuid()),
+                () -> assertTrue(collaboratorResponse.isOwner()),
+                () -> assertTrue(collaboratorResponse.associationActive()),
+                () -> assertEquals("1111", collaboratorResponse.telephone()),
+                () -> assertEquals("Collaborator", collaboratorResponse.name()),
+                () -> assertEquals(ParkUserType.COLLABORATOR, collaboratorResponse.userType()),
+                () -> assertEquals("B1", collaboratorResponse.badgeNumber()),
+                () -> assertEquals("Factory", collaboratorResponse.location()),
+                () -> assertNull(collaboratorResponse.boss()),
+                () -> assertNull(collaboratorResponse.company()),
+                () -> assertFalse(visitorResponse.associationActive()),
+                () -> assertEquals("Company", visitorResponse.company()),
+                () -> assertNull(visitorResponse.badgeNumber()),
+                () -> assertEquals("Boss", guardResponse.boss()),
+                () -> assertEquals("B2", guardResponse.badgeNumber()),
+                () -> assertEquals("Gate", guardResponse.location())
+        );
     }
 
     @Test
