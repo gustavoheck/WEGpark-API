@@ -57,10 +57,12 @@ public class VehicleService {
 
     @Transactional
     public GetVehicleResponseDTO registerVehicle(CreateVehicleRequestDTO request, JWTUserData userData) {
+        String normalizedPlate = normalizePlate(request.plate());
+
         Optional<VehicleUser> alreadyAssociatedVehicleUser =
-                vehicleUserRepository.findByVehiclePlateAndParkUserUuid(request.plate(), userData.uuid());
+                vehicleUserRepository.findByVehiclePlateAndParkUserUuid(normalizedPlate, userData.uuid());
         Boolean alreadyExistentOwner =
-                vehicleUserRepository.existsByVehiclePlateAndVehicleOwnerAndActive(request.plate(), true, true);
+                vehicleUserRepository.existsByVehiclePlateAndVehicleOwnerAndActive(normalizedPlate, true, true);
         if (alreadyAssociatedVehicleUser.isPresent() && alreadyExistentOwner == false) {
             VehicleUser loggedVehicleUser = alreadyAssociatedVehicleUser.get();
             loggedVehicleUser.setActive(true);
@@ -71,15 +73,13 @@ public class VehicleService {
             loggedUserResponseList.add(vehicleUserMapper.toResponse(loggedVehicleUser));
 
             return vehicleMapper.toGetResponse(loggedVehicleUser.getVehicle(), loggedUserResponseList);
-        } else if (vehicleRepository.existsByPlate(request.plate()) == false) {
+        } else if (vehicleRepository.existsByPlate(normalizedPlate) == false) {
             ParkUser loggedUser = parkUserRepository.findByUuid(userData.uuid())
                     .orElseThrow(() -> new NotFoundException("Any park user was found by the logged uuid"));
 
             Vehicle vehicle = vehicleMapper.toEntity(request);
 
-            String plate = vehicle.getPlate();
-            plate = plate.toUpperCase().replace("-", "").trim();
-            vehicle.setPlate(plate);
+            vehicle.setPlate(normalizedPlate);
 
             vehicleRepository.saveAndFlush(vehicle);
 
@@ -134,10 +134,12 @@ public class VehicleService {
 
     @Transactional
     public void SendNotificationForAssociate(AssociationNotificationRequestDTO request, JWTUserData userData) {
+        String normalizedPlate = normalizePlate(request.plate());
+
         ParkUser loggedUser = parkUserRepository.findByUuid(userData.uuid())
                 .orElseThrow(() -> new NotFoundException("Any park user was found by the logged email"));
-        Vehicle vehicle = vehicleRepository.findByPlate(request.plate())
-                .orElseThrow(() -> new NotFoundException("Any vehicle was found by %s plate".formatted(request.plate())));
+        Vehicle vehicle = vehicleRepository.findByPlate(normalizedPlate)
+                .orElseThrow(() -> new NotFoundException("Any vehicle was found by %s plate".formatted(normalizedPlate)));
         ParkUser vehicleOwner = vehicle
                 .getParkUsers()
                 .stream()
@@ -150,11 +152,7 @@ public class VehicleService {
 
     public Page<GetVehicleResponseDTO> findVehicle(FilterVehicleRequestDTO filter, Pageable pageable) {
         if (FilterUtil.checkMoreThanOneFilter(filter)) {
-            String plate = null;
-
-            if (filter.plate() != null && !filter.plate().isBlank()) {
-                plate = filter.plate().toUpperCase().replace("-", "").trim();
-            }
+            String plate = normalizePlate(filter.plate());
 
             Specification<Vehicle> spec = Specification
                     .where(VehicleSpecification.hasPlate(plate))
@@ -210,8 +208,20 @@ public class VehicleService {
 
         vehicleMapper.updateFromDto(request, vehicle);
 
+        if (request.plate() != null) {
+            vehicle.setPlate(normalizePlate(request.plate()));
+        }
+
         vehicleRepository.save(vehicle);
 
         return vehicleMapper.toUpdateResponse(vehicle);
+    }
+
+    private String normalizePlate(String plate) {
+        if (plate == null) {
+            return null;
+        }
+
+        return plate.toUpperCase().replace("-", "").trim();
     }
 }

@@ -68,9 +68,9 @@ class VehicleServiceTest {
         CreateVehicleRequestDTO request = new CreateVehicleRequestDTO("abc-1234", "Model", "Brand", "Blue");
         Vehicle vehicle = new Vehicle(request.plate(), request.model(), request.brand(), request.color());
         GetVehicleResponseDTO response = new GetVehicleResponseDTO(UUID.randomUUID(), "ABC1234", "Model", "Brand", "Blue", List.of());
-        when(vehicleUserRepository.findByVehiclePlateAndParkUserUuid(request.plate(), user.getUuid())).thenReturn(Optional.empty());
-        when(vehicleUserRepository.existsByVehiclePlateAndVehicleOwnerAndActive(request.plate(), true, true)).thenReturn(false);
-        when(vehicleRepository.existsByPlate(request.plate())).thenReturn(false);
+        when(vehicleUserRepository.findByVehiclePlateAndParkUserUuid("ABC1234", user.getUuid())).thenReturn(Optional.empty());
+        when(vehicleUserRepository.existsByVehiclePlateAndVehicleOwnerAndActive("ABC1234", true, true)).thenReturn(false);
+        when(vehicleRepository.existsByPlate("ABC1234")).thenReturn(false);
         when(parkUserRepository.findByUuid(user.getUuid())).thenReturn(Optional.of(user));
         when(vehicleMapper.toEntity(request)).thenReturn(vehicle);
         when(vehicleMapper.toGetResponse(eq(vehicle), anyList())).thenReturn(response);
@@ -83,12 +83,12 @@ class VehicleServiceTest {
 
     @Test
     void reactivatesExistingInactiveAssociationBeforeCreatingVehicle() {
-        CreateVehicleRequestDTO request = new CreateVehicleRequestDTO("ABC1234", "Model", "Brand", "Blue");
+        CreateVehicleRequestDTO request = new CreateVehicleRequestDTO(" abc-1234 ", "Model", "Brand", "Blue");
         VehicleUser association = new VehicleUser(user, new Vehicle("ABC1234", "M", "B", "C"));
         association.setActive(false);
         association.setVehicleOwner(false);
-        when(vehicleUserRepository.findByVehiclePlateAndParkUserUuid(request.plate(), user.getUuid())).thenReturn(Optional.of(association));
-        when(vehicleUserRepository.existsByVehiclePlateAndVehicleOwnerAndActive(request.plate(), true, true)).thenReturn(false);
+        when(vehicleUserRepository.findByVehiclePlateAndParkUserUuid("ABC1234", user.getUuid())).thenReturn(Optional.of(association));
+        when(vehicleUserRepository.existsByVehiclePlateAndVehicleOwnerAndActive("ABC1234", true, true)).thenReturn(false);
 
         assertDoesNotThrow(() -> service.registerVehicle(request, token));
         assertAll(() -> assertTrue(association.getActive()), () -> assertTrue(association.getVehicleOwner()));
@@ -98,10 +98,10 @@ class VehicleServiceTest {
 
     @Test
     void rejectsAlreadyOwnedVehicle() {
-        CreateVehicleRequestDTO request = new CreateVehicleRequestDTO("ABC1234", "Model", "Brand", "Blue");
+        CreateVehicleRequestDTO request = new CreateVehicleRequestDTO("abc1234", "Model", "Brand", "Blue");
         when(vehicleUserRepository.findByVehiclePlateAndParkUserUuid(anyString(), any())).thenReturn(Optional.empty());
-        when(vehicleUserRepository.existsByVehiclePlateAndVehicleOwnerAndActive(request.plate(), true, true)).thenReturn(true);
-        when(vehicleRepository.existsByPlate(request.plate())).thenReturn(true);
+        when(vehicleUserRepository.existsByVehiclePlateAndVehicleOwnerAndActive("ABC1234", true, true)).thenReturn(true);
+        when(vehicleRepository.existsByPlate("ABC1234")).thenReturn(true);
 
         assertThrows(VehicleAlreadyRegisteredException.class, () -> service.registerVehicle(request, token));
     }
@@ -138,7 +138,7 @@ class VehicleServiceTest {
         when(vehicleRepository.findByPlate("ABC1234")).thenReturn(Optional.of(vehicle));
         when(eventMapper.toEvent(user, vehicle, owner)).thenReturn(event);
 
-        service.SendNotificationForAssociate(new AssociationNotificationRequestDTO("ABC1234"), token);
+        service.SendNotificationForAssociate(new AssociationNotificationRequestDTO(" abc-1234 "), token);
 
         verify(eventMapper).toEvent(user, vehicle, owner);
         verify(publisher).publishEvent(event);
@@ -201,10 +201,11 @@ class VehicleServiceTest {
 
         assertSame(response, service.updateVehicle(
                 vehicle.getUuid(),
-                new UpdateVehicleRequestDTO(null, "Updated", null, null),
+                new UpdateVehicleRequestDTO(" abc-1234 ", "Updated", null, null),
                 guardToken
         ));
         verify(vehicleUserRepository, never()).findByVehicleUuidAndParkUserUuid(any(), any());
+        assertEquals("ABC1234", vehicle.getPlate());
     }
 
     @Test
