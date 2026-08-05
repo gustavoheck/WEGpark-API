@@ -5,22 +5,26 @@ import com.weg.WEGpark.auth.internal.infra.security.config.JWTUserData;
 import com.weg.WEGpark.auth.shared.dto.update.UpdateUserRequestDTO;
 import com.weg.WEGpark.auth.shared.dto.update.UpdateUserResponseDTO;
 import com.weg.WEGpark.rh.GetParkUsersEvent;
+import com.weg.WEGpark.rh.UserSearchResult;
 import com.weg.WEGpark.rh.internal.app.mapper.UserOperationMapper;
 import com.weg.WEGpark.rh.internal.domain.enums.OperationType;
-import com.weg.WEGpark.rh.internal.dto.rh.GetRhResponseDTO;
 import com.weg.WEGpark.rh.internal.infra.repository.RhRepository;
 import com.weg.WEGpark.rh.shared.filter.FindUserFilter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 import java.time.Duration;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -45,18 +49,57 @@ class UserOperationServiceTest {
     }
 
     @Test
-    void combinesParkAndRhUserPages() {
-        var pageable = PageRequest.of(0, 10);
+    void combinesAndSortsSourcesBeforePagingWithoutRepeatingUsers() {
         FindUserFilter filter = new FindUserFilter(null, null, null, null);
-        GetRhResponseDTO rh = mock(GetRhResponseDTO.class);
+        List<UserSearchResult> parkUsers = List.of(
+                user(1L, "alpha"),
+                user(4L, "delta"),
+                user(6L, "foxtrot")
+        );
+        List<UserSearchResult> rhUsers = List.of(
+                user(2L, "beta"),
+                user(3L, "charlie"),
+                user(5L, "echo")
+        );
         doAnswer(invocation -> {
             GetParkUsersEvent event = invocation.getArgument(0);
-            event.eventResponse().complete(new PageImpl<>(List.of(), pageable, 0));
+            int toIndex = Math.min(event.pageable().getPageSize(), parkUsers.size());
+            event.eventResponse().complete(
+                    new PageImpl<>(parkUsers.subList(0, toIndex), event.pageable(), parkUsers.size())
+            );
             return null;
         }).when(publisher).publishEvent(any(GetParkUsersEvent.class));
-        when(rhService.listRhUsers(filter, pageable)).thenReturn(new PageImpl<>(List.of(rh), pageable, 1));
+        when(rhService.listRhUsers(eq(filter), any(Pageable.class))).thenAnswer(invocation -> {
+            Pageable sourcePageable = invocation.getArgument(1);
+            int toIndex = Math.min(sourcePageable.getPageSize(), rhUsers.size());
+            return new PageImpl<>(rhUsers.subList(0, toIndex), sourcePageable, rhUsers.size());
+        });
 
-        assertEquals(1, service.listUsers(filter, pageable).getTotalElements());
+        Sort sort = Sort.by("name");
+        Page<Record> firstPage = service.listUsers(filter, PageRequest.of(0, 2, sort));
+        Page<Record> secondPage = service.listUsers(filter, PageRequest.of(1, 2, sort));
+        Page<Record> thirdPage = service.listUsers(filter, PageRequest.of(2, 2, sort));
+
+        assertAll(
+                () -> assertEquals(
+                        List.of(parkUsers.get(0).response(), rhUsers.get(0).response()),
+                        firstPage.getContent()
+                ),
+                () -> assertEquals(
+                        List.of(rhUsers.get(1).response(), parkUsers.get(1).response()),
+                        secondPage.getContent()
+                ),
+                () -> assertEquals(
+                        List.of(rhUsers.get(2).response(), parkUsers.get(2).response()),
+                        thirdPage.getContent()
+                ),
+                () -> assertEquals(6, firstPage.getTotalElements()),
+                () -> assertEquals(2, firstPage.getSize()),
+                () -> assertEquals(6, Stream.of(firstPage, secondPage, thirdPage)
+                        .flatMap(page -> page.getContent().stream())
+                        .distinct()
+                        .count())
+        );
     }
 
     @Test
@@ -79,5 +122,22 @@ class UserOperationServiceTest {
     void exposesDeactivationDeadlockBeforeEventPublication() {
         assertTimeoutPreemptively(Duration.ofMillis(250),
                 () -> service.desactivateAndActivateUser(UUID.randomUUID(), token));
+    }
+
+    private UserSearchResult user(Long id, String name) {
+        return new UserSearchResult(
+                id,
+                UUID.randomUUID(),
+                name + "@weg.net",
+                "1",
+                name,
+                null,
+                null,
+                true,
+                new TestUser(name)
+        );
+    }
+
+    private record TestUser(String name) {
     }
 }
