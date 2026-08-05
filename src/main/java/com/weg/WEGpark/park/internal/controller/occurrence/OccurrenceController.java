@@ -1,6 +1,6 @@
 package com.weg.WEGpark.park.internal.controller.occurrence;
 
-import com.weg.WEGpark.auth.internal.infra.security.config.JWTUserData;
+import com.weg.WEGpark.auth.shared.dto.JWTUserData;
 import com.weg.WEGpark.park.internal.app.occurrence.service.OccurrenceService;
 import com.weg.WEGpark.park.internal.app.occurrence.service.WarningService;
 import com.weg.WEGpark.park.internal.dto.occurrence.filter.FilterOccurrenceRequestDTO;

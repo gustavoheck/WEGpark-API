@@ -2,6 +2,7 @@ package com.weg.WEGpark.auth.internal.infra.security.config;
 
 import com.weg.WEGpark.auth.internal.infra.repository.UserRepository;
 import com.weg.WEGpark.auth.internal.infra.security.exception.InvalidTokenException;
+import com.weg.WEGpark.auth.shared.dto.JWTUserData;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

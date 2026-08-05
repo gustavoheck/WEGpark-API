@@ -1,12 +1,13 @@
 package com.weg.WEGpark.rh.internal.app.service;
 
 import com.weg.WEGpark.auth.UpdateUserAuthEvent;
-import com.weg.WEGpark.auth.internal.infra.security.config.JWTUserData;
+import com.weg.WEGpark.auth.shared.dto.JWTUserData;
 import com.weg.WEGpark.auth.shared.dto.update.UpdateUserRequestDTO;
 import com.weg.WEGpark.auth.shared.dto.update.UpdateUserResponseDTO;
 import com.weg.WEGpark.auth.shared.enums.RolesType;
 import com.weg.WEGpark.rh.FindParkUserEvent;
 import com.weg.WEGpark.rh.GetParkUsersEvent;
+import com.weg.WEGpark.rh.UserSearchResult;
 import com.weg.WEGpark.rh.internal.app.mapper.UserOperationMapper;
 import com.weg.WEGpark.rh.internal.domain.enums.OperationType;
 import com.weg.WEGpark.rh.internal.dto.rh.GetRhResponseDTO;
@@ -19,6 +20,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 
 import java.time.Duration;
 import java.util.List;
@@ -50,16 +52,22 @@ class UserOperationServiceTest {
     @Test
     void combinesParkAndRhUserPages() {
         var pageable = PageRequest.of(0, 10);
+        var sourcePageable = PageRequest.of(0, 10, Sort.by("id"));
         FindUserFilter filter = new FindUserFilter(null, null, null, null);
         GetRhResponseDTO rh = mock(GetRhResponseDTO.class);
+        UserSearchResult rhResult = new UserSearchResult(
+                1L, UUID.randomUUID(), null, null, "RH", null, null, true, rh);
         doAnswer(invocation -> {
             GetParkUsersEvent event = invocation.getArgument(0);
-            event.eventResponse().complete(new PageImpl<>(List.of(), pageable, 0));
+            event.eventResponse().complete(new PageImpl<>(List.of(), sourcePageable, 0));
             return null;
         }).when(publisher).publishEvent(any(GetParkUsersEvent.class));
-        when(rhService.listRhUsers(filter, pageable)).thenReturn(new PageImpl<>(List.of(rh), pageable, 1));
+        when(rhService.listRhUsers(filter, sourcePageable))
+                .thenReturn(new PageImpl<>(List.of(rhResult), sourcePageable, 1));
 
-        assertEquals(1, service.listUsers(filter, pageable).getTotalElements());
+        var response = service.listUsers(filter, pageable);
+        assertEquals(1, response.getTotalElements());
+        assertSame(rh, response.getContent().getFirst());
     }
 
     @Test

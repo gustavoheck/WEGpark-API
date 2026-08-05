@@ -2,10 +2,10 @@ package com.weg.WEGpark.auth.internal.infra.security.config;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
-import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.weg.WEGpark.auth.internal.domain.model.User;
 import com.weg.WEGpark.auth.internal.infra.security.exception.InvalidTokenException;
+import com.weg.WEGpark.auth.shared.dto.JWTUserData;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.converter.RsaKeyConverters;

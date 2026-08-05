@@ -2,6 +2,7 @@ package com.weg.WEGpark.auth.internal.infra.security.config;
 
 import com.weg.WEGpark.auth.internal.domain.model.User;
 import com.weg.WEGpark.auth.internal.infra.repository.UserRepository;
+import com.weg.WEGpark.auth.shared.dto.JWTUserData;
 import jakarta.servlet.FilterChain;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;

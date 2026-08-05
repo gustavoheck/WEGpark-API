@@ -1,7 +1,7 @@
 package com.weg.WEGpark.park.internal.app.user.service;
 
 import com.weg.WEGpark.auth.CollaboratorRegisteredEvent;
-import com.weg.WEGpark.auth.internal.infra.security.config.JWTUserData;
+import com.weg.WEGpark.auth.shared.dto.JWTUserData;
 import com.weg.WEGpark.auth.shared.enums.RolesType;
 import com.weg.WEGpark.park.internal.app.user.mapper.CollaboratorMapper;
 import com.weg.WEGpark.park.internal.domain.enums.user.ParkUserType;
@@ -11,7 +11,6 @@ import com.weg.WEGpark.park.internal.infra.repository.ParkUserRepository;
 import com.weg.WEGpark.park.shared.dto.update.UpdateCollaboratorRequestDTO;
 import com.weg.WEGpark.park.shared.dto.update.UpdateCollaboratorResponseDTO;
 import com.weg.WEGpark.rh.UpdateCollaboratorEvent;
-import com.weg.WEGpark.shared.exception.NotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.access.AccessDeniedException;

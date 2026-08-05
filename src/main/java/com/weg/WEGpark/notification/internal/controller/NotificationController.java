@@ -1,6 +1,6 @@
 package com.weg.WEGpark.notification.internal.controller;
 
-import com.weg.WEGpark.auth.internal.infra.security.config.JWTUserData;
+import com.weg.WEGpark.auth.shared.dto.JWTUserData;
 import com.weg.WEGpark.notification.internal.app.notification.service.NotificationService;
 import com.weg.WEGpark.notification.internal.dto.GetNotificationResponseDTO;
 import lombok.RequiredArgsConstructor;
