@@ -13,7 +13,7 @@ import com.weg.WEGpark.park.internal.dto.occurrence.trafficaccident.CreateTraffi
 import com.weg.WEGpark.park.internal.dto.occurrence.trafficaccident.CreateTrafficAccidentResponseDTO;
 import com.weg.WEGpark.park.internal.dto.occurrence.trafficaccident.GetTrafficAccidentResponseDTO;
 import com.weg.WEGpark.park.internal.dto.occurrence.trafficaccident.UpdateTrafficAccidentRequestDTO;
-import com.weg.WEGpark.park.internal.infra.repository.OccurrenceRepository;
+import com.weg.WEGpark.park.internal.infra.repository.TrafficAccidentRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
@@ -29,7 +29,7 @@ import java.util.UUID;
 @Transactional(readOnly = true)
 public class TrafficAccidentService {
 
-    private final OccurrenceRepository occurrenceRepository;
+    private final TrafficAccidentRepository trafficAccidentRepository;
     private final OccurrenceService occurrenceService;
 
     private final ApplicationEventPublisher applicationEventPublisher;
@@ -52,7 +52,7 @@ public class TrafficAccidentService {
 
         info.vehicleUsers().forEach(vu -> occurrence.getVehicleUsers().add(vu));
 
-        TrafficAccident savedOccurrence = occurrenceRepository.saveAndFlush(occurrence);
+        TrafficAccident savedOccurrence = trafficAccidentRepository.saveAndFlush(occurrence);
 
         occurrenceService.fiveOccurrenceWarn(info.vehicleUsers());
 
@@ -73,12 +73,12 @@ public class TrafficAccidentService {
 
     @Transactional
     public GetTrafficAccidentResponseDTO updateTrafficAccident(UUID uuid, UpdateTrafficAccidentRequestDTO request) {
-        TrafficAccident occurrence = (TrafficAccident) occurrenceRepository.findByUuid(uuid)
+        TrafficAccident occurrence = trafficAccidentRepository.findByUuid(uuid)
                 .orElseThrow(() -> new NotFoundException("Any occurrence of the traffic accident type was found by %s ".formatted(uuid)));
 
         trafficAccidentMapper.updateFromDto(request, occurrence);
 
-        occurrenceRepository.save(occurrence);
+        trafficAccidentRepository.save(occurrence);
 
         return trafficAccidentMapper.toGetResponse(occurrence);
     }

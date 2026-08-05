@@ -16,7 +16,7 @@ import com.weg.WEGpark.park.internal.dto.occurrence.illegalparking.CreateIllegal
 import com.weg.WEGpark.park.internal.dto.occurrence.illegalparking.CreateIllegalParkingResponseDTO;
 import com.weg.WEGpark.park.internal.dto.occurrence.illegalparking.GetIllegalParkingResponseDTO;
 import com.weg.WEGpark.park.internal.dto.occurrence.illegalparking.UpdateIllegalParkingRequestDTO;
-import com.weg.WEGpark.park.internal.infra.repository.OccurrenceRepository;
+import com.weg.WEGpark.park.internal.infra.repository.IllegalParkingRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
@@ -36,7 +36,7 @@ public class IllegalParkingService {
     private final OccurrenceService occurrenceService;
 
     private final ApplicationEventPublisher applicationEventPublisher;
-    private final OccurrenceRepository occurrenceRepository;
+    private final IllegalParkingRepository illegalParkingRepository;
 
     @Transactional
     public CreateIllegalParkingResponseDTO registerIllegalParkingOccurrence (
@@ -52,7 +52,7 @@ public class IllegalParkingService {
 
         info.vehicleUsers().forEach(vu -> occurrence.getVehicleUsers().add(vu));
 
-        IllegalParking savedOccurrence = occurrenceRepository.saveAndFlush(occurrence);
+        IllegalParking savedOccurrence = illegalParkingRepository.saveAndFlush(occurrence);
 
         occurrenceService.fiveOccurrenceWarn(info.vehicleUsers());
 
@@ -73,12 +73,12 @@ public class IllegalParkingService {
 
     @Transactional
     public GetIllegalParkingResponseDTO updateIllegalParking(UUID uuid, UpdateIllegalParkingRequestDTO request) {
-        IllegalParking occurrence = (IllegalParking) occurrenceRepository.findByUuid(uuid)
+        IllegalParking occurrence = illegalParkingRepository.findByUuid(uuid)
                 .orElseThrow(() -> new NotFoundException("Any occurrence of the illegal parking type was found by %s ".formatted(uuid)));
 
         illegalParkingMapper.updateFromDto(request, occurrence);
 
-        occurrenceRepository.save(occurrence);
+        illegalParkingRepository.save(occurrence);
 
         return illegalParkingMapper.toGetResponse(occurrence);
     }

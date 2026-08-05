@@ -14,7 +14,7 @@ import com.weg.WEGpark.park.internal.domain.model.users.VehicleUser;
 import com.weg.WEGpark.park.internal.domain.model.vehicle.Vehicle;
 import com.weg.WEGpark.park.internal.dto.occurrence.defaults.DefaultOccurrenceResponseDTO;
 import com.weg.WEGpark.park.internal.dto.occurrence.warning.*;
-import com.weg.WEGpark.park.internal.infra.repository.OccurrenceRepository;
+import com.weg.WEGpark.park.internal.infra.repository.WarningRepository;
 import com.weg.WEGpark.shared.exception.NotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -29,7 +29,7 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 class WarningServiceTest {
-    private OccurrenceRepository repository;
+    private WarningRepository repository;
     private OccurrenceService occurrenceService;
     private WarningMapper mapper;
     private ApplicationEventPublisher publisher;
@@ -39,7 +39,7 @@ class WarningServiceTest {
 
     @BeforeEach
     void setUp() {
-        repository = mock(OccurrenceRepository.class);
+        repository = mock(WarningRepository.class);
         occurrenceService = mock(OccurrenceService.class);
         mapper = mock(WarningMapper.class);
         publisher = mock(ApplicationEventPublisher.class);
