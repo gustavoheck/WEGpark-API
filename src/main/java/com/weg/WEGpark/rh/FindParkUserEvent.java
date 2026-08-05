@@ -1,9 +1,11 @@
 package com.weg.WEGpark.rh;
 
-import com.weg.WEGpark.rh.shared.filter.FindUserFilter;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 public record FindParkUserEvent(
-        
-        FindUserFilter filter
+        CompletableFuture<Record> eventResponse,
+
+        UUID userUuid
 ) {
 }

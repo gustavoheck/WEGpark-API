@@ -82,8 +82,12 @@ public class RhService {
     public GetRhResponseDTO findMyProfile(JWTUserData jwtUserData) {
         validateRhRole(jwtUserData);
 
-        Rh rh = rhRepository.findByUuid(jwtUserData.uuid())
-                .orElseThrow(() -> new NotFoundException("Any rh account was found by %s uuid".formatted(jwtUserData.uuid())));
+        return findUserByUuid(jwtUserData.uuid());
+    }
+
+    public GetRhResponseDTO findUserByUuid(UUID userUuid) {
+        Rh rh = rhRepository.findByUuid(userUuid)
+                .orElseThrow(() -> new NotFoundException("Any rh account was found by %s uuid".formatted(userUuid)));
 
         return rhMapper.toGetResponse(rh);
     }

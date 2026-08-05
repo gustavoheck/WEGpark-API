@@ -81,6 +81,7 @@ class RhServiceTest {
         assertSame(updated, service.updateRh(update, rh.getUuid(), token));
         assertSame(updated, service.updateMyProfile(update, token));
         assertSame(profile, service.findMyProfile(token));
+        assertSame(profile, service.findUserByUuid(rh.getUuid()));
         CompletableFuture<String> name = new CompletableFuture<>();
         service.getUserName(new GetRhUserNameEvent(name, rh.getUuid()));
         assertEquals(rh.getName(), name.join());

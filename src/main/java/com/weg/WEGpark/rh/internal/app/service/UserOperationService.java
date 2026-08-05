@@ -3,13 +3,16 @@ package com.weg.WEGpark.rh.internal.app.service;
 import com.weg.WEGpark.auth.internal.infra.security.config.JWTUserData;
 import com.weg.WEGpark.auth.shared.dto.update.UpdateUserRequestDTO;
 import com.weg.WEGpark.auth.shared.dto.update.UpdateUserResponseDTO;
+import com.weg.WEGpark.auth.shared.enums.RolesType;
 import com.weg.WEGpark.rh.DesactivateAndActivateUserEvent;
+import com.weg.WEGpark.rh.FindParkUserEvent;
 import com.weg.WEGpark.rh.GetParkUsersEvent;
 import com.weg.WEGpark.rh.UserSearchResult;
 import com.weg.WEGpark.rh.internal.app.mapper.UserOperationMapper;
 import com.weg.WEGpark.rh.internal.domain.enums.OperationType;
 import com.weg.WEGpark.rh.internal.infra.repository.RhRepository;
 import com.weg.WEGpark.rh.shared.filter.FindUserFilter;
+import com.weg.WEGpark.shared.exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
@@ -144,6 +147,18 @@ public class UserOperationService {
         int toIndex = Math.min(fromIndex + pageable.getPageSize(), content.size());
 
         return new PageImpl<>(content.subList(fromIndex, toIndex), pageable, totalElements);
+    }
+
+    public Record findUser (UUID userUuid, RolesType role) {
+        return switch (role) {
+            case ROLE_RH -> rhService.findUserByUuid(userUuid);
+            case ROLE_PARK, ROLE_GUARD -> {
+                CompletableFuture<Record> eventResponse = new CompletableFuture<>();
+                applicationEventPublisher.publishEvent(new FindParkUserEvent(eventResponse, userUuid));
+                yield eventResponse.join();
+            }
+            case ROLE_ADMIN -> throw new NotFoundException("Admin users do not have an rh or park profile");
+        };
     }
 
     @Transactional

@@ -23,6 +23,15 @@ public class AuthVerifyController {
     private final AuthNotificationService authNotificationService;
     private final AuthTokenService authTokenService;
 
+    @PostMapping("/validate-email/resend")
+    public ResponseEntity<Void> resendAccountEmailValidation (
+            @Valid @RequestBody EmailRequestDTO request
+    ) {
+        authNotificationService.resendAccountEmailValidation(request);
+
+        return ResponseEntity.noContent().build();
+    }
+
     @GetMapping("/validate-email/{token}")
     public ResponseEntity<Void> activeAccountEmail (@PathVariable UUID token) {
         authNotificationService.validateAccount(token);

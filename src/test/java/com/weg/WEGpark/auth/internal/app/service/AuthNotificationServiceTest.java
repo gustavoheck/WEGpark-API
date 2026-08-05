@@ -7,6 +7,7 @@ import com.weg.WEGpark.auth.internal.domain.model.AuthToken;
 import com.weg.WEGpark.auth.internal.domain.model.NumberToken;
 import com.weg.WEGpark.auth.internal.domain.model.Role;
 import com.weg.WEGpark.auth.internal.domain.model.User;
+import com.weg.WEGpark.auth.internal.dto.defaults.EmailRequestDTO;
 import com.weg.WEGpark.auth.internal.dto.defaults.EmailRoleRequestDTO;
 import com.weg.WEGpark.auth.internal.dto.reset.NewTokenResponseDTO;
 import com.weg.WEGpark.auth.internal.infra.repository.UserRepository;
@@ -19,6 +20,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.context.ApplicationEventPublisher;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -53,6 +55,51 @@ class AuthNotificationServiceTest {
         service.sendAccountEmailValidation(user);
 
         verify(publisher).publishEvent(new SendAccountValidationEmailEvent(id, user.getEmail(), TokenType.EMAIL_VALIDATION));
+    }
+
+    @Test
+    void resendsEmailValidationForEveryPendingAccount() {
+        User guardUser = new User(user.getEmail(), "password");
+        guardUser.setRole(new Role(RolesType.ROLE_GUARD));
+        user.setEmailValidated(false);
+        guardUser.setEmailValidated(false);
+
+        AuthToken parkToken = new AuthToken(TokenType.EMAIL_VALIDATION, user, 15);
+        parkToken.setToken(UUID.randomUUID());
+        AuthToken guardToken = new AuthToken(TokenType.EMAIL_VALIDATION, guardUser, 15);
+        guardToken.setToken(UUID.randomUUID());
+
+        when(userRepository.findByEmail(user.getEmail())).thenReturn(List.of(user, guardUser));
+        when(tokenService.createAuthToken(user, TokenType.EMAIL_VALIDATION)).thenReturn(parkToken);
+        when(tokenService.createAuthToken(guardUser, TokenType.EMAIL_VALIDATION)).thenReturn(guardToken);
+
+        service.resendAccountEmailValidation(new EmailRequestDTO(user.getEmail()));
+
+        verify(publisher).publishEvent(new SendAccountValidationEmailEvent(
+                parkToken.getToken(), user.getEmail(), TokenType.EMAIL_VALIDATION));
+        verify(publisher).publishEvent(new SendAccountValidationEmailEvent(
+                guardToken.getToken(), guardUser.getEmail(), TokenType.EMAIL_VALIDATION));
+    }
+
+    @Test
+    void rejectsEmailValidationResendForUnknownUser() {
+        when(userRepository.findByEmail(user.getEmail())).thenReturn(List.of());
+
+        assertThrows(NotFoundException.class,
+                () -> service.resendAccountEmailValidation(new EmailRequestDTO(user.getEmail())));
+
+        verifyNoInteractions(tokenService, publisher);
+    }
+
+    @Test
+    void rejectsEmailValidationResendWhenEveryAccountIsAlreadyValidated() {
+        user.setEmailValidated(true);
+        when(userRepository.findByEmail(user.getEmail())).thenReturn(List.of(user));
+
+        assertThrows(InvalidEmailValidationException.class,
+                () -> service.resendAccountEmailValidation(new EmailRequestDTO(user.getEmail())));
+
+        verifyNoInteractions(tokenService, publisher);
     }
 
     @Test
