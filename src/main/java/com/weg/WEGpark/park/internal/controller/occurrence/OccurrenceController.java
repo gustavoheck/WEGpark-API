@@ -14,6 +14,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.UUID;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/occurrence")
@@ -29,6 +31,14 @@ public class OccurrenceController {
     ) {
 
         Page<Record> response = occurrenceService.findAllOccurrences(filter, pageable);
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(response);
+    }
+
+    @GetMapping("/{uuid}")
+    public ResponseEntity<Record> findOccurrenceByUuid(@PathVariable UUID uuid) {
+        Record response = occurrenceService.findOccurrenceByUuid(uuid);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(response);

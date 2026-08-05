@@ -38,6 +38,7 @@ class OccurrenceServiceTest {
     private VehicleRepository vehicleRepository;
     private GuardRepository guardRepository;
     private OccurrenceMapper occurrenceMapper;
+    private WarningMapper warningMapper;
     private GuardMapper guardMapper;
     private VehicleMapper vehicleMapper;
     private OccurrenceNotificationMapper notificationMapper;
@@ -50,11 +51,12 @@ class OccurrenceServiceTest {
         vehicleRepository = mock(VehicleRepository.class);
         guardRepository = mock(GuardRepository.class);
         occurrenceMapper = mock(OccurrenceMapper.class);
+        warningMapper = mock(WarningMapper.class);
         guardMapper = mock(GuardMapper.class);
         vehicleMapper = mock(VehicleMapper.class);
         notificationMapper = mock(OccurrenceNotificationMapper.class);
         publisher = mock(ApplicationEventPublisher.class);
-        service = new OccurrenceService(occurrenceRepository, vehicleRepository, guardRepository, mock(IllegalParkingMapper.class), mock(TrafficAccidentMapper.class), mock(VehicleUserMapper.class), occurrenceMapper, mock(WarningMapper.class), guardMapper, vehicleMapper, notificationMapper, publisher);
+        service = new OccurrenceService(occurrenceRepository, vehicleRepository, guardRepository, mock(IllegalParkingMapper.class), mock(TrafficAccidentMapper.class), mock(VehicleUserMapper.class), occurrenceMapper, warningMapper, guardMapper, vehicleMapper, notificationMapper, publisher);
     }
 
     @Test
@@ -88,6 +90,26 @@ class OccurrenceServiceTest {
         assertEquals(1, result.getTotalElements());
         assertSame(response, result.getContent().getFirst());
         verify(occurrenceRepository).findAllByParkUserUuid(userUuid, pageable);
+    }
+
+    @Test
+    void findsOccurrenceByUuidAndMapsItsConcreteType() {
+        UUID occurrenceUuid = UUID.randomUUID();
+        Warning warning = mock(Warning.class);
+        GetWarningResponseDTO response = new GetWarningResponseDTO(null, null, null, null);
+        when(occurrenceRepository.findByUuid(occurrenceUuid)).thenReturn(Optional.of(warning));
+        when(warningMapper.toGetResponse(warning)).thenReturn(response);
+
+        assertSame(response, service.findOccurrenceByUuid(occurrenceUuid));
+        verify(occurrenceRepository).findByUuid(occurrenceUuid);
+    }
+
+    @Test
+    void rejectsMissingOccurrenceUuid() {
+        UUID occurrenceUuid = UUID.randomUUID();
+        when(occurrenceRepository.findByUuid(occurrenceUuid)).thenReturn(Optional.empty());
+
+        assertThrows(NotFoundException.class, () -> service.findOccurrenceByUuid(occurrenceUuid));
     }
 
     @Test

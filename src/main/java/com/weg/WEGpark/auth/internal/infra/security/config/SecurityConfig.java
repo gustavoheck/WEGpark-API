@@ -94,6 +94,12 @@ public class SecurityConfig {
                                 )
                         .requestMatchers(HttpMethod.GET, "/occurrence/me")
                                 .hasAnyAuthority(RolesType.ROLE_PARK.name(), RolesType.ROLE_ADMIN.name())
+                        .requestMatchers(HttpMethod.GET, "/occurrence/*")
+                                .hasAnyAuthority(
+                                        RolesType.ROLE_RH.name(),
+                                        RolesType.ROLE_GUARD.name(),
+                                        RolesType.ROLE_ADMIN.name()
+                                )
                         .requestMatchers(HttpMethod.POST,
                                 "/occurrence/warning",
                                 "/occurrence/traffic-accident",

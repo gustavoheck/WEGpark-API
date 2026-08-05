@@ -36,6 +36,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -80,6 +81,15 @@ public class OccurrenceService {
     public Page<Record> findMyOccurrences(JWTUserData jwtUserData, Pageable pageable) {
         return occurrenceRepository.findAllByParkUserUuid(jwtUserData.uuid(), pageable)
                 .map(this::toResponse);
+    }
+
+    public Record findOccurrenceByUuid(UUID uuid) {
+        Occurrence occurrence = occurrenceRepository.findByUuid(uuid)
+                .orElseThrow(() -> new NotFoundException(
+                        "Any occurrence was found by %s uuid".formatted(uuid)
+                ));
+
+        return toResponse(occurrence);
     }
 
     public RegisterDefaultInfo findRegisterBasics (String plate, JWTUserData jwtUserData) {

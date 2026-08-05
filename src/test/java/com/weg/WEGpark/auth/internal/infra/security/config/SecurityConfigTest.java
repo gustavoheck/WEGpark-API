@@ -73,6 +73,8 @@ class SecurityConfigTest {
                 .andExpect(status().isOk());
         mockMvc.perform(get("/occurrence").with(parkUser))
                 .andExpect(status().isForbidden());
+        mockMvc.perform(get("/occurrence/00000000-0000-0000-0000-000000000001").with(parkUser))
+                .andExpect(status().isForbidden());
         mockMvc.perform(get("/notification").with(parkUser))
                 .andExpect(status().isOk());
         mockMvc.perform(get("/vehicle").with(parkUser))
@@ -90,6 +92,8 @@ class SecurityConfigTest {
         mockMvc.perform(get("/vehicle").with(guard))
                 .andExpect(status().isOk());
         mockMvc.perform(get("/occurrence").with(guard))
+                .andExpect(status().isOk());
+        mockMvc.perform(get("/occurrence/00000000-0000-0000-0000-000000000001").with(guard))
                 .andExpect(status().isOk());
         mockMvc.perform(post("/occurrence/warning").with(guard))
                 .andExpect(status().isOk());
@@ -111,6 +115,8 @@ class SecurityConfigTest {
                 .andExpect(status().isOk());
         mockMvc.perform(get("/occurrence").with(rh))
                 .andExpect(status().isOk());
+        mockMvc.perform(get("/occurrence/00000000-0000-0000-0000-000000000001").with(rh))
+                .andExpect(status().isOk());
         mockMvc.perform(get("/occurrence/me").with(rh))
                 .andExpect(status().isForbidden());
         mockMvc.perform(get("/vehicle").with(rh))
@@ -128,6 +134,8 @@ class SecurityConfigTest {
         mockMvc.perform(post("/vehicle").with(admin))
                 .andExpect(status().isOk());
         mockMvc.perform(post("/occurrence/warning").with(admin))
+                .andExpect(status().isOk());
+        mockMvc.perform(get("/occurrence/00000000-0000-0000-0000-000000000001").with(admin))
                 .andExpect(status().isOk());
         mockMvc.perform(get("/notification").with(admin))
                 .andExpect(status().isOk());
@@ -179,6 +187,7 @@ class SecurityConfigTest {
                 "/vehicle/me",
                 "/occurrence",
                 "/occurrence/me",
+                "/occurrence/{uuid}",
                 "/notification",
                 "/park/profile",
                 "/rh",
