@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
@@ -45,7 +46,7 @@ public class RhService {
     public RegisterRhResponseDTO registerRh (RegisterRhRequestDTO request, JWTUserData jwtUserData) {
         CompletableFuture<DefaultRegisteredEvent> eventResponse = new CompletableFuture<>();
         applicationEventPublisher.publishEvent(rhMapper.toRegisterEvent(request.defaults(), eventResponse));
-        DefaultRegisteredEvent response = eventResponse.join();
+        DefaultRegisteredEvent response = eventResponse.orTimeout(8, TimeUnit.SECONDS).join();
 
         if (!rhRepository.existsByEmail(request.defaults().email())) {
             Rh rh = rhMapper.toEntity(request);
@@ -160,7 +161,7 @@ public class RhService {
 
         applicationEventPublisher.publishEvent(new GetUsersActiveEvent(eventResponse, userIds));
 
-        return eventResponse.join();
+        return eventResponse.orTimeout(8, TimeUnit.SECONDS).join();
     }
 
     private Page<UserSearchResult> toPage(List<UserSearchResult> content, Pageable pageable) {

@@ -35,6 +35,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
@@ -215,7 +216,7 @@ public class ParkUserService {
 
         applicationEventPublisher.publishEvent(new GetUsersActiveEvent(eventResponse, userIds));
 
-        return eventResponse.join();
+        return eventResponse.orTimeout(8, TimeUnit.SECONDS).join();
     }
 
     private boolean hasText(String value) {
@@ -225,6 +226,6 @@ public class ParkUserService {
     private Boolean getUserActive (UUID targetUuid) {
         CompletableFuture<Boolean> isUserActive = new CompletableFuture<>();
         applicationEventPublisher.publishEvent(new IsParkUserActiveEvent(isUserActive, targetUuid));
-        return isUserActive.join();
+        return isUserActive.orTimeout(8, TimeUnit.SECONDS).join();
     }
 }

@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
@@ -48,7 +49,7 @@ public class UserOperationService {
 
         CompletableFuture<Page<UserSearchResult>> eventResponse = new CompletableFuture<>();
         applicationEventPublisher.publishEvent(new GetParkUsersEvent(eventResponse, filter, sourcePageable));
-        Page<UserSearchResult> parkUsersResponse = eventResponse.join();
+        Page<UserSearchResult> parkUsersResponse = eventResponse.orTimeout(8, TimeUnit.SECONDS).join();
         Page<UserSearchResult> rhUsersResponse = rhService.listRhUsers(filter, sourcePageable);
 
         Set<UUID> foundUuids = new HashSet<>();
@@ -155,7 +156,7 @@ public class UserOperationService {
             case ROLE_PARK, ROLE_GUARD -> {
                 CompletableFuture<Record> eventResponse = new CompletableFuture<>();
                 applicationEventPublisher.publishEvent(new FindParkUserEvent(eventResponse, userUuid));
-                yield eventResponse.join();
+                yield eventResponse.orTimeout(8, TimeUnit.SECONDS).join();
             }
             case ROLE_ADMIN -> throw new NotFoundException("Admin users do not have an rh or park profile");
         };
@@ -167,7 +168,7 @@ public class UserOperationService {
 
         applicationEventPublisher.publishEvent(userOperationMapper.toUpdateAuthEvent(request, eventResponse, targetUuid));
 
-        UpdateUserResponseDTO response = eventResponse.join();
+        UpdateUserResponseDTO response = eventResponse.orTimeout(8, TimeUnit.SECONDS).join();
 
         operationService.saveOperation(jwtUserData, response.id(), OperationType.UPDATE);
 
@@ -179,7 +180,7 @@ public class UserOperationService {
     public void desactivateAndActivateUser (UUID uuid, JWTUserData jwtUserData) {
         CompletableFuture<Long> userIdResponse = new CompletableFuture<>();
         applicationEventPublisher.publishEvent(new DesactivateAndActivateUserEvent(userIdResponse, uuid));
-        Long userId = userIdResponse.join();
+        Long userId = userIdResponse.orTimeout(8, TimeUnit.SECONDS).join();
         operationService.saveOperation(jwtUserData, userId, OperationType.DESACTIVATE);
     }
 }

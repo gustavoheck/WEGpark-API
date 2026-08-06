@@ -24,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
@@ -127,7 +128,7 @@ public class NotificationService {
 
         applicationEventPublisher.publishEvent(new GetAuthUserIdEvent(eventResponse, userUuid));
 
-        return eventResponse.join();
+        return eventResponse.orTimeout(8, TimeUnit.SECONDS).join();
     }
 
 

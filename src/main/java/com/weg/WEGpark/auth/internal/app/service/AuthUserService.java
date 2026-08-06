@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Service
@@ -41,7 +42,7 @@ public class AuthUserService {
             applicationEventPublisher.publishEvent(new GetParkUserNameEvent(eventResponse, user.getUuid()));
         }
 
-        return eventResponse.join();
+        return eventResponse.orTimeout(8, TimeUnit.SECONDS).join();
     }
 
     public void getUserId(GetAuthUserIdEvent event) {
