@@ -1,5 +1,6 @@
 package com.weg.WEGpark.rh.internal.listener.get;
 
+import com.weg.WEGpark.rh.GetRhUserIdEvent;
 import com.weg.WEGpark.rh.GetRhUserNameEvent;
 import com.weg.WEGpark.rh.internal.app.service.RhService;
 import lombok.RequiredArgsConstructor;
@@ -15,5 +16,10 @@ public class RhGetListener {
     @EventListener
     public void getUserName(GetRhUserNameEvent event) {
         rhService.getUserName(event);
+    }
+
+    @EventListener
+    public void getUserId(GetRhUserIdEvent event) {
+        rhService.getUserId(event);
     }
 }

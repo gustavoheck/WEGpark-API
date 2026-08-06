@@ -6,7 +6,7 @@ import com.weg.WEGpark.park.ParkGuardRegisteredEvent;
 import com.weg.WEGpark.park.internal.app.user.mapper.GuardMapper;
 import com.weg.WEGpark.park.internal.domain.enums.user.ParkUserType;
 import com.weg.WEGpark.park.internal.domain.model.users.Guard;
-import com.weg.WEGpark.park.internal.infra.repository.ParkUserRepository;
+import com.weg.WEGpark.park.internal.infra.repository.GuardRepository;
 import com.weg.WEGpark.rh.UpdateGuardEvent;
 import com.weg.WEGpark.shared.exception.NotFoundException;
 import org.junit.jupiter.api.BeforeEach;
@@ -20,14 +20,14 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class GuardServiceTest {
-    private ParkUserRepository repository;
+    private GuardRepository repository;
     private GuardMapper mapper;
     private GuardService service;
     private Guard guard;
 
     @BeforeEach
     void setUp() {
-        repository = mock(ParkUserRepository.class);
+        repository = mock(GuardRepository.class);
         mapper = mock(GuardMapper.class);
         service = new GuardService(mapper, repository);
         guard = new Guard(3L, UUID.randomUUID(), "g@weg.net", "1", "Guard", "12", "A", "Boss");

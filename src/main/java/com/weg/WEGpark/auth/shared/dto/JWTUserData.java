@@ -1,4 +1,4 @@
-package com.weg.WEGpark.auth.internal.infra.security.config;
+package com.weg.WEGpark.auth.shared.dto;
 
 import lombok.Builder;
 

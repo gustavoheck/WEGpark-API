@@ -1,9 +1,7 @@
 package com.weg.WEGpark.park.internal.controller.occurrence;
 
-import com.weg.WEGpark.auth.internal.infra.security.config.JWTUserData;
+import com.weg.WEGpark.auth.shared.dto.JWTUserData;
 import com.weg.WEGpark.park.internal.app.occurrence.service.WarningService;
-import com.weg.WEGpark.park.internal.dto.occurrence.trafficaccident.GetTrafficAccidentResponseDTO;
-import com.weg.WEGpark.park.internal.dto.occurrence.trafficaccident.UpdateTrafficAccidentRequestDTO;
 import com.weg.WEGpark.park.internal.dto.occurrence.warning.CreateWarningRequestDTO;
 import com.weg.WEGpark.park.internal.dto.occurrence.warning.CreateWarningResponseDTO;
 import com.weg.WEGpark.park.internal.dto.occurrence.warning.GetWarningResponseDTO;

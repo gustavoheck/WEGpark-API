@@ -1,5 +1,7 @@
 package com.weg.WEGpark.auth.internal.listener.get;
 
+import com.weg.WEGpark.auth.GetAuthUserIdEvent;
+import com.weg.WEGpark.auth.GetUsersActiveEvent;
 import com.weg.WEGpark.auth.internal.app.service.AuthUserService;
 import com.weg.WEGpark.shared.IsParkUserActiveEvent;
 import lombok.RequiredArgsConstructor;
@@ -15,5 +17,15 @@ public class AuthGetListener {
     @EventListener
     public void getActive (IsParkUserActiveEvent isParkUserActiveEvent) {
         authUserService.getActive(isParkUserActiveEvent);
+    }
+
+    @EventListener
+    public void getUsersActive (GetUsersActiveEvent event) {
+        authUserService.getUsersActive(event);
+    }
+
+    @EventListener
+    public void getUserId(GetAuthUserIdEvent event) {
+        authUserService.getUserId(event);
     }
 }

@@ -1,8 +1,9 @@
 package com.weg.WEGpark.rh.internal.controller;
 
-import com.weg.WEGpark.auth.internal.infra.security.config.JWTUserData;
+import com.weg.WEGpark.auth.shared.dto.JWTUserData;
 import com.weg.WEGpark.auth.shared.dto.update.UpdateUserRequestDTO;
 import com.weg.WEGpark.auth.shared.dto.update.UpdateUserResponseDTO;
+import com.weg.WEGpark.auth.shared.enums.RolesType;
 import com.weg.WEGpark.rh.internal.app.service.UserOperationService;
 import com.weg.WEGpark.rh.shared.filter.FindUserFilter;
 import jakarta.validation.Valid;
@@ -30,6 +31,14 @@ public class RhControllerOperation {
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(page);
+    }
+
+    @GetMapping("/user/{userUuid}")
+    public ResponseEntity<Record> findUser (
+            @PathVariable UUID userUuid,
+            @RequestParam RolesType role
+    ) {
+        return ResponseEntity.ok(userOperationService.findUser(userUuid, role));
     }
 
     @PutMapping("/user/{userUuid}")

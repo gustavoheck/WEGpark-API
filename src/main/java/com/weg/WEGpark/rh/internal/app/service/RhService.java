@@ -1,17 +1,19 @@
 package com.weg.WEGpark.rh.internal.app.service;
 
 import com.weg.WEGpark.auth.DefaultRegisteredEvent;
+import com.weg.WEGpark.auth.GetUsersActiveEvent;
 import com.weg.WEGpark.auth.shared.exception.AlreadyHaveAccountException;
-import com.weg.WEGpark.auth.internal.infra.security.config.JWTUserData;
+import com.weg.WEGpark.auth.shared.dto.JWTUserData;
 import com.weg.WEGpark.auth.shared.enums.RolesType;
+import com.weg.WEGpark.rh.GetRhUserIdEvent;
 import com.weg.WEGpark.rh.GetRhUserNameEvent;
+import com.weg.WEGpark.rh.UserSearchResult;
 import com.weg.WEGpark.rh.internal.app.mapper.RhMapper;
 import com.weg.WEGpark.rh.internal.domain.enums.OperationType;
 import com.weg.WEGpark.rh.internal.domain.model.Rh;
 import com.weg.WEGpark.rh.internal.dto.rh.*;
 import com.weg.WEGpark.rh.internal.infra.repository.RhRepository;
 import com.weg.WEGpark.rh.shared.filter.FindUserFilter;
-import com.weg.WEGpark.shared.IsParkUserActiveEvent;
 import com.weg.WEGpark.shared.exception.MoreThenOneFilterException;
 import com.weg.WEGpark.shared.exception.NotFoundException;
 import com.weg.WEGpark.shared.util.FilterUtil;
@@ -25,8 +27,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
@@ -42,7 +46,7 @@ public class RhService {
     public RegisterRhResponseDTO registerRh (RegisterRhRequestDTO request, JWTUserData jwtUserData) {
         CompletableFuture<DefaultRegisteredEvent> eventResponse = new CompletableFuture<>();
         applicationEventPublisher.publishEvent(rhMapper.toRegisterEvent(request.defaults(), eventResponse));
-        DefaultRegisteredEvent response = eventResponse.join();
+        DefaultRegisteredEvent response = eventResponse.orTimeout(8, TimeUnit.SECONDS).join();
 
         if (!rhRepository.existsByEmail(request.defaults().email())) {
             Rh rh = rhMapper.toEntity(request);
@@ -79,8 +83,12 @@ public class RhService {
     public GetRhResponseDTO findMyProfile(JWTUserData jwtUserData) {
         validateRhRole(jwtUserData);
 
-        Rh rh = rhRepository.findByUuid(jwtUserData.uuid())
-                .orElseThrow(() -> new NotFoundException("Any rh account was found by %s uuid".formatted(jwtUserData.uuid())));
+        return findUserByUuid(jwtUserData.uuid());
+    }
+
+    public GetRhResponseDTO findUserByUuid(UUID userUuid) {
+        Rh rh = rhRepository.findByUuid(userUuid)
+                .orElseThrow(() -> new NotFoundException("Any rh account was found by %s uuid".formatted(userUuid)));
 
         return rhMapper.toGetResponse(rh);
     }
@@ -92,31 +100,84 @@ public class RhService {
         event.eventResponse().complete(rh.getName());
     }
 
-    public Page<GetRhResponseDTO> listRhUsers (FindUserFilter findUserFilter, Pageable pageable) {
-        if (FilterUtil.checkMoreThanOneFilter(findUserFilter)) {
-            if (FilterUtil.checkHaveFilter(findUserFilter)) {
-                if (findUserFilter.active() != null) {
-                    List<GetRhResponseDTO> responseList;
-                    responseList = rhRepository
-                            .findAll()
-                            .stream()
-                            .filter(user -> getUserActive(user.getUuid()) == findUserFilter.active())
-                            .map(rhMapper::toGetResponse)
-                            .toList();
-                    return new PageImpl<>(responseList, pageable, responseList.size());
-                }
-                return Page.empty();
-            }
-            return rhRepository.findAll(pageable)
-                    .map(rhMapper::toGetResponse);
-        }
-        throw new MoreThenOneFilterException("You can not use more than one filter");
+    public void getUserId(GetRhUserIdEvent event) {
+        Rh rh = rhRepository.findByUuid(event.userUuid())
+                .orElseThrow(() -> new NotFoundException("Any rh account was found by %s uuid".formatted(event.userUuid())));
+
+        event.eventResponse().complete(rh.getId());
     }
 
-    private Boolean getUserActive (UUID targetUuid) {
-        CompletableFuture<Boolean> isUserActive = new CompletableFuture<>();
-        applicationEventPublisher.publishEvent(new IsParkUserActiveEvent(isUserActive, targetUuid));
-        return isUserActive.join();
+    public Page<UserSearchResult> listRhUsers (FindUserFilter findUserFilter, Pageable pageable) {
+        if (findUserFilter != null && !FilterUtil.checkMoreThanOneFilter(findUserFilter)) {
+            throw new MoreThenOneFilterException("You can not use more than one filter");
+        }
+
+        if (!FilterUtil.checkHaveFilter(findUserFilter)) {
+            return rhRepository.findAll(pageable)
+                    .map(rh -> toSearchResult(rh, null));
+        }
+
+        if (findUserFilter.active() == null) {
+            return Page.empty(pageable);
+        }
+
+        List<Rh> rhUsers = rhRepository.findAll(pageable.getSort());
+        Map<Long, Boolean> activeByUserId = getUsersActive(rhUsers);
+
+        List<UserSearchResult> responseList = rhUsers
+                .stream()
+                .filter(user -> findUserFilter.active().equals(activeByUserId.get(user.getId())))
+                .map(user -> toSearchResult(user, activeByUserId.get(user.getId())))
+                .toList();
+
+        return toPage(responseList, pageable);
+    }
+
+    private UserSearchResult toSearchResult(Rh rh, Boolean active) {
+        return new UserSearchResult(
+                rh.getId(),
+                rh.getUuid(),
+                rh.getEmail(),
+                rh.getTelephone(),
+                rh.getName(),
+                rh.getBadgeNumber(),
+                null,
+                active,
+                rhMapper.toGetResponse(rh)
+        );
+    }
+
+    private Map<Long, Boolean> getUsersActive(List<Rh> rhUsers) {
+        if (rhUsers.isEmpty()) {
+            return Map.of();
+        }
+
+        List<Long> userIds = rhUsers
+                .stream()
+                .map(Rh::getId)
+                .distinct()
+                .toList();
+        CompletableFuture<Map<Long, Boolean>> eventResponse = new CompletableFuture<>();
+
+        applicationEventPublisher.publishEvent(new GetUsersActiveEvent(eventResponse, userIds));
+
+        return eventResponse.orTimeout(8, TimeUnit.SECONDS).join();
+    }
+
+    private Page<UserSearchResult> toPage(List<UserSearchResult> content, Pageable pageable) {
+        if (pageable.isUnpaged()) {
+            return new PageImpl<>(content);
+        }
+
+        long offset = pageable.getOffset();
+        if (offset >= content.size()) {
+            return new PageImpl<>(List.of(), pageable, content.size());
+        }
+
+        int fromIndex = (int) offset;
+        int toIndex = Math.min(fromIndex + pageable.getPageSize(), content.size());
+
+        return new PageImpl<>(content.subList(fromIndex, toIndex), pageable, content.size());
     }
 
     private void validateRhRole(JWTUserData jwtUserData) {

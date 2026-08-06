@@ -1,14 +1,11 @@
 package com.weg.WEGpark.park.internal.app.occurrence.service;
 
-import com.weg.WEGpark.auth.internal.infra.security.config.JWTUserData;
-import com.weg.WEGpark.park.SendOccurrenceWarnEvent;
-import com.weg.WEGpark.park.SendOccurrenceWarnToGuardEvent;
+import com.weg.WEGpark.auth.shared.dto.JWTUserData;
 import com.weg.WEGpark.park.internal.app.occurrence.dto.RegisterDefaultInfo;
 import com.weg.WEGpark.park.internal.app.occurrence.mapper.*;
 import com.weg.WEGpark.park.internal.app.user.mapper.GuardMapper;
 import com.weg.WEGpark.park.internal.app.user.mapper.VehicleUserMapper;
 import com.weg.WEGpark.park.internal.app.vehicle.mapper.VehicleMapper;
-import com.weg.WEGpark.park.internal.domain.model.users.ParkUser;
 import com.weg.WEGpark.park.internal.domain.model.users.VehicleUser;
 import com.weg.WEGpark.park.internal.dto.occurrence.defaults.DefaultOccurrenceResponseDTO;
 import com.weg.WEGpark.park.internal.dto.user.guard.GetGuardResponseDTO;
@@ -36,6 +33,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -72,23 +70,23 @@ public class OccurrenceService {
 
             Page<Occurrence> occurrencePage = occurrenceRepository.findAll(spec, pageable);
 
-            Page<Record> occurrenceResponsePage  = occurrencePage.map(occurrence -> {
-                switch (occurrence) {
-                    case Warning warning -> {
-                        return warningMapper.toGetResponse(warning);
-                    }
-                    case IllegalParking illegalParking -> {
-                        return illegalParkingMapper.toGetResponse(illegalParking);
-                    }
-                    case TrafficAccident trafficAccident -> {
-                        return trafficAccidentMapper.toGetResponse(trafficAccident);
-                    }
-                    default -> throw new IllegalStateException("Unexpected value: " + occurrence);
-                }
-            });
-            return occurrenceResponsePage;
+            return occurrencePage.map(this::toResponse);
         }
         throw new MoreThenOneFilterException("You can't use more than one filter");
+    }
+
+    public Page<Record> findMyOccurrences(JWTUserData jwtUserData, Pageable pageable) {
+        return occurrenceRepository.findAllByParkUserUuid(jwtUserData.uuid(), pageable)
+                .map(this::toResponse);
+    }
+
+    public Record findOccurrenceByUuid(UUID uuid) {
+        Occurrence occurrence = occurrenceRepository.findByUuid(uuid)
+                .orElseThrow(() -> new NotFoundException(
+                        "Any occurrence was found by %s uuid".formatted(uuid)
+                ));
+
+        return toResponse(occurrence);
     }
 
     public RegisterDefaultInfo findRegisterBasics (String plate, JWTUserData jwtUserData) {
@@ -144,5 +142,14 @@ public class OccurrenceService {
             return true;
         }
         return false;
+    }
+
+    private Record toResponse(Occurrence occurrence) {
+        return switch (occurrence) {
+            case Warning warning -> warningMapper.toGetResponse(warning);
+            case IllegalParking illegalParking -> illegalParkingMapper.toGetResponse(illegalParking);
+            case TrafficAccident trafficAccident -> trafficAccidentMapper.toGetResponse(trafficAccident);
+            default -> throw new IllegalStateException("Unexpected value: " + occurrence);
+        };
     }
 }

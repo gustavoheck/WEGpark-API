@@ -1,5 +1,7 @@
 package com.weg.WEGpark.auth.internal.app.service;
 
+import com.weg.WEGpark.auth.GetAuthUserIdEvent;
+import com.weg.WEGpark.auth.GetUsersActiveEvent;
 import com.weg.WEGpark.auth.internal.domain.model.Role;
 import com.weg.WEGpark.auth.internal.domain.model.User;
 import com.weg.WEGpark.auth.internal.infra.repository.UserRepository;
@@ -12,6 +14,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.ApplicationEventPublisher;
 
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -51,6 +55,28 @@ class AuthUserServiceTest {
     }
 
     @Test
+    void resolvesUserIdFromAuthByUuid() {
+        UUID userUuid = UUID.randomUUID();
+        User user = user(RolesType.ROLE_RH);
+        user.setId(42L);
+        when(userRepository.findByUuid(userUuid)).thenReturn(Optional.of(user));
+        var response = new java.util.concurrent.CompletableFuture<Long>();
+
+        service.getUserId(new GetAuthUserIdEvent(response, userUuid));
+
+        assertEquals(42L, response.join());
+
+        UUID missingUuid = UUID.randomUUID();
+        when(userRepository.findByUuid(missingUuid)).thenReturn(Optional.empty());
+        var missingResponse = new java.util.concurrent.CompletableFuture<Long>();
+
+        service.getUserId(new GetAuthUserIdEvent(missingResponse, missingUuid));
+
+        assertTrue(missingResponse.isCompletedExceptionally());
+        assertThrows(java.util.concurrent.CompletionException.class, missingResponse::join);
+    }
+
+    @Test
     void completesActiveLookupForExistingUser() {
         UUID uuid = UUID.randomUUID();
         User user = user(RolesType.ROLE_PARK);
@@ -73,6 +99,24 @@ class AuthUserServiceTest {
 
         assertTrue(response.isCompletedExceptionally());
         assertThrows(java.util.concurrent.CompletionException.class, response::join);
+    }
+
+    @Test
+    void resolvesSeveralActiveStatusesWithOneRepositoryCall() {
+        User activeUser = user(RolesType.ROLE_PARK);
+        activeUser.setId(1L);
+        activeUser.setActive(true);
+        User inactiveUser = user(RolesType.ROLE_RH);
+        inactiveUser.setId(2L);
+        inactiveUser.setActive(false);
+        List<Long> userIds = List.of(1L, 2L);
+        when(userRepository.findAllById(userIds)).thenReturn(List.of(activeUser, inactiveUser));
+        var response = new java.util.concurrent.CompletableFuture<Map<Long, Boolean>>();
+
+        service.getUsersActive(new GetUsersActiveEvent(response, userIds));
+
+        assertEquals(Map.of(1L, true, 2L, false), response.join());
+        verify(userRepository, times(1)).findAllById(userIds);
     }
 
     private User user(RolesType role) {

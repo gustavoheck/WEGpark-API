@@ -1,6 +1,6 @@
 package com.weg.WEGpark.park.internal.controller.user;
 
-import com.weg.WEGpark.auth.internal.infra.security.config.JWTUserData;
+import com.weg.WEGpark.auth.shared.dto.JWTUserData;
 import com.weg.WEGpark.park.internal.app.user.service.CollaboratorService;
 import com.weg.WEGpark.park.internal.app.user.service.ParkUserService;
 import com.weg.WEGpark.park.internal.app.user.service.VisitorService;

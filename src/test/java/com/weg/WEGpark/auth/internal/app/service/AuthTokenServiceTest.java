@@ -1,5 +1,6 @@
 package com.weg.WEGpark.auth.internal.app.service;
 
+import com.weg.WEGpark.auth.internal.app.exception.InvalidRequestException;
 import com.weg.WEGpark.auth.internal.domain.model.AuthToken;
 import com.weg.WEGpark.auth.internal.domain.model.NumberToken;
 import com.weg.WEGpark.auth.internal.domain.model.User;
@@ -100,5 +101,14 @@ class AuthTokenServiceTest {
 
         assertSame(authToken, service.findToken(tokenId));
         assertThrows(NotFoundException.class, () -> service.findNumberToken(tokenId));
+    }
+
+    @Test
+    void rejectsInvalidNumberTokenUuid() {
+        NumberTokenVerificateTryRequestDTO request = new NumberTokenVerificateTryRequestDTO("invalid-uuid", "123456");
+
+        assertThrows(InvalidRequestException.class, () -> service.validateNumberToken(request));
+
+        verifyNoInteractions(userRepository, authTokenRepository, numberTokenRepository);
     }
 }

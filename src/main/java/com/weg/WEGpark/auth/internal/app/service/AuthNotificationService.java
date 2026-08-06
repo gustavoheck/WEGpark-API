@@ -3,6 +3,8 @@ package com.weg.WEGpark.auth.internal.app.service;
 import com.weg.WEGpark.auth.SendAccountValidationEmailEvent;
 import com.weg.WEGpark.auth.SendEmailCheckEvent;
 import com.weg.WEGpark.auth.internal.app.exception.InvalidEmailValidationException;
+import com.weg.WEGpark.auth.internal.app.exception.InvalidRequestException;
+import com.weg.WEGpark.auth.internal.dto.defaults.EmailRequestDTO;
 import com.weg.WEGpark.auth.internal.dto.defaults.EmailRoleRequestDTO;
 import com.weg.WEGpark.auth.shared.enums.TokenType;
 import com.weg.WEGpark.auth.internal.domain.model.AuthToken;
@@ -19,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.weg.WEGpark.auth.internal.infra.security.exception.InvalidTokenException;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Transactional
@@ -37,8 +40,33 @@ public class AuthNotificationService {
     }
 
     @Transactional
+    public void resendAccountEmailValidation (EmailRequestDTO request) {
+        List<User> users = userRepository.findByEmail(request.email());
+
+        if (users.isEmpty()) {
+            throw new NotFoundException("Any user was found by %s email".formatted(request.email()));
+        }
+
+        List<User> usersWithPendingEmailValidation = users.stream()
+                .filter(user -> !user.getEmailValidated())
+                .toList();
+
+        if (usersWithPendingEmailValidation.isEmpty()) {
+            throw new InvalidEmailValidationException("Your account email is already validated");
+        }
+
+        usersWithPendingEmailValidation.forEach(this::sendAccountEmailValidation);
+    }
+
+    @Transactional
     public NewTokenResponseDTO resetPasswordEmailCheck (EmailRoleRequestDTO request) {
-        User user = userRepository.findByEmailAndRole_Role(request.email(), RolesType.valueOf(request.role()))
+        RolesType role;
+        try {
+            role = RolesType.valueOf(request.role());
+        } catch (IllegalArgumentException | NullPointerException exception) {
+            throw new InvalidRequestException("Invalid role value", exception);
+        }
+        User user = userRepository.findByEmailAndRole_Role(request.email(), role)
                 .orElseThrow(() -> new NotFoundException("Any user was found by %s email and %s role".formatted(request.email(), request.role())));
 
         NumberToken numberToken = authTokenService.createNumberToken(user);

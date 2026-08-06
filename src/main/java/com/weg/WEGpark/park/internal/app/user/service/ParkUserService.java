@@ -1,8 +1,12 @@
 package com.weg.WEGpark.park.internal.app.user.service;
 
+import com.weg.WEGpark.auth.GetUsersActiveEvent;
 import com.weg.WEGpark.rh.GetParkUsersEvent;
+import com.weg.WEGpark.rh.FindParkUserEvent;
+import com.weg.WEGpark.rh.UserSearchResult;
+import com.weg.WEGpark.park.GetParkUserIdEvent;
 import com.weg.WEGpark.park.GetParkUserNameEvent;
-import com.weg.WEGpark.auth.internal.infra.security.config.JWTUserData;
+import com.weg.WEGpark.auth.shared.dto.JWTUserData;
 import com.weg.WEGpark.auth.shared.enums.RolesType;
 import com.weg.WEGpark.shared.IsParkUserActiveEvent;
 import com.weg.WEGpark.shared.util.FilterUtil;
@@ -28,10 +32,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Objects;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import java.util.stream.Stream;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
@@ -72,6 +76,21 @@ public class ParkUserService {
         };
     }
 
+    public void findParkUser(FindParkUserEvent event) {
+        ParkUser parkUser = parkUserRepository.findByUuid(event.userUuid())
+                .orElseThrow(() -> new NotFoundException("Any park user was found by %s uuid".formatted(event.userUuid())));
+        Boolean active = getUserActive(parkUser.getUuid());
+
+        Record response = switch (parkUser) {
+            case Guard guard -> guardMapper.toGetResponse(guard, active);
+            case Collaborator collaborator -> collaboratorMapper.toResponse(collaborator, active);
+            case Visitor visitor -> visitorMapper.toResponse(visitor, active);
+            default -> throw new NotFoundException("Can not found a user of this type");
+        };
+
+        event.eventResponse().complete(response);
+    }
+
     public void getUserName(GetParkUserNameEvent event) {
         ParkUser parkUser = parkUserRepository.findByUuid(event.userUuid())
                 .orElseThrow(() -> new NotFoundException("Any park user was found by %s uuid".formatted(event.userUuid())));
@@ -79,157 +98,134 @@ public class ParkUserService {
         event.eventResponse().complete(parkUser.getName());
     }
 
+    public void getUserId(GetParkUserIdEvent event) {
+        ParkUser parkUser = parkUserRepository.findByUuid(event.userUuid())
+                .orElseThrow(() -> new NotFoundException("Any park user was found by %s uuid".formatted(event.userUuid())));
+
+        event.eventResponse().complete(parkUser.getId());
+    }
 
     public void findParkUsers(GetParkUsersEvent event, Pageable pageable) {
-        if (FilterUtil.checkHaveFilter(event.findUserFilter())) {
-            if (FilterUtil.checkMoreThanOneFilter(event.findUserFilter())) {
+        if (!FilterUtil.checkHaveFilter(event.findUserFilter())) {
+            event.eventResponse().complete(findAllUsers(pageable));
+            return;
+        }
 
-                Page<Record> findByName = findParkUserName(event, pageable);
-                Page<Record> findByCpf = findVisitorCpf(event, pageable);
-                Page<Record> findByBadgeNumber = findColaboratorBadgeNumber(event, pageable);
-                Page<Record> findByActive = findAllActiveDesactiveUsers(event, pageable);
-
-                List<Record> responseList = Stream.of(
-                                findByName,
-                                findByCpf,
-                                findByBadgeNumber,
-                                findByActive)
-                        .flatMap(page -> page.getContent().stream())
-                        .toList();
-
-                long totalElements = findByCpf.getTotalElements() + findByName.getTotalElements() + findByBadgeNumber.getTotalElements();
-
-                event.eventResponse().complete(new PageImpl<>(responseList, pageable, totalElements));
-            }
+        if (!FilterUtil.checkMoreThanOneFilter(event.findUserFilter())) {
             event.eventResponse().completeExceptionally(new MoreThenOneFilterException("You can not use more than one filter to search for users"));
+            return;
         }
-        event.eventResponse().complete(findAllUsers(event, pageable));
+
+        Page<UserSearchResult> response;
+        if (hasText(event.findUserFilter().name())) {
+            response = findParkUserName(event.findUserFilter().name(), pageable);
+        } else if (hasText(event.findUserFilter().badgeNumber())) {
+            response = findCollaboratorBadgeNumber(event.findUserFilter().badgeNumber(), pageable);
+        } else if (hasText(event.findUserFilter().cpf())) {
+            response = findVisitorCpf(event.findUserFilter().cpf(), pageable);
+        } else {
+            response = findAllActiveDesactiveUsers(event.findUserFilter().active(), pageable);
+        }
+
+        event.eventResponse().complete(response);
     }
 
-    private Page<Record> findAllUsers(GetParkUsersEvent event, Pageable pageable) {
-        Page<ParkUser> parkUsers = parkUserRepository.findAll(pageable);
-        List<Record> responseList;
-        if (!parkUsers.isEmpty()) {
-            responseList = parkUsers.map(parkUser -> {
-                Boolean isActive = getUserActive(parkUser.getUuid());
-                switch (parkUser) {
-                    case Guard guard -> {
-                        return guardMapper.toGetResponse(guard, isActive);
-                    }
-                    case Collaborator collaborator -> {
-                        return collaboratorMapper.toResponse(collaborator, isActive);
-                    }
-                    case Visitor visitor -> {
-                        return visitorMapper.toResponse(visitor, isActive);
-                    }
-                    default -> {
-                        event.eventResponse().completeExceptionally(new NotFoundException("Can not found a user of this type"));
-                    }
-                }
-                return null;
-            }).filter(Objects::nonNull).toList();
-            return new PageImpl<>(responseList, pageable, responseList.size());
-        }
-        return Page.empty();
+    private Page<UserSearchResult> findAllUsers(Pageable pageable) {
+        return mapPage(parkUserRepository.findAll(pageable));
     }
 
-    private Page<Record> findAllActiveDesactiveUsers(GetParkUsersEvent event, Pageable pageable) {
-        Page<ParkUser> parkUsers = parkUserRepository.findAll(pageable);
-        List<Record> responseList;
-        Boolean activeFilter = event.findUserFilter().active();
-        if (activeFilter != null) {
-            if (!parkUsers.isEmpty()) {
-                responseList = parkUsers.stream().map(parkUser -> {
-                    Boolean isActive = getUserActive(parkUser.getUuid());
-                    if (isActive == activeFilter) {
-                        switch (parkUser) {
-                            case Guard guard -> {
-                                return guardMapper.toGetResponse(guard, isActive);
-                            }
-                            case Collaborator collaborator -> {
-                                return collaboratorMapper.toResponse(collaborator, isActive);
-                            }
-                            case Visitor visitor -> {
-                                return visitorMapper.toResponse(visitor, isActive);
-                            }
-                            default -> {
-                                event.eventResponse().completeExceptionally(new NotFoundException("Can not found a user of this type"));
-                            }
-                        }
-                    }
-                    return null;
-                }).filter(Objects::nonNull).toList();
-                return new PageImpl<>(responseList, pageable, responseList.size());
-            }
+    private Page<UserSearchResult> findAllActiveDesactiveUsers(Boolean activeFilter, Pageable pageable) {
+        List<ParkUser> parkUsers = parkUserRepository.findAll(pageable.getSort());
+        Map<Long, Boolean> activeByUserId = getUsersActive(parkUsers);
+
+        List<UserSearchResult> responseList = parkUsers.stream()
+                .filter(parkUser -> activeFilter.equals(activeByUserId.get(parkUser.getId())))
+                .map(parkUser -> toSearchResult(parkUser, activeByUserId.get(parkUser.getId())))
+                .toList();
+
+        if (pageable.isUnpaged()) {
+            return new PageImpl<>(responseList);
         }
-        return Page.empty();
+
+        long offset = pageable.getOffset();
+        if (offset >= responseList.size()) {
+            return new PageImpl<>(List.of(), pageable, responseList.size());
+        }
+
+        int fromIndex = (int) offset;
+        int toIndex = Math.min(fromIndex + pageable.getPageSize(), responseList.size());
+
+        return new PageImpl<>(responseList.subList(fromIndex, toIndex), pageable, responseList.size());
     }
 
-    private Page<Record> findParkUserName(GetParkUsersEvent event, Pageable pageable) {
-        String name = event.findUserFilter().name();
-        if (name != null) {
-            Page<ParkUser> parkUsers = parkUserRepository.findByNameLike(name, pageable);
-            if (!parkUsers.isEmpty()) {
-                List<Record> responseList = parkUsers.map(parkUser -> {
-                        Boolean isActive = getUserActive(parkUser.getUuid());
-                        switch (parkUser) {
-                            case Guard guard -> {
-                                return guardMapper.toGetResponse(guard, isActive);
-                            }
-                            case Collaborator collaborator -> {
-                                return collaboratorMapper.toResponse(collaborator, isActive);
-                            }
-                            case Visitor visitor -> {
-                                return visitorMapper.toResponse(visitor, isActive);
-                            }
-                            default -> {
-                                event.eventResponse().completeExceptionally(new NotFoundException("Can not found a user of this type"));
-                            }
-                        }
-                    return null;
-                }).filter(Objects::nonNull).toList();
-                return new PageImpl<>(responseList, pageable, responseList.size());
-            }
-        }
-        return Page.empty();
+    private Page<UserSearchResult> findParkUserName(String name, Pageable pageable) {
+        return mapPage(parkUserRepository.findByNameLike(name, pageable));
     }
 
-    private Page<Record> findColaboratorBadgeNumber(GetParkUsersEvent event, Pageable pageable) {
-        String badgeNumber = event.findUserFilter().badgeNumber();
-        if (badgeNumber != null) {
-            Page<Collaborator> collaborators = collaboratorRepository.findByBadgeNumber(badgeNumber, pageable);
-            if (!collaborators.isEmpty()) {
-                Page<Record> responseList = collaborators.map(collaborator -> {
-                    Boolean isActive = getUserActive(collaborator.getUuid());
-                    switch (collaborator) {
-                        case Guard guard -> {
-                            return guardMapper.toGetResponse(guard, isActive);
-                        }
-                        default -> {
-                            return collaboratorMapper.toResponse(collaborator, isActive);
-                        }
-                    }
-                });
-                return responseList;
-            }
-            return Page.empty();
-        }
-        return Page.empty();
+    private Page<UserSearchResult> findCollaboratorBadgeNumber(String badgeNumber, Pageable pageable) {
+        return mapPage(collaboratorRepository.findByBadgeNumber(badgeNumber, pageable));
     }
 
-    private Page<Record> findVisitorCpf(GetParkUsersEvent event, Pageable pageable) {
-        String cpf = event.findUserFilter().cpf();
-        if (cpf != null) {
-            Page<Visitor> visitorResponse = visitorRepository.findVisitorByCpf(cpf, pageable);
-            Page<Record> responsePage = visitorResponse
-                    .map(visitor -> visitorMapper.toResponse(visitor, getUserActive(visitor.getUuid())));
+    private Page<UserSearchResult> findVisitorCpf(String cpf, Pageable pageable) {
+        return mapPage(visitorRepository.findVisitorByCpf(cpf, pageable));
+    }
+
+    private Page<UserSearchResult> mapPage(Page<? extends ParkUser> parkUsers) {
+        Map<Long, Boolean> activeByUserId = getUsersActive(parkUsers.getContent());
+        return parkUsers.map(parkUser -> toSearchResult(parkUser, activeByUserId.get(parkUser.getId())));
+    }
+
+    private UserSearchResult toSearchResult(ParkUser parkUser, Boolean active) {
+        String badgeNumber = parkUser instanceof Collaborator collaborator
+                ? collaborator.getBadgeNumber()
+                : null;
+        String cpf = parkUser instanceof Visitor visitor
+                ? visitor.getCpf()
+                : null;
+
+        Record response = switch (parkUser) {
+            case Guard guard -> guardMapper.toGetResponse(guard, active);
+            case Collaborator collaborator -> collaboratorMapper.toResponse(collaborator, active);
+            case Visitor visitor -> visitorMapper.toResponse(visitor, active);
+            default -> throw new NotFoundException("Can not found a user of this type");
+        };
+
+        return new UserSearchResult(
+                parkUser.getId(),
+                parkUser.getUuid(),
+                parkUser.getEmail(),
+                parkUser.getTelephone(),
+                parkUser.getName(),
+                badgeNumber,
+                cpf,
+                active,
+                response
+        );
+    }
+
+    private Map<Long, Boolean> getUsersActive(List<? extends ParkUser> parkUsers) {
+        if (parkUsers.isEmpty()) {
+            return Map.of();
         }
-        return Page.empty();
+
+        List<Long> userIds = parkUsers.stream()
+                .map(ParkUser::getId)
+                .distinct()
+                .toList();
+        CompletableFuture<Map<Long, Boolean>> eventResponse = new CompletableFuture<>();
+
+        applicationEventPublisher.publishEvent(new GetUsersActiveEvent(eventResponse, userIds));
+
+        return eventResponse.orTimeout(8, TimeUnit.SECONDS).join();
+    }
+
+    private boolean hasText(String value) {
+        return value != null && !value.isBlank();
     }
 
     private Boolean getUserActive (UUID targetUuid) {
         CompletableFuture<Boolean> isUserActive = new CompletableFuture<>();
         applicationEventPublisher.publishEvent(new IsParkUserActiveEvent(isUserActive, targetUuid));
-        return isUserActive.join();
+        return isUserActive.orTimeout(8, TimeUnit.SECONDS).join();
     }
 }

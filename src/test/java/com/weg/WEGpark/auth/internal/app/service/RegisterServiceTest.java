@@ -1,6 +1,7 @@
 package com.weg.WEGpark.auth.internal.app.service;
 
 import com.weg.WEGpark.auth.CollaboratorRegisteredEvent;
+import com.weg.WEGpark.auth.DefaultRegisteredEvent;
 import com.weg.WEGpark.auth.VisitorRegisteredEvent;
 import com.weg.WEGpark.auth.ValidateCollaboratorByEvent;
 import com.weg.WEGpark.auth.ValidateCollaboratorEvent;
@@ -17,6 +18,7 @@ import com.weg.WEGpark.auth.shared.dto.register.RegisterAccountResponseDTO;
 import com.weg.WEGpark.auth.shared.dto.register.RegisterCollaboratorRequestDTO;
 import com.weg.WEGpark.auth.shared.dto.register.RegisterVisitorRequestDTO;
 import com.weg.WEGpark.auth.shared.enums.RolesType;
+import com.weg.WEGpark.park.ParkGuardRegisteredEvent;
 import com.weg.WEGpark.rh.RegisterGuardEvent;
 import com.weg.WEGpark.rh.RegisterRhEvent;
 import com.weg.WEGpark.shared.exception.NotFoundException;
@@ -64,15 +66,13 @@ class RegisterServiceTest {
         RegisterVisitorRequestDTO request = mock(RegisterVisitorRequestDTO.class);
         RegisterAccountRequestDTO defaults = new RegisterAccountRequestDTO("visitor@weg.net", "password");
         User user = user("visitor@weg.net", "password");
-        RegisterAccountResponseDTO response = new RegisterAccountResponseDTO(UUID.randomUUID(), user.getEmail());
         CompletableFuture<RegisterAccountResponseDTO> future = new CompletableFuture<>();
         when(request.defaults()).thenReturn(defaults);
         when(userMapper.toEntity(defaults)).thenReturn(user);
         when(roleRepository.findByRole(RolesType.ROLE_PARK)).thenReturn(Optional.of(new Role(RolesType.ROLE_PARK)));
-        when(userMapper.toRegisterResponse(user)).thenReturn(response);
         when(eventMapper.toVisitorRegisteredEvent(eq(request), eq(future), eq(user))).thenReturn(mock(VisitorRegisteredEvent.class));
 
-        assertSame(response, service.registerVisitor(future, request, false));
+        service.registerVisitor(future, request, false);
         assertAll(() -> assertFalse(user.getActive()), () -> assertFalse(user.getEmailValidated()), () -> assertEquals("encoded-password", user.getPassword()));
         verify(userRepository).saveAndFlush(user);
         verify(notificationService).sendAccountEmailValidation(user);
@@ -82,7 +82,7 @@ class RegisterServiceTest {
     @Test
     void rejectsVisitorWhenAnAccountAlreadyExists() {
         CompletableFuture<RegisterAccountResponseDTO> future = new CompletableFuture<>();
-        assertNull(service.registerVisitor(future, mock(RegisterVisitorRequestDTO.class), true));
+        service.registerVisitor(future, mock(RegisterVisitorRequestDTO.class), true);
         assertTrue(future.isCompletedExceptionally());
         verifyNoInteractions(userRepository);
     }
@@ -91,12 +91,53 @@ class RegisterServiceTest {
     void failsVisitorRegistrationWhenParkRoleDoesNotExist() {
         RegisterVisitorRequestDTO request = mock(RegisterVisitorRequestDTO.class);
         when(request.defaults()).thenReturn(new RegisterAccountRequestDTO("visitor@weg.net", "password"));
-        when(userMapper.toEntity(any())).thenReturn(user("visitor@weg.net", "password"));
         when(roleRepository.findByRole(RolesType.ROLE_PARK)).thenReturn(Optional.empty());
         CompletableFuture<RegisterAccountResponseDTO> future = new CompletableFuture<>();
 
-        assertNull(service.registerVisitor(future, request, false));
+        service.registerVisitor(future, request, false);
         assertTrue(future.isCompletedExceptionally());
+        verifyNoInteractions(userRepository);
+        verify(userMapper, never()).toEntity(any());
+        verify(publisher, never()).publishEvent(any());
+    }
+
+    @Test
+    void failsGuardRegistrationWhenGuardRoleDoesNotExist() {
+        CompletableFuture<ParkGuardRegisteredEvent> future = new CompletableFuture<>();
+        RegisterGuardEvent event = new RegisterGuardEvent(
+                future, "guard@weg.net", "password", "Guard", "1", "2", "location", "boss"
+        );
+        when(roleRepository.findByRole(RolesType.ROLE_GUARD)).thenReturn(Optional.empty());
+
+        service.registerGuard(event, null);
+
+        assertTrue(future.isCompletedExceptionally());
+        verifyNoInteractions(userRepository);
+        verify(userMapper, never()).toEntityFromGuardEvent(event);
+        verify(publisher, never()).publishEvent(any());
+    }
+
+    @Test
+    void failsRhRegistrationWhenRhRoleDoesNotExist() {
+        CompletableFuture<DefaultRegisteredEvent> future = new CompletableFuture<>();
+        RegisterRhEvent event = new RegisterRhEvent(future, "rh@weg.net", "password");
+        when(roleRepository.findByRole(RolesType.ROLE_RH)).thenReturn(Optional.empty());
+
+        service.registerRhAccount(event);
+
+        assertTrue(future.isCompletedExceptionally());
+        verifyNoInteractions(userRepository);
+        verify(userMapper, never()).toEntityFromRhEvent(event);
+    }
+
+    @Test
+    void reportsMissingAuthUserDuringCollaboratorRegistration() {
+        when(userRepository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThrows(NotFoundException.class, () -> service.registerCollaborator(
+                new CompletableFuture<>(), mock(RegisterCollaboratorRequestDTO.class), 99L
+        ));
+        verifyNoInteractions(roleRepository);
     }
 
     @Test

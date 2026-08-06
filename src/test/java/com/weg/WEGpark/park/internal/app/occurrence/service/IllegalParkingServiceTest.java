@@ -1,6 +1,6 @@
 package com.weg.WEGpark.park.internal.app.occurrence.service;
 
-import com.weg.WEGpark.auth.internal.infra.security.config.JWTUserData;
+import com.weg.WEGpark.auth.shared.dto.JWTUserData;
 import com.weg.WEGpark.park.internal.app.occurrence.dto.RegisterDefaultInfo;
 import com.weg.WEGpark.park.internal.app.occurrence.mapper.IllegalParkingMapper;
 import com.weg.WEGpark.park.internal.app.occurrence.mapper.OccurrenceNotificationMapper;
@@ -13,7 +13,7 @@ import com.weg.WEGpark.park.internal.domain.model.users.VehicleUser;
 import com.weg.WEGpark.park.internal.domain.model.vehicle.Vehicle;
 import com.weg.WEGpark.park.internal.dto.occurrence.defaults.DefaultOccurrenceResponseDTO;
 import com.weg.WEGpark.park.internal.dto.occurrence.illegalparking.*;
-import com.weg.WEGpark.park.internal.infra.repository.OccurrenceRepository;
+import com.weg.WEGpark.park.internal.infra.repository.IllegalParkingRepository;
 import com.weg.WEGpark.shared.exception.NotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -28,7 +28,7 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 class IllegalParkingServiceTest {
-    private OccurrenceRepository repository;
+    private IllegalParkingRepository repository;
     private OccurrenceService occurrenceService;
     private IllegalParkingMapper mapper;
     private IllegalParkingService service;
@@ -36,7 +36,7 @@ class IllegalParkingServiceTest {
 
     @BeforeEach
     void setUp() {
-        repository = mock(OccurrenceRepository.class);
+        repository = mock(IllegalParkingRepository.class);
         occurrenceService = mock(OccurrenceService.class);
         mapper = mock(IllegalParkingMapper.class);
         service = new IllegalParkingService(mapper, mock(OccurrenceNotificationMapper.class), occurrenceService, mock(ApplicationEventPublisher.class), repository);

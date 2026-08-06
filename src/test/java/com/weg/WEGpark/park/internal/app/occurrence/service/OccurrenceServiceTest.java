@@ -1,6 +1,6 @@
 package com.weg.WEGpark.park.internal.app.occurrence.service;
 
-import com.weg.WEGpark.auth.internal.infra.security.config.JWTUserData;
+import com.weg.WEGpark.auth.shared.dto.JWTUserData;
 import com.weg.WEGpark.park.SendManyOccurrencesWarnEvent;
 import com.weg.WEGpark.park.internal.app.occurrence.dto.RegisterDefaultInfo;
 import com.weg.WEGpark.park.internal.app.occurrence.mapper.*;
@@ -8,17 +8,20 @@ import com.weg.WEGpark.park.internal.app.user.mapper.GuardMapper;
 import com.weg.WEGpark.park.internal.app.user.mapper.VehicleUserMapper;
 import com.weg.WEGpark.park.internal.app.vehicle.mapper.VehicleMapper;
 import com.weg.WEGpark.park.internal.domain.model.occurrence.Occurrence;
+import com.weg.WEGpark.park.internal.domain.model.occurrence.Warning;
 import com.weg.WEGpark.park.internal.domain.model.users.Guard;
 import com.weg.WEGpark.park.internal.domain.model.users.ParkUser;
 import com.weg.WEGpark.park.internal.domain.model.users.VehicleUser;
 import com.weg.WEGpark.park.internal.domain.model.vehicle.Vehicle;
 import com.weg.WEGpark.park.internal.dto.occurrence.defaults.DefaultOccurrenceResponseDTO;
 import com.weg.WEGpark.park.internal.dto.occurrence.filter.FilterOccurrenceRequestDTO;
+import com.weg.WEGpark.park.internal.dto.occurrence.warning.GetWarningResponseDTO;
 import com.weg.WEGpark.park.internal.infra.repository.*;
 import com.weg.WEGpark.shared.exception.NotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 
@@ -35,6 +38,7 @@ class OccurrenceServiceTest {
     private VehicleRepository vehicleRepository;
     private GuardRepository guardRepository;
     private OccurrenceMapper occurrenceMapper;
+    private WarningMapper warningMapper;
     private GuardMapper guardMapper;
     private VehicleMapper vehicleMapper;
     private OccurrenceNotificationMapper notificationMapper;
@@ -47,11 +51,12 @@ class OccurrenceServiceTest {
         vehicleRepository = mock(VehicleRepository.class);
         guardRepository = mock(GuardRepository.class);
         occurrenceMapper = mock(OccurrenceMapper.class);
+        warningMapper = mock(WarningMapper.class);
         guardMapper = mock(GuardMapper.class);
         vehicleMapper = mock(VehicleMapper.class);
         notificationMapper = mock(OccurrenceNotificationMapper.class);
         publisher = mock(ApplicationEventPublisher.class);
-        service = new OccurrenceService(occurrenceRepository, vehicleRepository, guardRepository, mock(IllegalParkingMapper.class), mock(TrafficAccidentMapper.class), mock(VehicleUserMapper.class), occurrenceMapper, mock(WarningMapper.class), guardMapper, vehicleMapper, notificationMapper, publisher);
+        service = new OccurrenceService(occurrenceRepository, vehicleRepository, guardRepository, mock(IllegalParkingMapper.class), mock(TrafficAccidentMapper.class), mock(VehicleUserMapper.class), occurrenceMapper, warningMapper, guardMapper, vehicleMapper, notificationMapper, publisher);
     }
 
     @Test
@@ -61,6 +66,50 @@ class OccurrenceServiceTest {
         when(occurrenceRepository.findAll(any(org.springframework.data.jpa.domain.Specification.class), eq(pageable))).thenReturn(org.springframework.data.domain.Page.empty(pageable));
 
         assertTrue(service.findAllOccurrences(filter, pageable).isEmpty());
+    }
+
+    @Test
+    void findsOnlyOccurrencesAssociatedWithLoggedUser() {
+        UUID userUuid = UUID.randomUUID();
+        JWTUserData parkUser = new JWTUserData(userUuid, "park@weg.net", List.of("ROLE_PARK"), "Park User");
+        var pageable = PageRequest.of(0, 10);
+        Warning warning = mock(Warning.class);
+        GetWarningResponseDTO response = new GetWarningResponseDTO(null, null, null, null);
+        WarningMapper warningMapper = mock(WarningMapper.class);
+        service = new OccurrenceService(
+                occurrenceRepository, vehicleRepository, guardRepository,
+                mock(IllegalParkingMapper.class), mock(TrafficAccidentMapper.class), mock(VehicleUserMapper.class),
+                occurrenceMapper, warningMapper, guardMapper, vehicleMapper, notificationMapper, publisher
+        );
+        when(occurrenceRepository.findAllByParkUserUuid(userUuid, pageable))
+                .thenReturn(new PageImpl<>(List.of(warning), pageable, 1));
+        when(warningMapper.toGetResponse(warning)).thenReturn(response);
+
+        Page<Record> result = service.findMyOccurrences(parkUser, pageable);
+
+        assertEquals(1, result.getTotalElements());
+        assertSame(response, result.getContent().getFirst());
+        verify(occurrenceRepository).findAllByParkUserUuid(userUuid, pageable);
+    }
+
+    @Test
+    void findsOccurrenceByUuidAndMapsItsConcreteType() {
+        UUID occurrenceUuid = UUID.randomUUID();
+        Warning warning = mock(Warning.class);
+        GetWarningResponseDTO response = new GetWarningResponseDTO(null, null, null, null);
+        when(occurrenceRepository.findByUuid(occurrenceUuid)).thenReturn(Optional.of(warning));
+        when(warningMapper.toGetResponse(warning)).thenReturn(response);
+
+        assertSame(response, service.findOccurrenceByUuid(occurrenceUuid));
+        verify(occurrenceRepository).findByUuid(occurrenceUuid);
+    }
+
+    @Test
+    void rejectsMissingOccurrenceUuid() {
+        UUID occurrenceUuid = UUID.randomUUID();
+        when(occurrenceRepository.findByUuid(occurrenceUuid)).thenReturn(Optional.empty());
+
+        assertThrows(NotFoundException.class, () -> service.findOccurrenceByUuid(occurrenceUuid));
     }
 
     @Test

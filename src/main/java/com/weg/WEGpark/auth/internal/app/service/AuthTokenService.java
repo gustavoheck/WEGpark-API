@@ -1,5 +1,6 @@
 package com.weg.WEGpark.auth.internal.app.service;
 
+import com.weg.WEGpark.auth.internal.app.exception.InvalidRequestException;
 import com.weg.WEGpark.auth.internal.dto.reset.NewTokenResponseDTO;
 import com.weg.WEGpark.auth.internal.dto.reset.NumberTokenVerificateTryRequestDTO;
 import com.weg.WEGpark.auth.shared.enums.TokenType;
@@ -53,13 +54,21 @@ public class AuthTokenService {
 
     @Transactional
     public NewTokenResponseDTO validateNumberToken (NumberTokenVerificateTryRequestDTO request) {
-        NumberToken numberToken = findNumberToken(UUID.fromString(request.numberTokenId()));
+        UUID numberTokenId;
+        try {
+            numberTokenId = UUID.fromString(request.numberTokenId());
+        } catch (IllegalArgumentException | NullPointerException exception) {
+            throw new InvalidRequestException("Invalid UUID format for numberTokenId", exception);
+        }
+        NumberToken numberToken = findNumberToken(numberTokenId);
             if (!numberToken.getUsed() && numberToken.getExpirationTime().isAfter(LocalDateTime.now()) && numberToken.getTries() < 5) {
                 if (numberToken.getDigits().equals(request.numberCode())) {
                     numberToken.setUsed(true);
                     AuthToken authToken = createAuthToken(numberToken.getTargetUser(), TokenType.PASSWORD_RESET);
                     return new NewTokenResponseDTO(authToken.getToken());
                 } else {
+                    numberToken.setTries(numberToken.getTries() + 1);
+                    numberTokenRepository.save(numberToken);
                     throw new InvalidTokenException("Request digits don't match with token digits");
                 }
             } else {

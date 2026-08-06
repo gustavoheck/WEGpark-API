@@ -1,5 +1,7 @@
 package com.weg.WEGpark.auth.internal.app.service;
 
+import com.weg.WEGpark.auth.GetAuthUserIdEvent;
+import com.weg.WEGpark.auth.GetUsersActiveEvent;
 import com.weg.WEGpark.auth.internal.domain.model.User;
 import com.weg.WEGpark.auth.internal.infra.repository.UserRepository;
 import com.weg.WEGpark.auth.shared.enums.RolesType;
@@ -12,8 +14,11 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -37,7 +42,17 @@ public class AuthUserService {
             applicationEventPublisher.publishEvent(new GetParkUserNameEvent(eventResponse, user.getUuid()));
         }
 
-        return eventResponse.join();
+        return eventResponse.orTimeout(8, TimeUnit.SECONDS).join();
+    }
+
+    public void getUserId(GetAuthUserIdEvent event) {
+        userRepository.findByUuid(event.userUuid())
+                .ifPresentOrElse(
+                        user -> event.eventResponse().complete(user.getId()),
+                        () -> event.eventResponse().completeExceptionally(
+                                new NotFoundException("Any auth user was found by %s uuid".formatted(event.userUuid()))
+                        )
+                );
     }
 
     public void getActive (IsParkUserActiveEvent event) {
@@ -46,7 +61,26 @@ public class AuthUserService {
         if (optUser.isPresent()) {
             User user = optUser.get();
             event.eventResponse().complete(user.getActive());
+        } else {
+            event.eventResponse().completeExceptionally(new NotFoundException("Any user was found by %s uuid".formatted(event.targetUserUuid())));
         }
-        event.eventResponse().completeExceptionally(new NotFoundException("Any user was found by %s uuid".formatted(event.targetUserUuid())));
+    }
+
+    public void getUsersActive (GetUsersActiveEvent event) {
+        Map<Long, Boolean> activeByUserId = userRepository
+                .findAllById(event.targetUserIds())
+                .stream()
+                .collect(Collectors.toMap(User::getId, User::getActive));
+
+        event.targetUserIds()
+                .stream()
+                .filter(userId -> !activeByUserId.containsKey(userId))
+                .findFirst()
+                .ifPresentOrElse(
+                        userId -> event.eventResponse().completeExceptionally(
+                                new NotFoundException("Any auth user was found by %s id".formatted(userId))
+                        ),
+                        () -> event.eventResponse().complete(activeByUserId)
+                );
     }
 }

@@ -19,6 +19,14 @@ public interface OccurrenceRepository extends JpaRepository<Occurrence, Long>, J
 
     Optional<Occurrence> findByUuid (UUID uuid);
 
+    @Query("""
+        SELECT DISTINCT o
+        FROM Occurrence o
+        JOIN o.vehicleUsers vu
+        WHERE vu.uuidParkUser = :uuid
+        """)
+    Page<Occurrence> findAllByParkUserUuid(@Param("uuid") UUID uuid, Pageable pageable);
+
     @Query(value = """
         SELECT COUNT(DISTINCT o)
         FROM Occurrence o

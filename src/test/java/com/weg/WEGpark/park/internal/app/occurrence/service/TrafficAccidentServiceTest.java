@@ -1,10 +1,9 @@
 package com.weg.WEGpark.park.internal.app.occurrence.service;
 
-import com.weg.WEGpark.auth.internal.infra.security.config.JWTUserData;
+import com.weg.WEGpark.auth.shared.dto.JWTUserData;
 import com.weg.WEGpark.park.internal.app.occurrence.dto.RegisterDefaultInfo;
 import com.weg.WEGpark.park.internal.app.occurrence.mapper.OccurrenceNotificationMapper;
 import com.weg.WEGpark.park.internal.app.occurrence.mapper.TrafficAccidentMapper;
-import com.weg.WEGpark.park.internal.domain.enums.occurrence.OccurrenceType;
 import com.weg.WEGpark.park.internal.domain.model.occurrence.TrafficAccident;
 import com.weg.WEGpark.park.internal.domain.model.users.Guard;
 import com.weg.WEGpark.park.internal.domain.model.users.ParkUser;
@@ -12,7 +11,7 @@ import com.weg.WEGpark.park.internal.domain.model.users.VehicleUser;
 import com.weg.WEGpark.park.internal.domain.model.vehicle.Vehicle;
 import com.weg.WEGpark.park.internal.dto.occurrence.defaults.DefaultOccurrenceResponseDTO;
 import com.weg.WEGpark.park.internal.dto.occurrence.trafficaccident.*;
-import com.weg.WEGpark.park.internal.infra.repository.OccurrenceRepository;
+import com.weg.WEGpark.park.internal.infra.repository.TrafficAccidentRepository;
 import com.weg.WEGpark.shared.exception.NotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -27,7 +26,7 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 class TrafficAccidentServiceTest {
-    private OccurrenceRepository repository;
+    private TrafficAccidentRepository repository;
     private OccurrenceService occurrenceService;
     private TrafficAccidentMapper mapper;
     private TrafficAccidentService service;
@@ -35,7 +34,7 @@ class TrafficAccidentServiceTest {
 
     @BeforeEach
     void setUp() {
-        repository = mock(OccurrenceRepository.class);
+        repository = mock(TrafficAccidentRepository.class);
         occurrenceService = mock(OccurrenceService.class);
         mapper = mock(TrafficAccidentMapper.class);
         service = new TrafficAccidentService(repository, occurrenceService, mock(ApplicationEventPublisher.class), mapper, mock(OccurrenceNotificationMapper.class));

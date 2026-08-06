@@ -1,6 +1,6 @@
 package com.weg.WEGpark.park.internal.controller.vehicle;
 
-import com.weg.WEGpark.auth.internal.infra.security.config.JWTUserData;
+import com.weg.WEGpark.auth.shared.dto.JWTUserData;
 import com.weg.WEGpark.park.internal.app.user.service.VehicleUserService;
 import com.weg.WEGpark.park.internal.app.vehicle.service.VehicleService;
 import com.weg.WEGpark.park.internal.dto.vehicle.association.AssociateWithVehicleResponseDTO;
@@ -49,8 +49,11 @@ public class VehicleController {
     }
 
     @PostMapping("/associate/{uuidNotification}")
-    public ResponseEntity<AssociateWithVehicleResponseDTO> associateVehicle (@PathVariable UUID uuidNotification) {
-        AssociateWithVehicleResponseDTO response = vehicleService.associateToRegisteredVehicle(uuidNotification);
+    public ResponseEntity<AssociateWithVehicleResponseDTO> associateVehicle (
+            @PathVariable UUID uuidNotification,
+            @AuthenticationPrincipal JWTUserData jwtUserData
+    ) {
+        AssociateWithVehicleResponseDTO response = vehicleService.associateToRegisteredVehicle(uuidNotification, jwtUserData);
 
         URI uri = ServletUriComponentsBuilder
                 .fromCurrentRequest()
@@ -111,9 +114,10 @@ public class VehicleController {
             @Valid @RequestBody
             UpdateVehicleRequestDTO request,
             @PathVariable
-            UUID uuid
+            UUID uuid,
+            @AuthenticationPrincipal JWTUserData jwtUserData
     ) {
-        UpdateVehicleResponseDTO response = vehicleService.updateVehicle(uuid, request);
+        UpdateVehicleResponseDTO response = vehicleService.updateVehicle(uuid, request, jwtUserData);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(response);

@@ -1,7 +1,7 @@
 package com.weg.WEGpark.park.internal.app.user.service;
 
 import com.weg.WEGpark.auth.VisitorRegisteredEvent;
-import com.weg.WEGpark.auth.internal.infra.security.config.JWTUserData;
+import com.weg.WEGpark.auth.shared.dto.JWTUserData;
 import com.weg.WEGpark.auth.shared.enums.RolesType;
 import com.weg.WEGpark.park.internal.app.user.mapper.VisitorMapper;
 import com.weg.WEGpark.park.internal.domain.enums.user.ParkUserType;

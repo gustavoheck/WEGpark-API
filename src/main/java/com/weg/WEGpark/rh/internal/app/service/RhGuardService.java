@@ -1,6 +1,6 @@
 package com.weg.WEGpark.rh.internal.app.service;
 
-import com.weg.WEGpark.auth.internal.infra.security.config.JWTUserData;
+import com.weg.WEGpark.auth.shared.dto.JWTUserData;
 import com.weg.WEGpark.park.ParkGuardRegisteredEvent;
 import com.weg.WEGpark.park.GuardUpdatedEvent;
 import com.weg.WEGpark.rh.internal.app.mapper.RhGuardMapper;
@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
@@ -31,7 +32,7 @@ public class RhGuardService {
         CompletableFuture<ParkGuardRegisteredEvent> guardRegisteredEvent = new CompletableFuture<>();
         applicationEventPublisher.publishEvent(rhGuardMapper.toGuardRegisterEvent(request, guardRegisteredEvent));
 
-        ParkGuardRegisteredEvent response = guardRegisteredEvent.join();
+        ParkGuardRegisteredEvent response = guardRegisteredEvent.orTimeout(8, TimeUnit.SECONDS).join();
 
         operationService.saveOperation(jwtUserData, response.id(), OperationType.CREATE);
         return rhGuardMapper.toGuardRegisterResponse(response);
@@ -42,7 +43,7 @@ public class RhGuardService {
         CompletableFuture<GuardUpdatedEvent> eventResponse = new CompletableFuture<>();
         applicationEventPublisher.publishEvent(rhGuardMapper.toGuardUpdateEvent(request, guardUuid, eventResponse));
 
-        GuardUpdatedEvent response = eventResponse.join();
+        GuardUpdatedEvent response = eventResponse.orTimeout(8, TimeUnit.SECONDS).join();
 
         operationService.saveOperation(jwtUserData, response.id(), OperationType.UPDATE);
         return rhGuardMapper.toGuardUpdateResponse(response);

@@ -1,6 +1,7 @@
 package com.weg.WEGpark.auth.internal.app.service;
 
 import com.weg.WEGpark.auth.UpdateUserAuthEvent;
+import com.weg.WEGpark.auth.internal.app.exception.InvalidRequestException;
 import com.weg.WEGpark.auth.internal.app.dto.UpdateUserDTO;
 import com.weg.WEGpark.auth.internal.app.mapper.UserMapper;
 import com.weg.WEGpark.auth.internal.domain.model.AuthToken;
@@ -144,5 +145,18 @@ class AuthUpdateServiceTest {
 
         assertThrows(NotFoundException.class,
                 () -> service.activateAndDesactivateUser(new DesactivateAndActivateUserEvent(new CompletableFuture<>(), uuid)));
+    }
+
+    @Test
+    void rejectsInvalidRoleAndPasswordResetUuid() {
+        UpdateUserRequestDTO invalidRole = new UpdateUserRequestDTO(
+                "old@weg.net", "INVALID_ROLE", "new-password", "old-password", null);
+        UpdateUserRequestDTO invalidUuid = new UpdateUserRequestDTO(
+                null, null, "new-password", null, "invalid-uuid");
+
+        assertThrows(InvalidRequestException.class, () -> service.updateUserAuthDataRequest(invalidRole));
+        assertThrows(InvalidRequestException.class, () -> service.updateUserAuthDataRequest(invalidUuid));
+
+        verifyNoInteractions(passwordEncoder, userRepository, tokenService, mapper);
     }
 }

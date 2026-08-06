@@ -9,6 +9,8 @@ public record FindAssociationNotificationEvent(
 
         CompletableFuture<FindAssociationNotificationResponse> eventResponse,
 
-        UUID uuidNotification
+        UUID uuidNotification,
+
+        UUID notificatedUserUuid
 ) {
 }

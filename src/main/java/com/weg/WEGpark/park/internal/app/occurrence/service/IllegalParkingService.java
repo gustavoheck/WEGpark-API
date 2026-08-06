@@ -1,22 +1,17 @@
 package com.weg.WEGpark.park.internal.app.occurrence.service;
 
-import com.weg.WEGpark.auth.internal.domain.model.User;
-import com.weg.WEGpark.auth.internal.infra.security.config.JWTUserData;
-import com.weg.WEGpark.park.SendOccurrenceNotificationEvent;
+import com.weg.WEGpark.auth.shared.dto.JWTUserData;
 import com.weg.WEGpark.park.internal.app.occurrence.dto.RegisterDefaultInfo;
 import com.weg.WEGpark.park.internal.app.occurrence.mapper.IllegalParkingMapper;
-import com.weg.WEGpark.park.internal.app.occurrence.mapper.OccurrenceMapper;
 import com.weg.WEGpark.park.internal.app.occurrence.mapper.OccurrenceNotificationMapper;
 import com.weg.WEGpark.park.internal.domain.model.vehicle.Vehicle;
-import com.weg.WEGpark.park.internal.infra.repository.ParkUserRepository;
 import com.weg.WEGpark.shared.exception.NotFoundException;
-import com.weg.WEGpark.park.internal.domain.enums.occurrence.OccurrenceType;
 import com.weg.WEGpark.park.internal.domain.model.occurrence.IllegalParking;
 import com.weg.WEGpark.park.internal.dto.occurrence.illegalparking.CreateIllegalParkingRequestDTO;
 import com.weg.WEGpark.park.internal.dto.occurrence.illegalparking.CreateIllegalParkingResponseDTO;
 import com.weg.WEGpark.park.internal.dto.occurrence.illegalparking.GetIllegalParkingResponseDTO;
 import com.weg.WEGpark.park.internal.dto.occurrence.illegalparking.UpdateIllegalParkingRequestDTO;
-import com.weg.WEGpark.park.internal.infra.repository.OccurrenceRepository;
+import com.weg.WEGpark.park.internal.infra.repository.IllegalParkingRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
@@ -36,7 +31,7 @@ public class IllegalParkingService {
     private final OccurrenceService occurrenceService;
 
     private final ApplicationEventPublisher applicationEventPublisher;
-    private final OccurrenceRepository occurrenceRepository;
+    private final IllegalParkingRepository illegalParkingRepository;
 
     @Transactional
     public CreateIllegalParkingResponseDTO registerIllegalParkingOccurrence (
@@ -52,7 +47,7 @@ public class IllegalParkingService {
 
         info.vehicleUsers().forEach(vu -> occurrence.getVehicleUsers().add(vu));
 
-        IllegalParking savedOccurrence = occurrenceRepository.saveAndFlush(occurrence);
+        IllegalParking savedOccurrence = illegalParkingRepository.saveAndFlush(occurrence);
 
         occurrenceService.fiveOccurrenceWarn(info.vehicleUsers());
 
@@ -61,7 +56,7 @@ public class IllegalParkingService {
                 info.vehicleUsers(),
                 occurrence,
                 """
-                        Uma nova ocorrencia foi registrada para o seu veículo %s da placa %s, seu veículo foi
+                        Uma nova ocorrência foi registrada para o seu veículo %s da placa %s, seu veículo foi
                         encontrado estacionado em um local não permitido,
                         confira mais acessando a ocorrência!
                 """.formatted("%s %s".formatted(vehicle.getBrand(), vehicle.getModel()), vehicle.getPlate())
@@ -73,12 +68,12 @@ public class IllegalParkingService {
 
     @Transactional
     public GetIllegalParkingResponseDTO updateIllegalParking(UUID uuid, UpdateIllegalParkingRequestDTO request) {
-        IllegalParking occurrence = (IllegalParking) occurrenceRepository.findByUuid(uuid)
+        IllegalParking occurrence = illegalParkingRepository.findByUuid(uuid)
                 .orElseThrow(() -> new NotFoundException("Any occurrence of the illegal parking type was found by %s ".formatted(uuid)));
 
         illegalParkingMapper.updateFromDto(request, occurrence);
 
-        occurrenceRepository.save(occurrence);
+        illegalParkingRepository.save(occurrence);
 
         return illegalParkingMapper.toGetResponse(occurrence);
     }

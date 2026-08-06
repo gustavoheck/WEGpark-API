@@ -1,6 +1,6 @@
 package com.weg.WEGpark.park.internal.app.occurrence.service;
 
-import com.weg.WEGpark.auth.internal.infra.security.config.JWTUserData;
+import com.weg.WEGpark.auth.shared.dto.JWTUserData;
 import com.weg.WEGpark.park.internal.app.occurrence.dto.RegisterDefaultInfo;
 import com.weg.WEGpark.park.internal.app.occurrence.mapper.OccurrenceNotificationMapper;
 import com.weg.WEGpark.park.internal.app.occurrence.mapper.WarningMapper;
@@ -11,7 +11,7 @@ import com.weg.WEGpark.park.internal.dto.occurrence.warning.CreateWarningRequest
 import com.weg.WEGpark.park.internal.dto.occurrence.warning.CreateWarningResponseDTO;
 import com.weg.WEGpark.park.internal.dto.occurrence.warning.GetWarningResponseDTO;
 import com.weg.WEGpark.park.internal.dto.occurrence.warning.UpdateWarningRequestDTO;
-import com.weg.WEGpark.park.internal.infra.repository.OccurrenceRepository;
+import com.weg.WEGpark.park.internal.infra.repository.WarningRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
@@ -25,7 +25,7 @@ import java.util.UUID;
 @Transactional(readOnly = true)
 public class WarningService {
 
-    private final OccurrenceRepository occurrenceRepository;
+    private final WarningRepository warningRepository;
     private final OccurrenceService occurrenceService;
 
     private final WarningMapper warningMapper;
@@ -46,7 +46,7 @@ public class WarningService {
 
         info.vehicleUsers().forEach(vu -> occurrence.getVehicleUsers().add(vu));
 
-        Warning savedOccurrence = occurrenceRepository.saveAndFlush(occurrence);
+        Warning savedOccurrence = warningRepository.saveAndFlush(occurrence);
 
         occurrenceService.fiveOccurrenceWarn(info.vehicleUsers());
 
@@ -55,7 +55,7 @@ public class WarningService {
                 info.vehicleUsers(),
                 savedOccurrence,
                 """
-                        Uma nova ocorrencia foi registrada para o seu veículo %s da placa %s,
+                        Uma nova ocorrência foi registrada para o seu veículo %s da placa %s,
                         este veículo acabou recebendo um aviso, confira mais acessando a ocorrência!
                 """.formatted("%s %s".formatted(vehicle.getBrand(), vehicle.getModel()), vehicle.getPlate())
         ));
@@ -66,12 +66,12 @@ public class WarningService {
 
     @Transactional
     public GetWarningResponseDTO updateWarning (UUID uuid, UpdateWarningRequestDTO request) {
-        Warning occurrence = (Warning) occurrenceRepository.findByUuid(uuid)
+        Warning occurrence = warningRepository.findByUuid(uuid)
                 .orElseThrow(() -> new NotFoundException("Any occurrence of the warning type was found by %s ".formatted(uuid)));
 
         warningMapper.updateFromDto(request, occurrence);
 
-        occurrenceRepository.save(occurrence);
+        warningRepository.save(occurrence);
 
         return warningMapper.toGetResponse(occurrence);
     }

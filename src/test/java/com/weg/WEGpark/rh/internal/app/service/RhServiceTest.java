@@ -1,8 +1,10 @@
 package com.weg.WEGpark.rh.internal.app.service;
 
 import com.weg.WEGpark.auth.DefaultRegisteredEvent;
-import com.weg.WEGpark.auth.internal.infra.security.config.JWTUserData;
+import com.weg.WEGpark.auth.GetUsersActiveEvent;
+import com.weg.WEGpark.auth.shared.dto.JWTUserData;
 import com.weg.WEGpark.auth.shared.enums.RolesType;
+import com.weg.WEGpark.rh.GetRhUserIdEvent;
 import com.weg.WEGpark.rh.GetRhUserNameEvent;
 import com.weg.WEGpark.rh.internal.app.mapper.RhMapper;
 import com.weg.WEGpark.rh.internal.domain.enums.OperationType;
@@ -19,6 +21,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.security.access.AccessDeniedException;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -78,9 +81,13 @@ class RhServiceTest {
         assertSame(updated, service.updateRh(update, rh.getUuid(), token));
         assertSame(updated, service.updateMyProfile(update, token));
         assertSame(profile, service.findMyProfile(token));
+        assertSame(profile, service.findUserByUuid(rh.getUuid()));
         CompletableFuture<String> name = new CompletableFuture<>();
         service.getUserName(new GetRhUserNameEvent(name, rh.getUuid()));
         assertEquals(rh.getName(), name.join());
+        CompletableFuture<Long> id = new CompletableFuture<>();
+        service.getUserId(new GetRhUserIdEvent(id, rh.getUuid()));
+        assertEquals(rh.getId(), id.join());
     }
 
     @Test
@@ -91,6 +98,29 @@ class RhServiceTest {
         when(repository.findAll(pageable)).thenReturn(new PageImpl<>(List.of(rh), pageable, 1));
         when(mapper.toGetResponse(rh)).thenReturn(mock(GetRhResponseDTO.class));
         assertEquals(1, service.listRhUsers(new FindUserFilter(null, null, null, null), pageable).getTotalElements());
+    }
+
+    @Test
+    void filtersActiveRhUsersInBatchBeforeApplyingPagination() {
+        Rh secondRh = new Rh(2L, UUID.randomUUID(), "rh2@weg.net", "2", "RH 2", "3");
+        Rh thirdRh = new Rh(3L, UUID.randomUUID(), "rh3@weg.net", "3", "RH 3", "4");
+        var pageable = PageRequest.of(1, 1);
+        GetRhResponseDTO firstResponse = mock(GetRhResponseDTO.class);
+        GetRhResponseDTO thirdResponse = mock(GetRhResponseDTO.class);
+        when(repository.findAll(pageable.getSort())).thenReturn(List.of(rh, secondRh, thirdRh));
+        when(mapper.toGetResponse(rh)).thenReturn(firstResponse);
+        when(mapper.toGetResponse(thirdRh)).thenReturn(thirdResponse);
+        doAnswer(invocation -> {
+            GetUsersActiveEvent event = invocation.getArgument(0);
+            event.eventResponse().complete(Map.of(rh.getId(), true, secondRh.getId(), false, thirdRh.getId(), true));
+            return null;
+        }).when(publisher).publishEvent(any(GetUsersActiveEvent.class));
+
+        var response = service.listRhUsers(new FindUserFilter(null, null, null, true), pageable);
+
+        assertEquals(2, response.getTotalElements());
+        assertEquals(thirdResponse, response.getContent().getFirst().response());
+        verify(publisher, times(1)).publishEvent(any(GetUsersActiveEvent.class));
     }
 
     @Test

@@ -1,6 +1,8 @@
 package com.weg.WEGpark.auth.internal.infra.security.config;
 
+import com.weg.WEGpark.auth.internal.infra.repository.UserRepository;
 import com.weg.WEGpark.auth.internal.infra.security.exception.InvalidTokenException;
+import com.weg.WEGpark.auth.shared.dto.JWTUserData;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -24,6 +26,7 @@ import java.util.Optional;
 public class SecurityFilter extends OncePerRequestFilter {
 
     private final TokenConfig tokenConfig;
+    private final UserRepository userRepository;
     private final AuthenticationEntryPoint authenticationEntryPoint;
 
     @Override
@@ -44,6 +47,14 @@ public class SecurityFilter extends OncePerRequestFilter {
 
             if (optUserData.isPresent()) {
                 JWTUserData userData = optUserData.get();
+                if (userRepository.findByUuid(userData.uuid())
+                        .filter(user -> Boolean.TRUE.equals(user.getActive()))
+                        .isEmpty()) {
+                    SecurityContextHolder.clearContext();
+                    authenticationEntryPoint.commence(request, response,
+                            new InsufficientAuthenticationException("User account is inactive or does not exist"));
+                    return;
+                }
 
                 List<SimpleGrantedAuthority> authorities = userData.roles().stream()
                         .map(SimpleGrantedAuthority::new)

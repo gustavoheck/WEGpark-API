@@ -1,6 +1,7 @@
 package com.weg.WEGpark.park.internal.app.vehicle.service;
 
-import com.weg.WEGpark.auth.internal.infra.security.config.JWTUserData;
+import com.weg.WEGpark.auth.shared.dto.JWTUserData;
+import com.weg.WEGpark.auth.shared.enums.RolesType;
 import com.weg.WEGpark.notification.FindAssociationNotificationResponse;
 import com.weg.WEGpark.park.FindAssociationNotificationEvent;
 import com.weg.WEGpark.park.internal.app.user.mapper.ParkUserMapper;
@@ -28,6 +29,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -55,10 +57,12 @@ public class VehicleService {
 
     @Transactional
     public GetVehicleResponseDTO registerVehicle(CreateVehicleRequestDTO request, JWTUserData userData) {
+        String normalizedPlate = normalizePlate(request.plate());
+
         Optional<VehicleUser> alreadyAssociatedVehicleUser =
-                vehicleUserRepository.findByVehiclePlateAndParkUserUuid(request.plate(), userData.uuid());
+                vehicleUserRepository.findByVehiclePlateAndParkUserUuid(normalizedPlate, userData.uuid());
         Boolean alreadyExistentOwner =
-                vehicleUserRepository.existsByVehiclePlateAndVehicleOwnerAndActive(request.plate(), true, true);
+                vehicleUserRepository.existsByVehiclePlateAndVehicleOwnerAndActive(normalizedPlate, true, true);
         if (alreadyAssociatedVehicleUser.isPresent() && alreadyExistentOwner == false) {
             VehicleUser loggedVehicleUser = alreadyAssociatedVehicleUser.get();
             loggedVehicleUser.setActive(true);
@@ -69,15 +73,13 @@ public class VehicleService {
             loggedUserResponseList.add(vehicleUserMapper.toResponse(loggedVehicleUser));
 
             return vehicleMapper.toGetResponse(loggedVehicleUser.getVehicle(), loggedUserResponseList);
-        } else if (vehicleRepository.existsByPlate(request.plate()) == false) {
+        } else if (vehicleRepository.existsByPlate(normalizedPlate) == false) {
             ParkUser loggedUser = parkUserRepository.findByUuid(userData.uuid())
                     .orElseThrow(() -> new NotFoundException("Any park user was found by the logged uuid"));
 
             Vehicle vehicle = vehicleMapper.toEntity(request);
 
-            String plate = vehicle.getPlate();
-            plate = plate.toUpperCase().replace("-", "").trim();
-            vehicle.setPlate(plate);
+            vehicle.setPlate(normalizedPlate);
 
             vehicleRepository.saveAndFlush(vehicle);
 
@@ -102,10 +104,12 @@ public class VehicleService {
     }
 
     @Transactional
-    public AssociateWithVehicleResponseDTO associateToRegisteredVehicle(UUID uuidNotification) {
+    public AssociateWithVehicleResponseDTO associateToRegisteredVehicle(UUID uuidNotification, JWTUserData jwtUserData) {
 
         CompletableFuture<FindAssociationNotificationResponse> eventResponse = new CompletableFuture<>();
-        applicationEventPublisher.publishEvent(new FindAssociationNotificationEvent(eventResponse, uuidNotification));
+        applicationEventPublisher.publishEvent(new FindAssociationNotificationEvent(
+                eventResponse, uuidNotification, jwtUserData.uuid()
+        ));
 
         Vehicle vehicleToAssociate;
         ParkUser userToAssociate;
@@ -130,10 +134,12 @@ public class VehicleService {
 
     @Transactional
     public void SendNotificationForAssociate(AssociationNotificationRequestDTO request, JWTUserData userData) {
+        String normalizedPlate = normalizePlate(request.plate());
+
         ParkUser loggedUser = parkUserRepository.findByUuid(userData.uuid())
                 .orElseThrow(() -> new NotFoundException("Any park user was found by the logged email"));
-        Vehicle vehicle = vehicleRepository.findByPlate(request.plate())
-                .orElseThrow(() -> new NotFoundException("Any vehicle was found by %s plate".formatted(request.plate())));
+        Vehicle vehicle = vehicleRepository.findByPlate(normalizedPlate)
+                .orElseThrow(() -> new NotFoundException("Any vehicle was found by %s plate".formatted(normalizedPlate)));
         ParkUser vehicleOwner = vehicle
                 .getParkUsers()
                 .stream()
@@ -146,11 +152,7 @@ public class VehicleService {
 
     public Page<GetVehicleResponseDTO> findVehicle(FilterVehicleRequestDTO filter, Pageable pageable) {
         if (FilterUtil.checkMoreThanOneFilter(filter)) {
-            String plate = null;
-
-            if (filter.plate() != null && !filter.plate().isBlank()) {
-                plate = filter.plate().toUpperCase().replace("-", "").trim();
-            }
+            String plate = normalizePlate(filter.plate());
 
             Specification<Vehicle> spec = Specification
                     .where(VehicleSpecification.hasPlate(plate))
@@ -193,15 +195,33 @@ public class VehicleService {
     }
 
     @Transactional
-    public UpdateVehicleResponseDTO updateVehicle(UUID uuid, UpdateVehicleRequestDTO request) {
+    public UpdateVehicleResponseDTO updateVehicle(UUID uuid, UpdateVehicleRequestDTO request, JWTUserData jwtUserData) {
 
+        if (!jwtUserData.roles().contains(RolesType.ROLE_GUARD.name())
+                && vehicleUserRepository.findByVehicleUuidAndParkUserUuid(uuid, jwtUserData.uuid()).isEmpty()) {
+            throw new AccessDeniedException(
+                    "Only guards or users associated with the vehicle can update it"
+            );
+        }
         Vehicle vehicle = vehicleRepository.findByUuid(uuid)
                 .orElseThrow(() -> new NotFoundException(("The vehicle was not found by %s uuid".formatted(uuid))));
 
         vehicleMapper.updateFromDto(request, vehicle);
 
+        if (request.plate() != null) {
+            vehicle.setPlate(normalizePlate(request.plate()));
+        }
+
         vehicleRepository.save(vehicle);
 
         return vehicleMapper.toUpdateResponse(vehicle);
+    }
+
+    private String normalizePlate(String plate) {
+        if (plate == null) {
+            return null;
+        }
+
+        return plate.toUpperCase().replace("-", "").trim();
     }
 }

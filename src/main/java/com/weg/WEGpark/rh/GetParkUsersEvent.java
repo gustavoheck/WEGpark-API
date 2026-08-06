@@ -7,7 +7,7 @@ import org.springframework.data.domain.Pageable;
 import java.util.concurrent.CompletableFuture;
 
 public record GetParkUsersEvent(
-        CompletableFuture<Page<Record>> eventResponse,
+        CompletableFuture<Page<UserSearchResult>> eventResponse,
 
         FindUserFilter findUserFilter,
 

@@ -42,92 +42,99 @@ public class RegisterService {
     private final AuthNotificationService authNotificationService;
 
     @Transactional
-    public RegisterAccountResponseDTO registerCollaborator (
+    public void registerCollaborator (
             CompletableFuture<RegisterAccountResponseDTO> futureResponse,
             RegisterCollaboratorRequestDTO request,
             Long collaboratorId) {
-        if (verifyCollaboratorRegistering(collaboratorId, RolesType.ROLE_PARK)) {
-            User user = registerParkAccount(request.defaults(), futureResponse);
-            applicationEventPublisher.publishEvent(authEventMapper.toCollaboratorRegisteredEvent(request, futureResponse, user));
-            return userMapper.toRegisterResponse(user);
+        if (!verifyCollaboratorRegistering(collaboratorId, RolesType.ROLE_PARK)) {
+            futureResponse.completeExceptionally(new AlreadyHaveAccountException("An account with this badge number or email is already registered!"));
+        } else {
+            registerParkAccount(request.defaults(), futureResponse)
+                    .ifPresent(user -> applicationEventPublisher.publishEvent(
+                            authEventMapper.toCollaboratorRegisteredEvent(request, futureResponse, user)
+                    ));
         }
-        futureResponse.completeExceptionally(new AlreadyHaveAccountException("An account with this badge number or email is already registered!"));
-        return null;
     }
 
     @Transactional
     public void registerGuard (RegisterGuardEvent event, Long collaboratorId) {
-        if (verifyCollaboratorRegistering(collaboratorId, RolesType.ROLE_GUARD)) {
-            User user = registerGuardAccount(event);
-            applicationEventPublisher.publishEvent(authEventMapper.ToGuardRegisteredEvent(event, user));
-        } else {
+        if (!verifyCollaboratorRegistering(collaboratorId, RolesType.ROLE_GUARD)) {
             event.registerResponse().completeExceptionally(new AlreadyHaveAccountException("An account with this badge number or email is already registered!"));
+        } else {
+            registerGuardAccount(event)
+                    .ifPresent(user -> applicationEventPublisher.publishEvent(
+                            authEventMapper.ToGuardRegisteredEvent(event, user)
+                    ));
         }
     }
 
-    private boolean verifyCollaboratorRegistering (Long collaboratorId,RolesType roleToCompare) {
-        if (collaboratorId != null ) {
-            User user = userRepository.findById(collaboratorId).get();
-            if (user.getRole().getRole().equals(roleToCompare)) {
-                return false;
-            } else {
-                return true;
-            }
-        } else {
+    private boolean verifyCollaboratorRegistering (Long collaboratorId, RolesType roleToCompare) {
+        if (collaboratorId == null) {
             return true;
         }
+
+        User user = userRepository.findById(collaboratorId)
+                .orElseThrow(() -> new NotFoundException(
+                        "No auth user was found by %s id".formatted(collaboratorId)
+                ));
+
+        return !user.getRole().getRole().equals(roleToCompare);
     }
 
     @Transactional
-    public RegisterAccountResponseDTO registerVisitor (
+    public void registerVisitor (
             CompletableFuture<RegisterAccountResponseDTO> futureResponse,
             RegisterVisitorRequestDTO request,
             Boolean alreadyExists
     ) {
-        if (!alreadyExists) {
-            User user = registerParkAccount(request.defaults(), futureResponse);
-            applicationEventPublisher.publishEvent(authEventMapper.toVisitorRegisteredEvent(request, futureResponse, user));
-            return userMapper.toRegisterResponse(user);
+        if (alreadyExists) {
+            futureResponse.completeExceptionally(new AlreadyHaveAccountException("An account with this email is already registered!"));
+        } else {
+            registerParkAccount(request.defaults(), futureResponse)
+                    .ifPresent(user -> applicationEventPublisher.publishEvent(
+                            authEventMapper.toVisitorRegisteredEvent(request, futureResponse, user)
+                    ));
         }
-        futureResponse.completeExceptionally(new AlreadyHaveAccountException("An account with this email is already registered!"));
-        return null;
     }
 
     @Transactional
-    private User registerParkAccount (
+    private Optional<User> registerParkAccount (
             RegisterAccountRequestDTO request,
             CompletableFuture<RegisterAccountResponseDTO> futureResponse) {
 
-        User user = userMapper.toEntity(request);
         Optional<Role> role = roleRepository.findByRole(RolesType.ROLE_PARK);
 
         if (role.isEmpty()) {
             futureResponse.completeExceptionally(new NotFoundException("Any PARK role was found"));
-            return null;
+            return Optional.empty();
         }
-        return registerAccount(user, role.get());
+
+        User user = userMapper.toEntity(request);
+        return Optional.of(registerAccount(user, role.get()));
     }
 
     @Transactional
-    private User registerGuardAccount (RegisterGuardEvent event) {
-        User user = userMapper.toEntityFromGuardEvent(event);
+    private Optional<User> registerGuardAccount (RegisterGuardEvent event) {
         Optional<Role> role = roleRepository.findByRole(RolesType.ROLE_GUARD);
         if (role.isEmpty()) {
             event.registerResponse().completeExceptionally(new NotFoundException("Any GUARD role was found"));
-            return null;
+            return Optional.empty();
         }
-        return registerAccount(user, role.get());
+
+        User user = userMapper.toEntityFromGuardEvent(event);
+        return Optional.of(registerAccount(user, role.get()));
     }
 
     @Transactional
     public void registerRhAccount (RegisterRhEvent event) {
-        User user = userMapper.toEntityFromRhEvent(event);
         Optional<Role> role = roleRepository.findByRole(RolesType.ROLE_RH);
         if (role.isEmpty()) {
             event.eventResponse().completeExceptionally(new NotFoundException("Any RH role was found"));
+        } else {
+            User user = userMapper.toEntityFromRhEvent(event);
+            registerAccount(user, role.get());
+            event.eventResponse().complete(authEventMapper.toDefaultRegisteredEvent(user));
         }
-        registerAccount(user, role.get());
-        event.eventResponse().complete(authEventMapper.toDefaultRegisteredEvent(user));
     }
 
     @Transactional

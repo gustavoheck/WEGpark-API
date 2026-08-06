@@ -72,7 +72,7 @@ public class OccurrenceSpecification {
             if (plate == null || plate.trim().isEmpty()) {
                 return null;
             }
-            Join<Occurrence, VehicleUser> vehicleUser = root.join("vehicleUser");
+            Join<Occurrence, VehicleUser> vehicleUser = root.join("vehicleUsers");
             Join<VehicleUser, Vehicle> vehicle = vehicleUser.join("vehicle");
 
             return cb.equal(cb.lower(vehicle.get("plate")), plate.toLowerCase());
@@ -84,7 +84,7 @@ public class OccurrenceSpecification {
             if (name == null || name.trim().isEmpty()) {
                 return null;
             }
-            Join<Occurrence, VehicleUser> vehicleUser = root.join("vehicleUser");
+            Join<Occurrence, VehicleUser> vehicleUser = root.join("vehicleUsers");
             Join<VehicleUser, ParkUser> parkUser = vehicleUser.join("parkUser");
 
             return cb.equal(cb.lower(parkUser.get("name")), name.toLowerCase());
@@ -96,7 +96,7 @@ public class OccurrenceSpecification {
             if (badgeNumber == null || badgeNumber.trim().isEmpty()) {
                 return null;
             }
-            Join<Occurrence, VehicleUser> vehicleUser = root.join("vehicleUser");
+            Join<Occurrence, VehicleUser> vehicleUser = root.join("vehicleUsers");
             Join<VehicleUser, Collaborator> collaborator = vehicleUser.join("parkUser");
 
             return cb.equal(cb.lower(collaborator.get("badgeNumber")), badgeNumber);
