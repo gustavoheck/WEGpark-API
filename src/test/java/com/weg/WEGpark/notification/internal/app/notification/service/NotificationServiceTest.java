@@ -44,12 +44,13 @@ class NotificationServiceTest {
     @Test
     void createsAssociationNotificationWithGeneratedMessage() {
         AssociateToVehicleNotificationEvent event = new AssociateToVehicleNotificationEvent(1L, 2L, "User", 3L, "Brand", "Model");
-        VehicleAssociationNotification notification = new VehicleAssociationNotification(1L, 3L, 2L);
+        VehicleAssociationNotification notification = new VehicleAssociationNotification();
         when(mapper.toNotification(event)).thenReturn(notification);
 
         service.createAssociationNotification(event);
 
         assertTrue(notification.getMessage().contains("User"));
+        assertNotNull(notification.getNotificationTime());
         verify(repository).save(notification);
     }
 
