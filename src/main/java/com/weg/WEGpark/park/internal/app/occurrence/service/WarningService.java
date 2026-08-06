@@ -55,7 +55,7 @@ public class WarningService {
                 info.vehicleUsers(),
                 savedOccurrence,
                 """
-                        Uma nova ocorrencia foi registrada para o seu veículo %s da placa %s,
+                        Uma nova ocorrência foi registrada para o seu veículo %s da placa %s,
                         este veículo acabou recebendo um aviso, confira mais acessando a ocorrência!
                 """.formatted("%s %s".formatted(vehicle.getBrand(), vehicle.getModel()), vehicle.getPlate())
         ));
