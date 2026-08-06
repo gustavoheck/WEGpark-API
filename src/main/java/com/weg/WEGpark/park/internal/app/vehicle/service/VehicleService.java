@@ -7,6 +7,8 @@ import com.weg.WEGpark.park.FindAssociationNotificationEvent;
 import com.weg.WEGpark.park.internal.app.user.mapper.ParkUserMapper;
 import com.weg.WEGpark.park.internal.app.user.mapper.VehicleUserMapper;
 import com.weg.WEGpark.park.internal.app.vehicle.exception.NotificationNotFoundException;
+import com.weg.WEGpark.park.internal.app.vehicle.exception.VehicleAlreadyAssociatedWithUserException;
+import com.weg.WEGpark.park.internal.app.vehicle.exception.VehicleAlreadyOwnedByUserException;
 import com.weg.WEGpark.park.internal.app.vehicle.mapper.VehicleEventMapper;
 import com.weg.WEGpark.park.internal.domain.model.users.ParkUser;
 import com.weg.WEGpark.park.internal.domain.model.users.VehicleUser;
@@ -38,6 +40,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
@@ -63,17 +67,26 @@ public class VehicleService {
                 vehicleUserRepository.findByVehiclePlateAndParkUserUuid(normalizedPlate, userData.uuid());
         Boolean alreadyExistentOwner =
                 vehicleUserRepository.existsByVehiclePlateAndVehicleOwnerAndActive(normalizedPlate, true, true);
-        if (alreadyAssociatedVehicleUser.isPresent() && alreadyExistentOwner == false) {
+
+        if (alreadyAssociatedVehicleUser.isPresent()) {
             VehicleUser loggedVehicleUser = alreadyAssociatedVehicleUser.get();
-            loggedVehicleUser.setActive(true);
-            loggedVehicleUser.setVehicleOwner(true);
-            vehicleUserRepository.save(loggedVehicleUser);
+            if (loggedVehicleUser.getVehicleOwner()) {
+                if (loggedVehicleUser.getActive() && alreadyExistentOwner) {
+                    throw vehicleAlreadyOwnedByUserException();
+                }
+                if (!alreadyExistentOwner) {
+                    loggedVehicleUser.setActive(true);
+                    vehicleUserRepository.save(loggedVehicleUser);
 
-            List<GetVehicleUserResponseDTO> loggedUserResponseList = new ArrayList<>();
-            loggedUserResponseList.add(vehicleUserMapper.toResponse(loggedVehicleUser));
-
-            return vehicleMapper.toGetResponse(loggedVehicleUser.getVehicle(), loggedUserResponseList);
-        } else if (vehicleRepository.existsByPlate(normalizedPlate) == false) {
+                    List<GetVehicleUserResponseDTO> loggedUserResponseList = new ArrayList<>();
+                    loggedUserResponseList.add(vehicleUserMapper.toResponse(loggedVehicleUser));
+                    return vehicleMapper.toGetResponse(loggedVehicleUser.getVehicle(), loggedUserResponseList);
+                }
+            } else if (loggedVehicleUser.getActive()) {
+                throw vehicleAlreadyAssociatedWithUserException();
+            }
+        }
+        if (vehicleRepository.existsByPlate(normalizedPlate) == false) {
             ParkUser loggedUser = parkUserRepository.findByUuid(userData.uuid())
                     .orElseThrow(() -> new NotFoundException("Any park user was found by the logged uuid"));
 
@@ -111,22 +124,40 @@ public class VehicleService {
                 eventResponse, uuidNotification, jwtUserData.uuid()
         ));
 
-        Vehicle vehicleToAssociate;
-        ParkUser userToAssociate;
+        FindAssociationNotificationResponse associationNotification;
 
         try {
-            userToAssociate = parkUserRepository.findById(eventResponse.get().idUserToAssociate())
-                    .orElseThrow(() -> new NotFoundException("Any park user was found by the logged uuid"));
+            associationNotification = eventResponse.orTimeout(8, TimeUnit.SECONDS).join();
+        } catch (CompletionException exception) {
+            throw new NotificationNotFoundException("Error trying to find association notification");
+        }
 
-            vehicleToAssociate = vehicleRepository.findById(eventResponse.get().idVehicleToAssociate())
-                    .orElseThrow(() -> new NotFoundException("Any vehicle with this id was found"));
+        ParkUser userToAssociate = parkUserRepository.findById(associationNotification.idUserToAssociate())
+                .orElseThrow(() -> new NotFoundException("Any park user was found by the logged uuid"));
 
+        Vehicle vehicleToAssociate = vehicleRepository.findById(associationNotification.idVehicleToAssociate())
+                .orElseThrow(() -> new NotFoundException("Any vehicle with this id was found"));
+
+        Optional<VehicleUser> existentAssociation = vehicleUserRepository
+                .findByVehicleUuidAndParkUserUuid(vehicleToAssociate.getUuid(), userToAssociate.getUuid());
+
+        if (existentAssociation.isPresent()) {
+            VehicleUser vehicleUser = existentAssociation.get();
+
+            if (vehicleUser.getVehicleOwner()) {
+                throw vehicleAlreadyOwnedByUserException();
+            }
+
+            if (vehicleUser.getActive()) {
+                throw vehicleAlreadyAssociatedWithUserException();
+            }
+
+            vehicleUser.setActive(true);
+            vehicleUserRepository.save(vehicleUser);
+        } else {
             VehicleUser vehicleUser = new VehicleUser(userToAssociate, vehicleToAssociate);
             vehicleUser.setVehicleOwner(false);
             vehicleUserRepository.save(vehicleUser);
-
-        } catch (Exception e) {
-            throw new NotificationNotFoundException("Error trying to find association notification");
         }
 
         return parkUserMapper.toAssociationResponse(userToAssociate);
@@ -140,6 +171,21 @@ public class VehicleService {
                 .orElseThrow(() -> new NotFoundException("Any park user was found by the logged email"));
         Vehicle vehicle = vehicleRepository.findByPlate(normalizedPlate)
                 .orElseThrow(() -> new NotFoundException("Any vehicle was found by %s plate".formatted(normalizedPlate)));
+        Optional<VehicleUser> loggedUserAssociation = vehicleUserRepository
+                .findByVehicleUuidAndParkUserUuid(vehicle.getUuid(), loggedUser.getUuid());
+
+        if (loggedUserAssociation.isPresent()) {
+            VehicleUser vehicleUser = loggedUserAssociation.get();
+
+            if (vehicleUser.getVehicleOwner()) {
+                throw vehicleAlreadyOwnedByUserException();
+            }
+
+            if (vehicleUser.getActive()) {
+                throw vehicleAlreadyAssociatedWithUserException();
+            }
+        }
+
         ParkUser vehicleOwner = vehicle
                 .getParkUsers()
                 .stream()
@@ -223,5 +269,17 @@ public class VehicleService {
         }
 
         return plate.toUpperCase().replace("-", "").trim();
+    }
+
+    private VehicleAlreadyOwnedByUserException vehicleAlreadyOwnedByUserException() {
+        return new VehicleAlreadyOwnedByUserException(
+                "This vehicle is already registered by the logged user"
+        );
+    }
+
+    private VehicleAlreadyAssociatedWithUserException vehicleAlreadyAssociatedWithUserException() {
+        return new VehicleAlreadyAssociatedWithUserException(
+                "The logged user is already associated with this vehicle"
+        );
     }
 }

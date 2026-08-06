@@ -22,6 +22,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
@@ -40,6 +41,7 @@ public class NotificationService {
         VehicleAssociationNotification notification = notificationEventMapper.toNotification(event);
         notification.setMessage("Do you want to permit the user %s associate with your vehicle %s %s"
                 .formatted(event.userToAssociateName(), event.vehicleBrand(), event.vehicleModel()));
+        notification.setNotificationTime(LocalDateTime.now());
         notification.setUsed(false);
         notificationRepository.save(notification);
     }

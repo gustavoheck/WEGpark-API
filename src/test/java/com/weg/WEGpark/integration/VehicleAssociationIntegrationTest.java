@@ -18,11 +18,15 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -85,6 +89,61 @@ class VehicleAssociationIntegrationTest extends AbstractPostgresIntegrationTest 
         mockMvc.perform(post("/vehicle/associate/{uuid}", notification.getUuid())
                         .header("Authorization", "Bearer " + ownerJwt))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void createsDatedAssociationNotificationAndRejectsOwnerOrAssociatedRequester() throws Exception {
+        Role parkRole = roleRepository.findByRole(RolesType.ROLE_PARK).orElseThrow();
+        User ownerAuth = saveAuthUser("notification-owner@weg.net", parkRole);
+        Collaborator owner = saveParkUser(ownerAuth, "Notification Owner", "NOTIFICATION-OWNER");
+        User requesterAuth = saveAuthUser("notification-requester@weg.net", parkRole);
+        Collaborator requester = saveParkUser(
+                requesterAuth, "Notification Requester", "NOTIFICATION-REQUESTER"
+        );
+        Vehicle vehicle = vehicleRepository.saveAndFlush(
+                new Vehicle("REQ1234", "Civic", "Honda", "Blue")
+        );
+        VehicleUser ownerAssociation = new VehicleUser(owner, vehicle);
+        ownerAssociation.setVehicleOwner(true);
+        vehicleUserRepository.saveAndFlush(ownerAssociation);
+
+        String requesterJwt = tokenConfig.generateToken(requesterAuth, requester.getName());
+        mockMvc.perform(post("/vehicle/associate/notification")
+                        .header("Authorization", "Bearer " + requesterJwt)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"plate\":\"REQ1234\"}"))
+                .andExpect(status().isNoContent());
+
+        VehicleAssociationNotification notification = notificationRepository
+                .findAllByIdNotificatedUser(owner.getId(), PageRequest.of(0, 10))
+                .stream()
+                .filter(VehicleAssociationNotification.class::isInstance)
+                .map(VehicleAssociationNotification.class::cast)
+                .filter(candidate -> candidate.getIdUserToAssociate().equals(requester.getId()))
+                .findFirst()
+                .orElseThrow();
+        assertNotNull(notification.getNotificationTime());
+
+        String ownerJwt = tokenConfig.generateToken(ownerAuth, owner.getName());
+        mockMvc.perform(post("/vehicle/associate/notification")
+                        .header("Authorization", "Bearer " + ownerJwt)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"plate\":\"REQ1234\"}"))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.message")
+                        .value("This vehicle is already registered by the logged user"));
+
+        VehicleUser requesterAssociation = new VehicleUser(requester, vehicle);
+        requesterAssociation.setVehicleOwner(false);
+        vehicleUserRepository.saveAndFlush(requesterAssociation);
+
+        mockMvc.perform(post("/vehicle/associate/notification")
+                        .header("Authorization", "Bearer " + requesterJwt)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"plate\":\"REQ1234\"}"))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.message")
+                        .value("The logged user is already associated with this vehicle"));
     }
 
     private User saveAuthUser(String email, Role role) {

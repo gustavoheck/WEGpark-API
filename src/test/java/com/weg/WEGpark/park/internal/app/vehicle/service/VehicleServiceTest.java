@@ -6,6 +6,8 @@ import com.weg.WEGpark.park.AssociateToVehicleNotificationEvent;
 import com.weg.WEGpark.park.FindAssociationNotificationEvent;
 import com.weg.WEGpark.park.internal.app.user.mapper.ParkUserMapper;
 import com.weg.WEGpark.park.internal.app.user.mapper.VehicleUserMapper;
+import com.weg.WEGpark.park.internal.app.vehicle.exception.VehicleAlreadyAssociatedWithUserException;
+import com.weg.WEGpark.park.internal.app.vehicle.exception.VehicleAlreadyOwnedByUserException;
 import com.weg.WEGpark.park.internal.app.vehicle.exception.VehicleAlreadyRegisteredException;
 import com.weg.WEGpark.park.internal.app.vehicle.mapper.VehicleEventMapper;
 import com.weg.WEGpark.park.internal.app.vehicle.mapper.VehicleMapper;
@@ -138,7 +140,7 @@ class VehicleServiceTest {
         CreateVehicleRequestDTO request = new CreateVehicleRequestDTO(" abc-1234 ", "Model", "Brand", "Blue");
         VehicleUser association = new VehicleUser(user, new Vehicle("ABC1234", "M", "B", "C"));
         association.setActive(false);
-        association.setVehicleOwner(false);
+        association.setVehicleOwner(true);
         when(vehicleUserRepository.findByVehiclePlateAndParkUserUuid("ABC1234", user.getUuid())).thenReturn(Optional.of(association));
         when(vehicleUserRepository.existsByVehiclePlateAndVehicleOwnerAndActive("ABC1234", true, true)).thenReturn(false);
 
@@ -150,6 +152,32 @@ class VehicleServiceTest {
 
     @Test
     void rejectsAlreadyOwnedVehicle() {
+        CreateVehicleRequestDTO request = new CreateVehicleRequestDTO("abc1234", "Model", "Brand", "Blue");
+        VehicleUser association = new VehicleUser(user, new Vehicle("ABC1234", "Model", "Brand", "Blue"));
+        association.setVehicleOwner(true);
+        when(vehicleUserRepository.findByVehiclePlateAndParkUserUuid("ABC1234", user.getUuid()))
+                .thenReturn(Optional.of(association));
+        when(vehicleUserRepository.existsByVehiclePlateAndVehicleOwnerAndActive("ABC1234", true, true)).thenReturn(true);
+
+        assertThrows(VehicleAlreadyOwnedByUserException.class, () -> service.registerVehicle(request, token));
+        verifyNoInteractions(vehicleRepository);
+    }
+
+    @Test
+    void rejectsVehicleAlreadyAssociatedWithLoggedUser() {
+        CreateVehicleRequestDTO request = new CreateVehicleRequestDTO("abc1234", "Model", "Brand", "Blue");
+        VehicleUser association = new VehicleUser(user, new Vehicle("ABC1234", "Model", "Brand", "Blue"));
+        association.setVehicleOwner(false);
+        when(vehicleUserRepository.findByVehiclePlateAndParkUserUuid("ABC1234", user.getUuid()))
+                .thenReturn(Optional.of(association));
+        when(vehicleUserRepository.existsByVehiclePlateAndVehicleOwnerAndActive("ABC1234", true, true)).thenReturn(true);
+
+        assertThrows(VehicleAlreadyAssociatedWithUserException.class, () -> service.registerVehicle(request, token));
+        verifyNoInteractions(vehicleRepository);
+    }
+
+    @Test
+    void rejectsRegisteredVehicleForUserWithoutAssociation() {
         CreateVehicleRequestDTO request = new CreateVehicleRequestDTO("abc1234", "Model", "Brand", "Blue");
         when(vehicleUserRepository.findByVehiclePlateAndParkUserUuid(anyString(), any())).thenReturn(Optional.empty());
         when(vehicleUserRepository.existsByVehiclePlateAndVehicleOwnerAndActive("ABC1234", true, true)).thenReturn(true);
@@ -179,6 +207,34 @@ class VehicleServiceTest {
     }
 
     @Test
+    void reactivatesInactiveAssociationFromNotificationEvent() {
+        UUID notification = UUID.randomUUID();
+        Vehicle vehicle = new Vehicle("ABC1234", "Model", "Brand", "Blue");
+        vehicle.setId(4L);
+        vehicle.setUuid(UUID.randomUUID());
+        VehicleUser inactiveAssociation = new VehicleUser(user, vehicle);
+        inactiveAssociation.setVehicleOwner(false);
+        inactiveAssociation.setActive(false);
+        doAnswer(invocation -> {
+            FindAssociationNotificationEvent event = invocation.getArgument(0);
+            event.eventResponse().complete(new FindAssociationNotificationResponse(1L, 4L));
+            return null;
+        }).when(publisher).publishEvent(any(FindAssociationNotificationEvent.class));
+        when(parkUserRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(vehicleRepository.findById(4L)).thenReturn(Optional.of(vehicle));
+        when(vehicleUserRepository.findByVehicleUuidAndParkUserUuid(vehicle.getUuid(), user.getUuid()))
+                .thenReturn(Optional.of(inactiveAssociation));
+        AssociateWithVehicleResponseDTO response = new AssociateWithVehicleResponseDTO(
+                user.getUuid(), user.getEmail(), user.getName()
+        );
+        when(parkUserMapper.toAssociationResponse(user)).thenReturn(response);
+
+        assertSame(response, service.associateToRegisteredVehicle(notification, token));
+        assertTrue(inactiveAssociation.getActive());
+        verify(vehicleUserRepository).save(inactiveAssociation);
+    }
+
+    @Test
     void sendsAssociationNotificationToVehicleOwner() {
         Vehicle vehicle = new Vehicle("ABC1234", "Model", "Brand", "Blue");
         ParkUser owner = new ParkUser(2L, UUID.randomUUID(), "owner@weg.net", "1", "Owner");
@@ -194,6 +250,49 @@ class VehicleServiceTest {
 
         verify(eventMapper).toEvent(user, vehicle, owner);
         verify(publisher).publishEvent(event);
+    }
+
+    @Test
+    void rejectsAssociationNotificationRequestedByVehicleOwner() {
+        Vehicle vehicle = new Vehicle("ABC1234", "Model", "Brand", "Blue");
+        vehicle.setUuid(UUID.randomUUID());
+        VehicleUser ownerAssociation = new VehicleUser(user, vehicle);
+        ownerAssociation.setVehicleOwner(true);
+        vehicle.setParkUsers(List.of(ownerAssociation));
+        when(parkUserRepository.findByUuid(user.getUuid())).thenReturn(Optional.of(user));
+        when(vehicleRepository.findByPlate("ABC1234")).thenReturn(Optional.of(vehicle));
+        when(vehicleUserRepository.findByVehicleUuidAndParkUserUuid(vehicle.getUuid(), user.getUuid()))
+                .thenReturn(Optional.of(ownerAssociation));
+
+        assertThrows(VehicleAlreadyOwnedByUserException.class, () ->
+                service.SendNotificationForAssociate(
+                        new AssociationNotificationRequestDTO("ABC1234"), token
+                )
+        );
+        verify(publisher, never()).publishEvent(any(AssociateToVehicleNotificationEvent.class));
+    }
+
+    @Test
+    void rejectsAssociationNotificationRequestedByAssociatedUser() {
+        Vehicle vehicle = new Vehicle("ABC1234", "Model", "Brand", "Blue");
+        vehicle.setUuid(UUID.randomUUID());
+        ParkUser owner = new ParkUser(2L, UUID.randomUUID(), "owner@weg.net", "1", "Owner");
+        VehicleUser ownerAssociation = new VehicleUser(owner, vehicle);
+        ownerAssociation.setVehicleOwner(true);
+        VehicleUser userAssociation = new VehicleUser(user, vehicle);
+        userAssociation.setVehicleOwner(false);
+        vehicle.setParkUsers(List.of(ownerAssociation, userAssociation));
+        when(parkUserRepository.findByUuid(user.getUuid())).thenReturn(Optional.of(user));
+        when(vehicleRepository.findByPlate("ABC1234")).thenReturn(Optional.of(vehicle));
+        when(vehicleUserRepository.findByVehicleUuidAndParkUserUuid(vehicle.getUuid(), user.getUuid()))
+                .thenReturn(Optional.of(userAssociation));
+
+        assertThrows(VehicleAlreadyAssociatedWithUserException.class, () ->
+                service.SendNotificationForAssociate(
+                        new AssociationNotificationRequestDTO("ABC1234"), token
+                )
+        );
+        verify(publisher, never()).publishEvent(any(AssociateToVehicleNotificationEvent.class));
     }
 
     @Test

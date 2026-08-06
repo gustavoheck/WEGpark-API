@@ -8,6 +8,7 @@ import com.weg.WEGpark.auth.internal.infra.security.config.TokenConfig;
 import com.weg.WEGpark.auth.shared.enums.RolesType;
 import com.weg.WEGpark.park.internal.domain.model.users.Collaborator;
 import com.weg.WEGpark.park.internal.domain.model.users.Guard;
+import com.weg.WEGpark.park.internal.domain.model.users.VehicleUser;
 import com.weg.WEGpark.park.internal.domain.model.vehicle.Vehicle;
 import com.weg.WEGpark.park.internal.infra.repository.ParkUserRepository;
 import com.weg.WEGpark.park.internal.infra.repository.VehicleRepository;
@@ -23,6 +24,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -56,6 +58,64 @@ class VehicleRegistrationIntegrationTest extends AbstractPostgresIntegrationTest
 
         assertTrue(vehicleRepository.findByPlate("ABC1234").isPresent());
         assertTrue(vehicleUserRepository.findByParkUserId(collaborator.getId()).stream().anyMatch(vehicleUser -> vehicleUser.getVehicleOwner()));
+    }
+
+    @Test
+    void differentiatesVehicleOwnerFromAssociatedUserDuringRegistration() throws Exception {
+        Role parkRole = roleRepository.findByRole(RolesType.ROLE_PARK).orElseThrow();
+
+        User ownerAuth = new User("registration-owner@weg.net", "encoded");
+        ownerAuth.setRole(parkRole);
+        ownerAuth.setActive(true);
+        ownerAuth.setEmailValidated(true);
+        ownerAuth = userRepository.saveAndFlush(ownerAuth);
+        Collaborator owner = new Collaborator(
+                ownerAuth.getId(), ownerAuth.getUuid(), ownerAuth.getEmail(),
+                "11999999991", "Registration Owner", "REG-OWNER", "A"
+        );
+        parkUserRepository.saveAndFlush(owner);
+
+        User associatedAuth = new User("registration-associated@weg.net", "encoded");
+        associatedAuth.setRole(parkRole);
+        associatedAuth.setActive(true);
+        associatedAuth.setEmailValidated(true);
+        associatedAuth = userRepository.saveAndFlush(associatedAuth);
+        Collaborator associatedUser = new Collaborator(
+                associatedAuth.getId(), associatedAuth.getUuid(), associatedAuth.getEmail(),
+                "11999999992", "Registration Associated", "REG-ASSOCIATED", "A"
+        );
+        parkUserRepository.saveAndFlush(associatedUser);
+
+        Vehicle vehicle = vehicleRepository.saveAndFlush(
+                new Vehicle("DIF1234", "Civic", "Honda", "Blue")
+        );
+        VehicleUser ownerAssociation = new VehicleUser(owner, vehicle);
+        ownerAssociation.setVehicleOwner(true);
+        vehicleUserRepository.saveAndFlush(ownerAssociation);
+        VehicleUser userAssociation = new VehicleUser(associatedUser, vehicle);
+        userAssociation.setVehicleOwner(false);
+        vehicleUserRepository.saveAndFlush(userAssociation);
+
+        String requestBody = "{\"plate\":\"DIF1234\",\"model\":\"Civic\","
+                + "\"brand\":\"Honda\",\"color\":\"Blue\"}";
+
+        String ownerJwt = tokenConfig.generateToken(ownerAuth, owner.getName());
+        mockMvc.perform(post("/vehicle")
+                        .header("Authorization", "Bearer " + ownerJwt)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.message")
+                        .value("This vehicle is already registered by the logged user"));
+
+        String associatedJwt = tokenConfig.generateToken(associatedAuth, associatedUser.getName());
+        mockMvc.perform(post("/vehicle")
+                        .header("Authorization", "Bearer " + associatedJwt)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.message")
+                        .value("The logged user is already associated with this vehicle"));
     }
 
     @Test
