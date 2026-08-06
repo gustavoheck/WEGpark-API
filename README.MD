@@ -127,6 +127,38 @@ http://localhost:8081
 
 Durante a inicialização, o Flyway aplica as migrations necessárias nos schemas da aplicação.
 
+### 3. Exponha a API com um Quick Tunnel da Cloudflare
+
+Com a API em execução na porta `8081`, inicie o perfil opcional do túnel:
+
+```bash
+docker compose --profile tunnel up -d database cloudflared
+```
+
+Consulte os logs do `cloudflared` para localizar a URL HTTPS gerada:
+
+```bash
+docker compose logs -f cloudflared
+```
+
+O endereço exibido terá o seguinte formato e pode ser usado pelo frontend como URL base da API:
+
+```text
+https://endereco-aleatorio.trycloudflare.com
+```
+
+O Quick Tunnel é destinado somente ao desenvolvimento. A URL muda quando o container é recriado e permanece acessível apenas enquanto o serviço `cloudflared` estiver em execução.
+
+Para encerrar somente o túnel:
+
+```bash
+docker compose --profile tunnel stop cloudflared
+```
+
+Comandos para observar a url criada pelo cloudflare:
+```
+docker compose logs cloudflared | Select-String -Pattern 'https://[a-z0-9-]+\.trycloudflare\.com'
+```
 ## Autenticação
 
 A API utiliza autenticação stateless com JWT. Nas rotas protegidas, envie o token no cabeçalho:
