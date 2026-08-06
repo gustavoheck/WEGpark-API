@@ -68,7 +68,7 @@ public class TokenConfig {
                     .build()
             );
 
-        } catch (Throwable e) {
+        } catch (Exception e) {
             throw new InvalidTokenException("Invalid Token!");
         }
     }
