@@ -5,6 +5,7 @@ import com.weg.WEGpark.auth.GetUsersActiveEvent;
 import com.weg.WEGpark.auth.shared.exception.AlreadyHaveAccountException;
 import com.weg.WEGpark.auth.shared.dto.JWTUserData;
 import com.weg.WEGpark.auth.shared.enums.RolesType;
+import com.weg.WEGpark.rh.GetRhUserActiveEvent;
 import com.weg.WEGpark.rh.GetRhUserIdEvent;
 import com.weg.WEGpark.rh.GetRhUserNameEvent;
 import com.weg.WEGpark.rh.UserSearchResult;
@@ -107,6 +108,7 @@ public class RhService {
         event.eventResponse().complete(rh.getId());
     }
 
+    // Tem que parar de retornar null aqui
     public Page<UserSearchResult> listRhUsers (FindUserFilter findUserFilter, Pageable pageable) {
         if (findUserFilter != null && !FilterUtil.checkMoreThanOneFilter(findUserFilter)) {
             throw new MoreThenOneFilterException("You can not use more than one filter");
@@ -114,7 +116,11 @@ public class RhService {
 
         if (!FilterUtil.checkHaveFilter(findUserFilter)) {
             return rhRepository.findAll(pageable)
-                    .map(rh -> toSearchResult(rh, null));
+                    .map(rh -> {
+                        CompletableFuture<Boolean> userActive = new CompletableFuture<>();
+                        applicationEventPublisher.publishEvent(new GetRhUserActiveEvent(userActive, rh.getUuid()));
+                        return toSearchResult(rh, userActive.orTimeout(8, TimeUnit.SECONDS).join());
+                    });
         }
 
         if (findUserFilter.active() == null) {

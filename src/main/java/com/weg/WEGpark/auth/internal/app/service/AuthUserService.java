@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -55,14 +56,14 @@ public class AuthUserService {
                 );
     }
 
-    public void getActive (IsParkUserActiveEvent event) {
-        Optional<User> optUser = userRepository.findByUuid(event.targetUserUuid());
+    public void getActive (UUID userUUID, CompletableFuture<Boolean> eventResponse) {
+        Optional<User> optUser = userRepository.findByUuid(userUUID);
 
         if (optUser.isPresent()) {
             User user = optUser.get();
-            event.eventResponse().complete(user.getActive());
+            eventResponse.complete(user.getActive());
         } else {
-            event.eventResponse().completeExceptionally(new NotFoundException("Any user was found by %s uuid".formatted(event.targetUserUuid())));
+            eventResponse.completeExceptionally(new NotFoundException("Any user was found by %s uuid".formatted(userUUID)));
         }
     }
 

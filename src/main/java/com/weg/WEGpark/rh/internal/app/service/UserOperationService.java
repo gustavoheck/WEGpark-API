@@ -10,7 +10,6 @@ import com.weg.WEGpark.rh.GetParkUsersEvent;
 import com.weg.WEGpark.rh.UserSearchResult;
 import com.weg.WEGpark.rh.internal.app.mapper.UserOperationMapper;
 import com.weg.WEGpark.rh.internal.domain.enums.OperationType;
-import com.weg.WEGpark.rh.internal.infra.repository.RhRepository;
 import com.weg.WEGpark.rh.shared.filter.FindUserFilter;
 import com.weg.WEGpark.shared.exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -41,7 +40,6 @@ public class UserOperationService {
     private final ApplicationEventPublisher applicationEventPublisher;
     private final UserOperationMapper userOperationMapper;
     private final RhService rhService;
-    private final RhRepository rhRepository;
     private final OperationService operationService;
 
     public Page<Record> listUsers (FindUserFilter filter, Pageable pageable) {
