@@ -7,9 +7,16 @@ public class PasswordValidator implements ConstraintValidator<ValidPassword, Str
 
     private static final String SPECIAL_CHARACTERS = "!@#$%^&*(),.?\"{}|<>";
 
+    private boolean nullable;
+
+    @Override
+    public void initialize(ValidPassword constraintAnnotation) {
+        this.nullable = constraintAnnotation.nullable();
+    }
+
     @Override
     public boolean isValid(String password, ConstraintValidatorContext context) {
-        if (password == null || password.isBlank()) {
+        if (password == null || password.isBlank() && !nullable) {
             context.disableDefaultConstraintViolation();
             addViolation(context, "The password can not be blank or null");
             return false;

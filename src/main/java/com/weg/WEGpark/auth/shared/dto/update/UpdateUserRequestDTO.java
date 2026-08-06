@@ -8,7 +8,7 @@ public record UpdateUserRequestDTO(
 
         String role,
 
-        @ValidPassword
+        @ValidPassword(nullable = true)
         String password,
 
         String actualPassword,
