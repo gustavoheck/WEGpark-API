@@ -2,6 +2,7 @@ package com.weg.WEGpark.auth.internal.app.service;
 
 import com.weg.WEGpark.auth.internal.app.exception.AccountEmailNotActiveException;
 import com.weg.WEGpark.auth.internal.app.exception.InvalidLoginException;
+import com.weg.WEGpark.auth.internal.app.exception.InvalidRequestException;
 import com.weg.WEGpark.auth.shared.enums.RolesType;
 import com.weg.WEGpark.auth.internal.domain.model.User;
 import com.weg.WEGpark.auth.internal.dto.login.LoginRequestDTO;
@@ -45,7 +46,13 @@ public class LoginService {
     public LoginResponseDTO login (LoginRequestDTO request) {
         User userLogin;
         if (request.role() != null) {
-            userLogin = userRepository.findByEmailAndRole_Role(request.email(), RolesType.valueOf(request.role()))
+            RolesType role;
+            try {
+                role = RolesType.valueOf(request.role());
+            } catch (IllegalArgumentException exception) {
+                throw new InvalidRequestException("Invalid role value", exception);
+            }
+            userLogin = userRepository.findByEmailAndRole_Role(request.email(), role)
                     .orElseThrow(() -> new InvalidLoginException());
         } else {
             List<User> users = userRepository.findByEmail(request.email());

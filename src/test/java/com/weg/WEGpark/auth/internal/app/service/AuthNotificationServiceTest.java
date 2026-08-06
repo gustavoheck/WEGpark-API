@@ -3,6 +3,7 @@ package com.weg.WEGpark.auth.internal.app.service;
 import com.weg.WEGpark.auth.SendAccountValidationEmailEvent;
 import com.weg.WEGpark.auth.SendEmailCheckEvent;
 import com.weg.WEGpark.auth.internal.app.exception.InvalidEmailValidationException;
+import com.weg.WEGpark.auth.internal.app.exception.InvalidRequestException;
 import com.weg.WEGpark.auth.internal.domain.model.AuthToken;
 import com.weg.WEGpark.auth.internal.domain.model.NumberToken;
 import com.weg.WEGpark.auth.internal.domain.model.Role;
@@ -150,5 +151,14 @@ class AuthNotificationServiceTest {
 
         user.setEmailValidated(true);
         assertThrows(InvalidEmailValidationException.class, () -> service.validateAccount(tokenId));
+    }
+
+    @Test
+    void rejectsInvalidRoleValueForPasswordReset() {
+        EmailRoleRequestDTO request = new EmailRoleRequestDTO(user.getEmail(), "INVALID_ROLE");
+
+        assertThrows(InvalidRequestException.class, () -> service.resetPasswordEmailCheck(request));
+
+        verifyNoInteractions(userRepository, tokenService, publisher);
     }
 }

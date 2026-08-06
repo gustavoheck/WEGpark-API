@@ -3,6 +3,7 @@ package com.weg.WEGpark.auth.internal.infra.handler;
 import com.weg.WEGpark.auth.internal.app.exception.AccountEmailNotActiveException;
 import com.weg.WEGpark.auth.internal.app.exception.InvalidEmailValidationException;
 import com.weg.WEGpark.auth.internal.app.exception.InvalidLoginException;
+import com.weg.WEGpark.auth.internal.app.exception.InvalidRequestException;
 import com.weg.WEGpark.auth.shared.infra.handler.DefaultExceptionHandler;
 import com.weg.WEGpark.auth.shared.infra.handler.ErrorResponseDTO;
 import org.springframework.http.HttpStatus;
@@ -15,6 +16,14 @@ import com.weg.WEGpark.auth.internal.infra.security.exception.InvalidTokenExcept
 
 @RestControllerAdvice(basePackages = "com.weg.WEGpark.auth")
 public class AuthExceptionHandler extends DefaultExceptionHandler {
+
+    @ExceptionHandler(InvalidRequestException.class)
+    public ResponseEntity<ErrorResponseDTO> invalidRequestExceptionHandler(
+            InvalidRequestException exception,
+            WebRequest request
+    ) {
+        return buildErrorResponse(HttpStatus.BAD_REQUEST, exception, request);
+    }
 
     @ExceptionHandler({InvalidLoginException.class, BadCredentialsException.class})
     public ResponseEntity<ErrorResponseDTO> invalidCredentialsExceptionHandler(RuntimeException exception, WebRequest request) {

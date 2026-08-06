@@ -1,6 +1,7 @@
 package com.weg.WEGpark.auth.internal.app.service;
 
 import com.weg.WEGpark.auth.internal.app.exception.InvalidLoginException;
+import com.weg.WEGpark.auth.internal.app.exception.InvalidRequestException;
 import com.weg.WEGpark.auth.internal.domain.model.Role;
 import com.weg.WEGpark.auth.internal.domain.model.User;
 import com.weg.WEGpark.auth.internal.dto.login.LoginRequestDTO;
@@ -87,5 +88,14 @@ class LoginServiceTest {
 
         assertThrows(InvalidLoginException.class,
                 () -> service.login(new LoginRequestDTO(user.getEmail(), "wrong", RolesType.ROLE_PARK.name())));
+    }
+
+    @Test
+    void rejectsInvalidRoleValue() {
+        LoginRequestDTO request = new LoginRequestDTO(user.getEmail(), "password", "INVALID_ROLE");
+
+        assertThrows(InvalidRequestException.class, () -> service.login(request));
+
+        verifyNoInteractions(userRepository, authenticationManager, tokenConfig, notificationService, authUserService);
     }
 }

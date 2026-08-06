@@ -1,6 +1,7 @@
 package com.weg.WEGpark.auth.internal.app.service;
 
 import com.weg.WEGpark.auth.UpdateUserAuthEvent;
+import com.weg.WEGpark.auth.internal.app.exception.InvalidRequestException;
 import com.weg.WEGpark.auth.internal.app.mapper.UserMapper;
 import com.weg.WEGpark.auth.shared.enums.RolesType;
 import com.weg.WEGpark.auth.shared.enums.TokenType;
@@ -38,12 +39,24 @@ public class AuthUpdateService {
         User user;
         boolean isPasswordCorrect;
         if (request.tokenIfPasswordReset() != null) {
-            AuthToken token = checkToken(UUID.fromString(request.tokenIfPasswordReset()), TokenType.PASSWORD_RESET);
+            UUID tokenUuid;
+            try {
+                tokenUuid = UUID.fromString(request.tokenIfPasswordReset());
+            } catch (IllegalArgumentException exception) {
+                throw new InvalidRequestException("Invalid UUID format for tokenIfPasswordReset", exception);
+            }
+            AuthToken token = checkToken(tokenUuid, TokenType.PASSWORD_RESET);
             user = token.getTargetUser();
             token.setUsed(true);
             isPasswordCorrect = true;
         } else {
-            user = userRepository.findByEmailAndRole_Role(request.email(), RolesType.valueOf(request.role()))
+            RolesType role;
+            try {
+                role = RolesType.valueOf(request.role());
+            } catch (IllegalArgumentException | NullPointerException exception) {
+                throw new InvalidRequestException("Invalid role value", exception);
+            }
+            user = userRepository.findByEmailAndRole_Role(request.email(), role)
                     .orElseThrow(() -> new NotFoundException("Any %s user was found by %s email".formatted(request.role(), request.email())));
             isPasswordCorrect = passwordEncoder.matches(request.actualPassword(), user.getPassword());
         }

@@ -3,6 +3,7 @@ package com.weg.WEGpark.auth.internal.app.service;
 import com.weg.WEGpark.auth.SendAccountValidationEmailEvent;
 import com.weg.WEGpark.auth.SendEmailCheckEvent;
 import com.weg.WEGpark.auth.internal.app.exception.InvalidEmailValidationException;
+import com.weg.WEGpark.auth.internal.app.exception.InvalidRequestException;
 import com.weg.WEGpark.auth.internal.dto.defaults.EmailRequestDTO;
 import com.weg.WEGpark.auth.internal.dto.defaults.EmailRoleRequestDTO;
 import com.weg.WEGpark.auth.shared.enums.TokenType;
@@ -59,7 +60,13 @@ public class AuthNotificationService {
 
     @Transactional
     public NewTokenResponseDTO resetPasswordEmailCheck (EmailRoleRequestDTO request) {
-        User user = userRepository.findByEmailAndRole_Role(request.email(), RolesType.valueOf(request.role()))
+        RolesType role;
+        try {
+            role = RolesType.valueOf(request.role());
+        } catch (IllegalArgumentException | NullPointerException exception) {
+            throw new InvalidRequestException("Invalid role value", exception);
+        }
+        User user = userRepository.findByEmailAndRole_Role(request.email(), role)
                 .orElseThrow(() -> new NotFoundException("Any user was found by %s email and %s role".formatted(request.email(), request.role())));
 
         NumberToken numberToken = authTokenService.createNumberToken(user);
