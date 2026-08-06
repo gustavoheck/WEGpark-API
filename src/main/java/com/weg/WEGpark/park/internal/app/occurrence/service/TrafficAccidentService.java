@@ -57,8 +57,8 @@ public class TrafficAccidentService {
                 info.vehicleUsers(),
                 occurrence,
                 """
-                        Uma nova ocorrencia foi registrada para o seu veículo %s da placa %s,
-                        este veículo acabou sofrendo um sinistro de transito,
+                        Uma nova ocorrência foi registrada para o seu veículo %s da placa %s,
+                        este veículo acabou sofrendo um sinistro de trânsito,
                         confira mais acessando a ocorrência!
                 """.formatted("%s %s".formatted(vehicle.getBrand(), vehicle.getModel()), vehicle.getPlate())
         ));
