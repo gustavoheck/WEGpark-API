@@ -1,90 +1,203 @@
+# WEGpark API
 
-Para encerrar o banco local:
+API REST desenvolvida para apoiar o gerenciamento básico de um estacionamento corporativo da WEG. A aplicação centraliza o cadastro de usuários e veículos, o controle de associações, o registro de ocorrências e o envio de notificações.
+
+> **Aviso:** este projeto foi criado em um contexto **100% educacional**, durante um processo de aprendizagem de desenvolvimento backend. Ele não representa um sistema oficial da WEG e não possui finalidade comercial.
+
+## Sobre o projeto
+
+O WEGpark permite que colaboradores e visitantes mantenham seus dados e veículos, enquanto guardas e profissionais de RH executam operações relacionadas à segurança e à administração do estacionamento.
+
+Entre os principais fluxos da API estão:
+
+- cadastro de colaboradores e visitantes;
+- autenticação e autorização com JWT;
+- validação de conta por e-mail;
+- recuperação e alteração de senha;
+- consulta e atualização de perfis;
+- cadastro e associação de veículos;
+- registro e consulta de ocorrências;
+- gerenciamento de usuários por profissionais de RH;
+- notificações internas e envio de e-mails.
+
+## Arquitetura
+
+A aplicação utiliza uma arquitetura de **monólito modular**. O código é separado por contexto de negócio e cada módulo mantém internamente seus controllers, DTOs, serviços, mappers, entidades e repositórios.
+
+Os módulos se comunicam principalmente por eventos do Spring, reduzindo o acoplamento direto entre eles.
+
+### Módulos da aplicação
+
+| Módulo | Responsabilidade |
+| --- | --- |
+| `auth` | Cadastro de contas, login, tokens JWT, validação de e-mail e recuperação de senha |
+| `park` | Usuários do estacionamento, veículos, associações e ocorrências |
+| `rh` | Operações administrativas de RH, incluindo gestão de usuários e guardas |
+| `notification` | Notificações da aplicação e envio assíncrono de e-mails |
+| `shared` | Recursos comuns utilizados pela aplicação |
+
+## Tecnologias utilizadas
+
+- Java 21;
+- Spring Boot 4.0.7;
+- Spring Web MVC;
+- Spring Security;
+- Spring Data JPA;
+- Spring Modulith;
+- PostgreSQL 18;
+- Flyway;
+- MapStruct;
+- Lombok;
+- Thymeleaf e Spring Mail;
+- JWT com chaves RSA;
+- Springdoc OpenAPI e Swagger UI;
+- JUnit e Testcontainers;
+- Maven;
+- Docker Compose.
+
+## Requisitos
+
+Antes de executar o projeto, tenha instalado:
+
+- JDK 21;
+- Docker e Docker Compose;
+- Git.
+
+O projeto contém o Maven Wrapper, portanto não é necessário instalar o Maven globalmente.
+
+## Configuração
+
+Na raiz do projeto, crie o arquivo `.env` a partir do exemplo fornecido:
 
 ```bash
-docker compose down
+cp .env.example .env
 ```
 
-## Autenticação e autorização
+No Windows PowerShell:
 
-Os endpoints protegidos esperam o JWT no cabeçalho HTTP:
+```powershell
+Copy-Item .env.example .env
+```
+
+Configure as variáveis:
+
+```dotenv
+DB_NAME=
+DB_USER=
+DB_PASSWORD=
+JWT_PRIVATE_KEY=
+JWT_PUBLIC_KEY=
+MAIL_USERNAME=
+MAIL_PASSWORD=
+```
+
+As chaves JWT devem formar um par RSA válido. As credenciais de e-mail são utilizadas pelos fluxos de validação de conta, recuperação de senha e notificações.
+
+> Nunca versione o arquivo `.env` nem publique senhas, tokens ou chaves privadas.
+
+## Como executar
+
+### 1. Inicie o banco de dados
+
+```bash
+docker compose up -d
+```
+
+O Docker Compose inicia o PostgreSQL 18 na porta `5432`.
+
+### 2. Inicie a API
+
+Linux ou macOS:
+
+```bash
+./mvnw spring-boot:run
+```
+
+Windows:
+
+```powershell
+.\mvnw.cmd spring-boot:run
+```
+
+A aplicação será iniciada em:
+
+```text
+http://localhost:8081
+```
+
+Durante a inicialização, o Flyway aplica as migrations necessárias nos schemas da aplicação.
+
+## Autenticação
+
+A API utiliza autenticação stateless com JWT. Nas rotas protegidas, envie o token no cabeçalho:
 
 ```http
 Authorization: Bearer <token>
 ```
 
-Os principais perfis de acesso são:
+Os perfis de acesso existentes são:
 
-| Perfil | Responsabilidade geral |
-| --- | --- |
-| `ROLE_PARK` | Colaboradores e visitantes que utilizam o estacionamento |
-| `ROLE_GUARD` | Guardas responsáveis por veículos e ocorrências |
-| `ROLE_RH` | Equipe responsável pela gestão de usuários |
-| `ROLE_ADMIN` | Administração geral da aplicação |
+- `ROLE_PARK`: colaboradores e visitantes;
+- `ROLE_GUARD`: guardas do estacionamento;
+- `ROLE_RH`: profissionais de RH;
+- `ROLE_ADMIN`: administradores.
 
-As permissões efetivas são definidas na configuração do Spring Security. Contas inativas ou inexistentes são rejeitadas mesmo quando o token apresentado é válido.
+## Principais recursos da API
 
-## Principais endpoints
+### Autenticação — `/auth`
 
-A tabela apresenta uma visão geral dos recursos. Os corpos das requisições, respostas, filtros e regras de acesso podem ser consultados na documentação OpenAPI da aplicação.
+- seleção de perfil por e-mail;
+- login;
+- cadastro de colaboradores e visitantes;
+- validação de e-mail;
+- recuperação de senha.
 
-| Método | Rota | Descrição |
-| --- | --- | --- |
-| `POST` | `/auth` | Consulta os perfis associados a um e-mail |
-| `POST` | `/auth/login` | Autentica um usuário |
-| `POST` | `/auth/register/collaborator` | Cadastra uma conta de colaborador |
-| `POST` | `/auth/register/visitor` | Cadastra uma conta de visitante |
-| `GET` | `/auth/validate-email/{token}` | Valida o e-mail de uma conta |
-| `POST` | `/auth/validate-email/resend` | Reenvia a validação de e-mail |
-| `POST` | `/auth/reset-password/check-email` | Inicia a recuperação de senha |
-| `POST` | `/auth/reset-password/check-email/answer` | Valida o código de recuperação |
-| `PATCH` | `/auth/reset-password` | Define a nova senha |
-| `GET` | `/park/profile` | Consulta o perfil do usuário autenticado |
-| `PATCH` | `/park/profile/collaborator` | Atualiza o perfil de colaborador |
-| `PATCH` | `/park/profile/visitor` | Atualiza o perfil de visitante |
-| `POST` | `/vehicle` | Cadastra um veículo |
-| `GET` | `/vehicle` | Consulta veículos com paginação e filtros |
-| `GET` | `/vehicle/me` | Consulta os veículos do usuário autenticado |
-| `PUT` | `/vehicle/{uuid}` | Atualiza um veículo |
-| `POST` | `/vehicle/associate/{uuidNotification}` | Confirma uma associação de veículo |
-| `POST` | `/vehicle/associate/notification` | Solicita uma associação de veículo |
-| `POST` | `/vehicle/associate/disable/{vehicleUuid}` | Remove uma associação de veículo |
-| `GET` | `/occurrence` | Consulta ocorrências com paginação e filtros |
-| `GET` | `/occurrence/{uuid}` | Consulta uma ocorrência específica |
-| `GET` | `/occurrence/me` | Consulta ocorrências do usuário autenticado |
-| `POST` | `/occurrence/warning` | Registra uma advertência |
-| `POST` | `/occurrence/traffic-accident` | Registra um acidente de trânsito |
-| `POST` | `/occurrence/illegal-parking` | Registra um estacionamento irregular |
-| `PUT` | `/occurrence/warning/{uuid}` | Atualiza uma advertência |
-| `PUT` | `/occurrence/traffic-accident/{uuid}` | Atualiza um acidente de trânsito |
-| `PUT` | `/occurrence/illegal-parking/{uuid}` | Atualiza um estacionamento irregular |
-| `GET` | `/notification` | Consulta as notificações do usuário autenticado |
-| `DELETE` | `/notification/{uuid}` | Exclui uma notificação do usuário autenticado |
-| `POST` | `/rh` | Cadastra um usuário de RH |
-| `GET` | `/rh` | Consulta usuários com paginação e filtros |
-| `GET` | `/rh/me` | Consulta o perfil de RH autenticado |
-| `PATCH` | `/rh/me` | Atualiza o próprio perfil de RH |
-| `GET` | `/rh/user/{userUuid}` | Consulta um usuário gerenciado pelo RH |
-| `PUT` | `/rh/user/{userUuid}` | Atualiza um usuário gerenciado pelo RH |
-| `POST` | `/rh/user/{userUuid}/desactivate` | Ativa ou desativa um usuário |
-| `POST` | `/rh/guard` | Cadastra um guarda |
-| `PUT` | `/rh/guard/{guardUuid}` | Atualiza um guarda |
-| `PUT` | `/rh/{rhUuid}` | Atualiza um usuário de RH |
+### Usuários do estacionamento — `/park`
 
-## OpenAPI e Swagger UI
+- consulta do próprio perfil;
+- atualização de dados de colaborador ou visitante.
 
-Com a aplicação em execução, a especificação e a interface do Swagger ficam disponíveis nas rotas padrão:
+### Veículos — `/vehicle`
+
+- cadastro e atualização de veículos;
+- consulta paginada e filtrada;
+- consulta dos veículos do usuário autenticado;
+- solicitação, confirmação e remoção de associações.
+
+### Ocorrências — `/occurrence`
+
+- consulta paginada e filtrada de ocorrências;
+- consulta das ocorrências do usuário autenticado;
+- registro e atualização de advertências;
+- registro e atualização de acidentes de trânsito;
+- registro e atualização de estacionamento irregular.
+
+### Notificações — `/notification`
+
+- consulta paginada das próprias notificações;
+- exclusão de notificações.
+
+### Recursos Humanos — `/rh`
+
+- cadastro e atualização de usuários de RH;
+- consulta e gerenciamento de usuários;
+- ativação e desativação de contas;
+- cadastro e atualização de guardas.
+
+## Documentação da API
+
+Com a aplicação em execução, a documentação OpenAPI pode ser acessada em:
 
 ```text
-http://localhost:8081/v3/api-docs
 http://localhost:8081/swagger-ui/index.html
+http://localhost:8081/v3/api-docs
 ```
 
-De acordo com a configuração de segurança atual, essas rotas exigem autenticação com o perfil `ROLE_ADMIN`.
+Na configuração atual, essas rotas são protegidas e exigem o perfil `ROLE_ADMIN`.
 
 ## Testes
 
-Execute a suíte de testes com:
+Para executar os testes:
 
 Linux ou macOS:
 
@@ -98,18 +211,18 @@ Windows:
 .\mvnw.cmd test
 ```
 
-Os testes incluem unidades de serviço e fluxos de integração. Os testes integrados utilizam Testcontainers com PostgreSQL 18, portanto o Docker deve estar em execução.
+Os testes de integração utilizam Testcontainers com PostgreSQL 18. Por isso, o Docker deve estar em execução.
 
 ## Banco de dados
 
-O Hibernate está configurado para não criar nem alterar o schema automaticamente. A evolução do banco é controlada exclusivamente pelas migrations localizadas em:
+O esquema do banco não é gerado automaticamente pelo Hibernate. Todas as alterações estruturais são versionadas com Flyway em:
 
 ```text
 src/main/resources/db/migration
 ```
 
-As migrations trabalham com os schemas `infra`, `auth`, `rh`, `park` e `notification`.
+Os schemas utilizados são `infra`, `auth`, `rh`, `park` e `notification`.
 
-## Observação final
+## Finalidade educacional
 
-O WEGpark foi criado como exercício prático para estudar desenvolvimento de APIs, segurança, persistência, arquitetura modular, eventos, testes e containerização no ecossistema Spring. Seu conteúdo deve ser entendido como material de aprendizagem, e não como uma solução oficial ou pronta para produção.
+O WEGpark foi desenvolvido para praticar conceitos de APIs REST, arquitetura modular, segurança, persistência, eventos, testes automatizados e containerização. Todo o projeto deve ser entendido como parte de uma jornada de aprendizagem, sem vínculo com um produto oficial ou ambiente de produção da WEG.
