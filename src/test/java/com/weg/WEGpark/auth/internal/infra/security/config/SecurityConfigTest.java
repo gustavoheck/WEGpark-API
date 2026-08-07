@@ -104,7 +104,7 @@ class SecurityConfigTest {
         mockMvc.perform(post("/vehicle").with(guard))
                 .andExpect(status().isForbidden());
         mockMvc.perform(get("/park/profile").with(guard))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isOk());
     }
 
     @Test
@@ -148,6 +148,8 @@ class SecurityConfigTest {
     @Test
     void blocksProtectedAndUnlistedEndpoints() throws Exception {
         mockMvc.perform(get("/vehicle"))
+                .andExpect(status().isUnauthorized());
+        mockMvc.perform(get("/park/profile"))
                 .andExpect(status().isUnauthorized());
         mockMvc.perform(get("/admin-fallback")
                         .with(user("park").authorities(new SimpleGrantedAuthority(RolesType.ROLE_PARK.name()))))

@@ -68,10 +68,18 @@ class IllegalParkingServiceTest {
         UUID uuid = UUID.randomUUID();
         UpdateIllegalParkingRequestDTO request = mock(UpdateIllegalParkingRequestDTO.class);
         GetIllegalParkingResponseDTO response = mock(GetIllegalParkingResponseDTO.class);
+        DefaultOccurrenceResponseDTO occurrenceDefaults = mock(DefaultOccurrenceResponseDTO.class);
+        Vehicle vehicle = new Vehicle("ABC1234", "M", "B", "C");
+        occurrence.getVehicleUsers().add(new VehicleUser(
+                new ParkUser(1L, UUID.randomUUID(), "u@weg.net", "1", "User"),
+                vehicle
+        ));
         when(repository.findByUuid(uuid)).thenReturn(Optional.of(occurrence));
-        when(mapper.toGetResponse(occurrence)).thenReturn(response);
+        when(occurrenceService.getOccurrenceResponse(occurrence, vehicle)).thenReturn(occurrenceDefaults);
+        when(mapper.toGetResponse(occurrence, occurrenceDefaults)).thenReturn(response);
         assertSame(response, service.updateIllegalParking(uuid, request));
         verify(repository).save(occurrence);
+        verify(mapper).toGetResponse(occurrence, occurrenceDefaults);
         when(repository.findByUuid(uuid)).thenReturn(Optional.empty());
         assertThrows(NotFoundException.class, () -> service.updateIllegalParking(uuid, request));
     }

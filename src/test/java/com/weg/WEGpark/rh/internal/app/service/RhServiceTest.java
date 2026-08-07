@@ -5,6 +5,7 @@ import com.weg.WEGpark.auth.GetUsersActiveEvent;
 import com.weg.WEGpark.auth.shared.dto.JWTUserData;
 import com.weg.WEGpark.auth.shared.enums.RolesType;
 import com.weg.WEGpark.rh.GetRhUserIdEvent;
+import com.weg.WEGpark.rh.GetRhUserActiveEvent;
 import com.weg.WEGpark.rh.GetRhUserNameEvent;
 import com.weg.WEGpark.rh.internal.app.mapper.RhMapper;
 import com.weg.WEGpark.rh.internal.domain.enums.OperationType;
@@ -97,7 +98,14 @@ class RhServiceTest {
         var pageable = PageRequest.of(0, 10);
         when(repository.findAll(pageable)).thenReturn(new PageImpl<>(List.of(rh), pageable, 1));
         when(mapper.toGetResponse(rh)).thenReturn(mock(GetRhResponseDTO.class));
+        doAnswer(invocation -> {
+            GetRhUserActiveEvent event = invocation.getArgument(0);
+            event.eventResponse().complete(true);
+            return null;
+        }).when(publisher).publishEvent(any(GetRhUserActiveEvent.class));
+
         assertEquals(1, service.listRhUsers(new FindUserFilter(null, null, null, null), pageable).getTotalElements());
+        verify(publisher).publishEvent(any(GetRhUserActiveEvent.class));
     }
 
     @Test
