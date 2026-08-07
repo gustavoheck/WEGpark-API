@@ -27,6 +27,7 @@ public class NotificationService {
     @Transactional
     public void createAssociationNotification (AssociateToVehicleNotificationEvent event) {
         VehicleAssociationNotification notification = notificationEventMapper.toNotification(event);
+        notification.setNotificationType(NotificationType.VEHICLE_ASSOCIATION);
         notification.setMessage("Do you want to permit the user %s associate with your vehicle %s %s"
                 .formatted(event.userToAssociateName(), event.vehicleBrand(), event.vehicleModel()));
         notificationRepository.save(notification);
