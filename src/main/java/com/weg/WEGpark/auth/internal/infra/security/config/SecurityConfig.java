@@ -67,7 +67,12 @@ public class SecurityConfig {
                                         RolesType.ROLE_RH.name(),
                                         RolesType.ROLE_ADMIN.name()
                                 )
-                        .requestMatchers(HttpMethod.GET, "/park/profile").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/park/profile")
+                                .hasAnyAuthority(
+                                        RolesType.ROLE_PARK.name(),
+                                        RolesType.ROLE_GUARD.name(),
+                                        RolesType.ROLE_ADMIN.name()
+                                )
                         .requestMatchers(HttpMethod.PATCH,
                                 "/park/profile/collaborator",
                                 "/park/profile/visitor"

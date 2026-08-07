@@ -8,7 +8,6 @@ import com.weg.WEGpark.auth.internal.infra.repository.UserRepository;
 import com.weg.WEGpark.auth.shared.enums.RolesType;
 import com.weg.WEGpark.park.GetParkUserNameEvent;
 import com.weg.WEGpark.rh.GetRhUserNameEvent;
-import com.weg.WEGpark.shared.IsParkUserActiveEvent;
 import com.weg.WEGpark.shared.exception.NotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -84,7 +83,7 @@ class AuthUserServiceTest {
         when(userRepository.findByUuid(uuid)).thenReturn(Optional.of(user));
         var response = new java.util.concurrent.CompletableFuture<Boolean>();
 
-        service.getActive(new IsParkUserActiveEvent(response, uuid));
+        service.getActive(uuid, response);
 
         assertTrue(response.join());
     }
@@ -95,7 +94,7 @@ class AuthUserServiceTest {
         when(userRepository.findByUuid(uuid)).thenReturn(Optional.empty());
         var response = new java.util.concurrent.CompletableFuture<Boolean>();
 
-        service.getActive(new IsParkUserActiveEvent(response, uuid));
+        service.getActive(uuid, response);
 
         assertTrue(response.isCompletedExceptionally());
         assertThrows(java.util.concurrent.CompletionException.class, response::join);

@@ -76,12 +76,20 @@ class WarningServiceTest {
         UUID uuid = UUID.randomUUID();
         UpdateWarningRequestDTO request = mock(UpdateWarningRequestDTO.class);
         GetWarningResponseDTO response = mock(GetWarningResponseDTO.class);
+        DefaultOccurrenceResponseDTO occurrenceDefaults = mock(DefaultOccurrenceResponseDTO.class);
+        Vehicle vehicle = new Vehicle("ABC1234", "M", "B", "C");
+        warning.getVehicleUsers().add(new VehicleUser(
+                new ParkUser(1L, UUID.randomUUID(), "u@weg.net", "1", "User"),
+                vehicle
+        ));
         when(repository.findByUuid(uuid)).thenReturn(Optional.of(warning));
-        when(mapper.toGetResponse(warning)).thenReturn(response);
+        when(occurrenceService.getOccurrenceResponse(warning, vehicle)).thenReturn(occurrenceDefaults);
+        when(mapper.toGetResponse(warning, occurrenceDefaults)).thenReturn(response);
 
         assertSame(response, service.updateWarning(uuid, request));
         verify(mapper).updateFromDto(request, warning);
         verify(repository).save(warning);
+        verify(mapper).toGetResponse(warning, occurrenceDefaults);
 
         when(repository.findByUuid(uuid)).thenReturn(Optional.empty());
         assertThrows(NotFoundException.class, () -> service.updateWarning(uuid, request));

@@ -53,10 +53,10 @@ class VehicleRegistrationIntegrationTest extends AbstractPostgresIntegrationTest
         mockMvc.perform(post("/vehicle")
                         .header("Authorization", "Bearer " + jwt)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"plate\":\"abc1234\",\"model\":\"Civic\",\"brand\":\"Honda\",\"color\":\"Blue\"}"))
+                        .content("{\"plate\":\"ABC1D23\",\"model\":\"Civic\",\"brand\":\"Honda\",\"color\":\"Blue\"}"))
                 .andExpect(status().isCreated());
 
-        assertTrue(vehicleRepository.findByPlate("ABC1234").isPresent());
+        assertTrue(vehicleRepository.findByPlate("ABC1D23").isPresent());
         assertTrue(vehicleUserRepository.findByParkUserId(collaborator.getId()).stream().anyMatch(vehicleUser -> vehicleUser.getVehicleOwner()));
     }
 
@@ -87,7 +87,7 @@ class VehicleRegistrationIntegrationTest extends AbstractPostgresIntegrationTest
         parkUserRepository.saveAndFlush(associatedUser);
 
         Vehicle vehicle = vehicleRepository.saveAndFlush(
-                new Vehicle("DIF1234", "Civic", "Honda", "Blue")
+                new Vehicle("DIF1E23", "Civic", "Honda", "Blue")
         );
         VehicleUser ownerAssociation = new VehicleUser(owner, vehicle);
         ownerAssociation.setVehicleOwner(true);
@@ -96,7 +96,7 @@ class VehicleRegistrationIntegrationTest extends AbstractPostgresIntegrationTest
         userAssociation.setVehicleOwner(false);
         vehicleUserRepository.saveAndFlush(userAssociation);
 
-        String requestBody = "{\"plate\":\"DIF1234\",\"model\":\"Civic\","
+        String requestBody = "{\"plate\":\"DIF1E23\",\"model\":\"Civic\","
                 + "\"brand\":\"Honda\",\"color\":\"Blue\"}";
 
         String ownerJwt = tokenConfig.generateToken(ownerAuth, owner.getName());

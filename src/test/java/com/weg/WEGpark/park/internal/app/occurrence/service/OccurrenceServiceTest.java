@@ -40,6 +40,7 @@ class OccurrenceServiceTest {
     private OccurrenceMapper occurrenceMapper;
     private WarningMapper warningMapper;
     private GuardMapper guardMapper;
+    private VehicleUserMapper vehicleUserMapper;
     private VehicleMapper vehicleMapper;
     private OccurrenceNotificationMapper notificationMapper;
     private ApplicationEventPublisher publisher;
@@ -53,10 +54,11 @@ class OccurrenceServiceTest {
         occurrenceMapper = mock(OccurrenceMapper.class);
         warningMapper = mock(WarningMapper.class);
         guardMapper = mock(GuardMapper.class);
+        vehicleUserMapper = mock(VehicleUserMapper.class);
         vehicleMapper = mock(VehicleMapper.class);
         notificationMapper = mock(OccurrenceNotificationMapper.class);
         publisher = mock(ApplicationEventPublisher.class);
-        service = new OccurrenceService(occurrenceRepository, vehicleRepository, guardRepository, mock(IllegalParkingMapper.class), mock(TrafficAccidentMapper.class), mock(VehicleUserMapper.class), occurrenceMapper, warningMapper, guardMapper, vehicleMapper, notificationMapper, publisher);
+        service = new OccurrenceService(occurrenceRepository, vehicleRepository, guardRepository, mock(IllegalParkingMapper.class), mock(TrafficAccidentMapper.class), vehicleUserMapper, occurrenceMapper, warningMapper, guardMapper, vehicleMapper, notificationMapper, publisher);
     }
 
     @Test
@@ -76,14 +78,22 @@ class OccurrenceServiceTest {
         Warning warning = mock(Warning.class);
         GetWarningResponseDTO response = new GetWarningResponseDTO(null, null, null, null);
         WarningMapper warningMapper = mock(WarningMapper.class);
+        Vehicle vehicle = new Vehicle("ABC1234", "M", "B", "C");
+        VehicleUser association = new VehicleUser(
+                new ParkUser(1L, userUuid, "park@weg.net", "1", "Park User"),
+                vehicle
+        );
+        DefaultOccurrenceResponseDTO occurrenceDefaults = mock(DefaultOccurrenceResponseDTO.class);
         service = new OccurrenceService(
                 occurrenceRepository, vehicleRepository, guardRepository,
-                mock(IllegalParkingMapper.class), mock(TrafficAccidentMapper.class), mock(VehicleUserMapper.class),
+                mock(IllegalParkingMapper.class), mock(TrafficAccidentMapper.class), vehicleUserMapper,
                 occurrenceMapper, warningMapper, guardMapper, vehicleMapper, notificationMapper, publisher
         );
         when(occurrenceRepository.findAllByParkUserUuid(userUuid, pageable))
                 .thenReturn(new PageImpl<>(List.of(warning), pageable, 1));
-        when(warningMapper.toGetResponse(warning)).thenReturn(response);
+        when(warning.getVehicleUsers()).thenReturn(List.of(association));
+        when(occurrenceMapper.toDefaultOccurrenceDTO(eq(warning), any(), any())).thenReturn(occurrenceDefaults);
+        when(warningMapper.toGetResponse(warning, occurrenceDefaults)).thenReturn(response);
 
         Page<Record> result = service.findMyOccurrences(parkUser, pageable);
 
@@ -98,7 +108,15 @@ class OccurrenceServiceTest {
         Warning warning = mock(Warning.class);
         GetWarningResponseDTO response = new GetWarningResponseDTO(null, null, null, null);
         when(occurrenceRepository.findByUuid(occurrenceUuid)).thenReturn(Optional.of(warning));
-        when(warningMapper.toGetResponse(warning)).thenReturn(response);
+        Vehicle vehicle = new Vehicle("ABC1234", "M", "B", "C");
+        VehicleUser association = new VehicleUser(
+                new ParkUser(1L, UUID.randomUUID(), "park@weg.net", "1", "Park User"),
+                vehicle
+        );
+        DefaultOccurrenceResponseDTO occurrenceDefaults = mock(DefaultOccurrenceResponseDTO.class);
+        when(warning.getVehicleUsers()).thenReturn(List.of(association));
+        when(occurrenceMapper.toDefaultOccurrenceDTO(eq(warning), any(), any())).thenReturn(occurrenceDefaults);
+        when(warningMapper.toGetResponse(warning, occurrenceDefaults)).thenReturn(response);
 
         assertSame(response, service.findOccurrenceByUuid(occurrenceUuid));
         verify(occurrenceRepository).findByUuid(occurrenceUuid);

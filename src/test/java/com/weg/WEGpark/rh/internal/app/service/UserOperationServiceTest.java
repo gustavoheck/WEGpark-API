@@ -11,18 +11,15 @@ import com.weg.WEGpark.rh.UserSearchResult;
 import com.weg.WEGpark.rh.internal.app.mapper.UserOperationMapper;
 import com.weg.WEGpark.rh.internal.domain.enums.OperationType;
 import com.weg.WEGpark.rh.internal.dto.rh.GetRhResponseDTO;
-import com.weg.WEGpark.rh.internal.infra.repository.RhRepository;
 import com.weg.WEGpark.rh.shared.filter.FindUserFilter;
 import com.weg.WEGpark.shared.exception.NotFoundException;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 
-import java.time.Duration;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -45,7 +42,7 @@ class UserOperationServiceTest {
         mapper = mock(UserOperationMapper.class);
         rhService = mock(RhService.class);
         operationService = mock(OperationService.class);
-        service = new UserOperationService(publisher, mapper, rhService, mock(RhRepository.class), operationService);
+        service = new UserOperationService(publisher, mapper, rhService, operationService);
         token = new JWTUserData(UUID.randomUUID(), "rh@weg.net", List.of("ROLE_RH"), "RH");
     }
 
@@ -109,10 +106,18 @@ class UserOperationServiceTest {
     }
 
     @Test
-    @Disabled("Known production deadlock: userIdResponse.join() is invoked before publishing DesactivateAndActivateUserEvent; enabling this test prevents the JVM from finishing.")
-    void exposesDeactivationDeadlockBeforeEventPublication() {
-        assertTimeoutPreemptively(Duration.ofMillis(250),
-                () -> service.desactivateAndActivateUser(UUID.randomUUID(), token));
+    void deactivatesUserThroughEventAndAuditsOperation() {
+        UUID target = UUID.randomUUID();
+        doAnswer(invocation -> {
+            com.weg.WEGpark.rh.DesactivateAndActivateUserEvent event = invocation.getArgument(0);
+            assertEquals(target, event.uuid());
+            event.userIdResponse().complete(7L);
+            return null;
+        }).when(publisher).publishEvent(any(com.weg.WEGpark.rh.DesactivateAndActivateUserEvent.class));
+
+        service.desactivateAndActivateUser(target, token);
+
+        verify(operationService).saveOperation(token, 7L, OperationType.DESACTIVATE);
     }
 
     private record TestUserResponse(UUID uuid) {

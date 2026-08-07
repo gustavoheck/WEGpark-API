@@ -66,10 +66,18 @@ class TrafficAccidentServiceTest {
         UUID uuid = UUID.randomUUID();
         UpdateTrafficAccidentRequestDTO request = mock(UpdateTrafficAccidentRequestDTO.class);
         GetTrafficAccidentResponseDTO response = mock(GetTrafficAccidentResponseDTO.class);
+        DefaultOccurrenceResponseDTO occurrenceDefaults = mock(DefaultOccurrenceResponseDTO.class);
+        Vehicle vehicle = new Vehicle("ABC1234", "M", "B", "C");
+        occurrence.getVehicleUsers().add(new VehicleUser(
+                new ParkUser(1L, UUID.randomUUID(), "u@weg.net", "1", "User"),
+                vehicle
+        ));
         when(repository.findByUuid(uuid)).thenReturn(Optional.of(occurrence));
-        when(mapper.toGetResponse(occurrence)).thenReturn(response);
+        when(occurrenceService.getOccurrenceResponse(occurrence, vehicle)).thenReturn(occurrenceDefaults);
+        when(mapper.toGetResponse(occurrence, occurrenceDefaults)).thenReturn(response);
         assertSame(response, service.updateTrafficAccident(uuid, request));
         verify(repository).save(occurrence);
+        verify(mapper).toGetResponse(occurrence, occurrenceDefaults);
         when(repository.findByUuid(uuid)).thenReturn(Optional.empty());
         assertThrows(NotFoundException.class, () -> service.updateTrafficAccident(uuid, request));
     }
