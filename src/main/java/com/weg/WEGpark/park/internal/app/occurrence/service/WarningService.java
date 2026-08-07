@@ -73,6 +73,8 @@ public class WarningService {
 
         warningRepository.save(occurrence);
 
-        return warningMapper.toGetResponse(occurrence);
+        Vehicle vehicle = occurrence.getVehicleUsers().getFirst().getVehicle();
+
+        return warningMapper.toGetResponse(occurrence, occurrenceService.getOccurrenceResponse(occurrence, vehicle));
     }
 }
