@@ -51,6 +51,7 @@ class NotificationServiceTest {
 
         assertTrue(notification.getMessage().contains("User"));
         assertNotNull(notification.getNotificationTime());
+        assertEquals(NotificationType.VEHICLE_ASSOCIATION, notification.getNotificationType());
         verify(repository).save(notification);
     }
 

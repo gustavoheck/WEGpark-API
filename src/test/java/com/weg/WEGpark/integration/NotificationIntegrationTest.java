@@ -16,10 +16,13 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -41,6 +44,8 @@ class NotificationIntegrationTest extends AbstractPostgresIntegrationTest {
     private RhRepository rhRepository;
     @Autowired
     private NotificationRepository notificationRepository;
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
     @MockitoBean
     private EmailService emailService;
 
@@ -64,13 +69,24 @@ class NotificationIntegrationTest extends AbstractPostgresIntegrationTest {
         Notification notification = notificationRepository.saveAndFlush(
                 new Notification(authUser.getId(), NotificationType.FIVE_OCCURRENCE, "RH notification")
         );
+        var persistedTypes = jdbcTemplate.queryForMap(
+                """
+                        SELECT notification_type, entity_notification_type
+                        FROM notification.notification
+                        WHERE id = ?
+                        """,
+                notification.getId()
+        );
+        assertEquals("FIVE_OCCURRENCE", persistedTypes.get("notification_type"));
+        assertNull(persistedTypes.get("entity_notification_type"));
         String jwt = tokenConfig.generateToken(authUser, rh.getName());
 
         mockMvc.perform(get("/notification")
                         .header("Authorization", "Bearer " + jwt))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.totalElements").value(1))
-                .andExpect(jsonPath("$.content[0].uuid").value(notification.getUuid().toString()));
+                .andExpect(jsonPath("$.content[0].uuid").value(notification.getUuid().toString()))
+                .andExpect(jsonPath("$.content[0].notificationType").value("FIVE_OCCURRENCE"));
 
         mockMvc.perform(delete("/notification/{uuid}", notification.getUuid())
                         .header("Authorization", "Bearer " + jwt))

@@ -1,5 +1,6 @@
 package com.weg.WEGpark.notification.internal.domain.entities;
 
+import com.weg.WEGpark.notification.internal.domain.enums.EntityNotificationType;
 import com.weg.WEGpark.notification.internal.domain.enums.NotificationType;
 import jakarta.persistence.*;
 import lombok.*;
@@ -14,7 +15,8 @@ import java.util.UUID;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@DiscriminatorColumn(name = "notification_type")
+@DiscriminatorColumn(name = "entity_notification_type")
+@DiscriminatorValue("null")
 @Inheritance(strategy = InheritanceType.JOINED)
 @Table(schema = "notification", name = "notification")
 public class Notification {
@@ -37,7 +39,11 @@ public class Notification {
     private LocalDateTime notificationTime;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "notification_type", insertable = false, updatable = false, nullable = false)
+    @Column(name = "entity_notification_type", insertable = false, updatable = false)
+    private EntityNotificationType entityNotificationType;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "notification_type", nullable = false)
     private NotificationType notificationType;
 
     public Notification(Long idNotificatedUser, NotificationType notificationType) {
