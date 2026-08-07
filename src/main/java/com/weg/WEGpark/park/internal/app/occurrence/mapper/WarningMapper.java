@@ -26,8 +26,9 @@ public interface WarningMapper {
     @Mapping(source = "occurrenceDefaults", target = "defaults")
     CreateWarningResponseDTO toCreateResponse(Warning warning, DefaultOccurrenceResponseDTO occurrenceDefaults);
 
-    @Mapping(source = ".", target = "defaults")
-    GetWarningResponseDTO toGetResponse(Warning warning);
+    @Mapping(source = "warning", target = ".")
+    @Mapping(source = "occurrenceDefaults", target = "defaults")
+    GetWarningResponseDTO toGetResponse(Warning warning, DefaultOccurrenceResponseDTO occurrenceDefaults);
 
     @Mapping(source = "defaults", target = ".")
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)

@@ -76,6 +76,8 @@ public class TrafficAccidentService {
 
         trafficAccidentRepository.save(occurrence);
 
-        return trafficAccidentMapper.toGetResponse(occurrence);
+        Vehicle vehicle = occurrence.getVehicleUsers().getFirst().getVehicle();
+
+        return trafficAccidentMapper.toGetResponse(occurrence, occurrenceService.getOccurrenceResponse(occurrence, vehicle));
     }
 }

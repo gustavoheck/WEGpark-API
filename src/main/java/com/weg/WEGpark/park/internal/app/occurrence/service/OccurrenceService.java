@@ -145,10 +145,11 @@ public class OccurrenceService {
     }
 
     private Record toResponse(Occurrence occurrence) {
+        Vehicle vehicle = occurrence.getVehicleUsers().getFirst().getVehicle();
         return switch (occurrence) {
-            case Warning warning -> warningMapper.toGetResponse(warning);
-            case IllegalParking illegalParking -> illegalParkingMapper.toGetResponse(illegalParking);
-            case TrafficAccident trafficAccident -> trafficAccidentMapper.toGetResponse(trafficAccident);
+            case Warning warning -> warningMapper.toGetResponse(warning, getOccurrenceResponse(warning, vehicle));
+            case IllegalParking illegalParking -> illegalParkingMapper.toGetResponse(illegalParking, getOccurrenceResponse(illegalParking, vehicle));
+            case TrafficAccident trafficAccident -> trafficAccidentMapper.toGetResponse(trafficAccident, getOccurrenceResponse(trafficAccident, vehicle));
             default -> throw new IllegalStateException("Unexpected value: " + occurrence);
         };
     }

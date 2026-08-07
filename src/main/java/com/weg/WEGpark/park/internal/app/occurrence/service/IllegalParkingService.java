@@ -75,6 +75,8 @@ public class IllegalParkingService {
 
         illegalParkingRepository.save(occurrence);
 
-        return illegalParkingMapper.toGetResponse(occurrence);
+        Vehicle vehicle = occurrence.getVehicleUsers().getFirst().getVehicle();
+
+        return illegalParkingMapper.toGetResponse(occurrence, occurrenceService.getOccurrenceResponse(occurrence, vehicle));
     }
 }

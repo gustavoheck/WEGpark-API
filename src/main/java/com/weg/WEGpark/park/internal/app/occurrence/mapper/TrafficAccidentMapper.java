@@ -26,8 +26,9 @@ public interface TrafficAccidentMapper {
         @Mapping(source = "occurrenceDefaults", target = "defaults")
         CreateTrafficAccidentResponseDTO toCreateResponse(TrafficAccident trafficAccident, DefaultOccurrenceResponseDTO occurrenceDefaults);
 
-        @Mapping(source = ".", target = "defaults")
-        GetTrafficAccidentResponseDTO toGetResponse(TrafficAccident trafficAccident);
+        @Mapping(source = "trafficAccident", target = ".")
+        @Mapping(source = "occurrenceDefaults", target = "defaults")
+        GetTrafficAccidentResponseDTO toGetResponse(TrafficAccident trafficAccident, DefaultOccurrenceResponseDTO occurrenceDefaults);
 
         @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
         @Mapping(source = "defaults", target = ".")

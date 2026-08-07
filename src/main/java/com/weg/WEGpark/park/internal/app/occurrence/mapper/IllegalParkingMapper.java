@@ -26,8 +26,9 @@ public interface IllegalParkingMapper {
     @Mapping(source = "occurrenceDefaults", target = "defaults")
     CreateIllegalParkingResponseDTO toCreateResponse(IllegalParking illegalParking, DefaultOccurrenceResponseDTO occurrenceDefaults);
 
-    @Mapping(source = ".", target = "defaults")
-    GetIllegalParkingResponseDTO toGetResponse(IllegalParking illegalParking);
+    @Mapping(source = "illegalParking", target = ".")
+    @Mapping(source = "occurrenceDefaults", target = "defaults")
+    GetIllegalParkingResponseDTO toGetResponse(IllegalParking illegalParking, DefaultOccurrenceResponseDTO occurrenceDefaults);
 
     @Mapping(source = "defaults", target = ".")
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
