@@ -7,6 +7,8 @@ import com.weg.WEGpark.auth.internal.infra.repository.UserRepository;
 import com.weg.WEGpark.auth.internal.infra.security.config.TokenConfig;
 import com.weg.WEGpark.auth.shared.enums.RolesType;
 import com.weg.WEGpark.notification.internal.domain.entities.VehicleAssociationNotification;
+import com.weg.WEGpark.notification.internal.domain.enums.EntityNotificationType;
+import com.weg.WEGpark.notification.internal.domain.enums.NotificationType;
 import com.weg.WEGpark.notification.internal.infra.repository.NotificationRepository;
 import com.weg.WEGpark.park.internal.domain.model.users.Collaborator;
 import com.weg.WEGpark.park.internal.domain.model.users.VehicleUser;
@@ -22,6 +24,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -123,6 +126,8 @@ class VehicleAssociationIntegrationTest extends AbstractPostgresIntegrationTest 
                 .findFirst()
                 .orElseThrow();
         assertNotNull(notification.getNotificationTime());
+        assertEquals(EntityNotificationType.VEHICLE_ASSOCIATION, notification.getEntityNotificationType());
+        assertEquals(NotificationType.VEHICLE_ASSOCIATION, notification.getNotificationType());
 
         String ownerJwt = tokenConfig.generateToken(ownerAuth, owner.getName());
         mockMvc.perform(post("/vehicle/associate/notification")
