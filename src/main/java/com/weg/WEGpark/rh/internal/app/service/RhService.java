@@ -108,7 +108,6 @@ public class RhService {
         event.eventResponse().complete(rh.getId());
     }
 
-    // Tem que parar de retornar null aqui
     public Page<UserSearchResult> listRhUsers (FindUserFilter findUserFilter, Pageable pageable) {
         if (findUserFilter != null && !FilterUtil.checkMoreThanOneFilter(findUserFilter)) {
             throw new MoreThenOneFilterException("You can not use more than one filter");
